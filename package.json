@@ -1,0 +1,18 @@
+{
+  "name": "habit-tracker-tui",
+  "version": "0.1.0",
+  "description": "A tui interface to track your habits",
+  "keywords": [
+    "habits",
+    "tracker",
+    "tui"
+  ],
+  "license": "ISC",
+  "author": "Bhargav Kodali",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}

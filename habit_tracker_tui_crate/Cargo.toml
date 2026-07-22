@@ -1,0 +1,8 @@
+[package]
+name = "habit-tracker-tui"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+anyhow = "1.0"
