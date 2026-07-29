@@ -1,5 +1,5 @@
 {
-  "name": "habit-tracker-tui",
+  "name": "sprout",
   "version": "0.1.0",
   "description": "A tui interface to track your habits",
   "keywords": [
@@ -13,6 +13,10 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "lint-staged": "^17.2.0"
+  },
+  "lint-staged": {
+    "**/*.rs": "rustfmt"
   }
 }

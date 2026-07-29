@@ -1,5 +1,29 @@
 // use anyhow::{Context, Result};
+/// Application.
+pub mod app;
+
+/// Terminal events handler.
+pub mod event;
+
+/// Widget renderer.
+pub mod ui;
+
+/// Terminal user interface.
+pub mod tui;
+
+/// Application updater.
+pub mod update;
+
+/// Color palette.
+pub mod palette;
+
+use app::App;
 use clap::{Parser, Subcommand, builder::styling};
+use color_eyre::Result;
+use event::{Event, EventHandler};
+use ratatui::{Terminal, backend::CrosstermBackend};
+use tui::Tui;
+use update::update;
 
 const STYLES: styling::Styles = styling::Styles::styled()
     .header(styling::AnsiColor::Green.on_default().bold())
@@ -7,14 +31,14 @@ const STYLES: styling::Styles = styling::Styles::styled()
     .literal(styling::AnsiColor::Blue.on_default().bold())
     .placeholder(styling::AnsiColor::Cyan.on_default());
 
-#[derive(Parser)]
+#[derive(Parser, Debug)]
 #[command(version, about = "Track your habit activity in the terminal", styles = STYLES)]
 struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
 }
 
-#[derive(Subcommand)]
+#[derive(Subcommand, Debug)]
 enum Commands {
     #[command(
         about = "Log a value for a habit (e.g. `habit log reading 30`)",
@@ -64,7 +88,33 @@ enum Commands {
     List {},
 }
 
-fn main() {
+fn main() -> Result<()> {
     let args = Cli::parse();
-    let _ = args;
+    println!("argus: {:?}", args);
+    // Create an application.
+    let mut app = App::new();
+
+    // Initialize the terminal user interface.
+    let backend = CrosstermBackend::new(std::io::stderr());
+    let terminal = Terminal::new(backend)?;
+    let events = EventHandler::new(250);
+    let mut tui = Tui::new(terminal, events);
+    tui.enter()?;
+
+    // Start the main loop.
+    while !app.should_quit {
+        // Render the user interface.
+        tui.draw(&mut app)?;
+        // Handle events.
+        match tui.events.next()? {
+            Event::Tick => {}
+            Event::Key(key_event) => update(&mut app, key_event),
+            Event::Mouse(_) => {}
+            Event::Resize(_, _) => {}
+        };
+    }
+
+    // Exit the user interface.
+    tui.exit()?;
+    Ok(())
 }

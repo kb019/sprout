@@ -1,12 +1,2 @@
 #!/bin/sh
-STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep '^habit_tracker_tui_crate/.*\.rs$')
-
-[ -z "$STAGED" ] && exit 0
-
-cd habit_tracker_tui_crate || exit 1
-
-for FILE in $STAGED; do
-  REL="${FILE#habit_tracker_tui_crate/}"
-  rustfmt "$REL"
-  git add "habit_tracker_tui_crate/$REL"
-done
+npx lint-staged
