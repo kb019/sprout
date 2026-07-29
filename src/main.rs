@@ -90,7 +90,7 @@ enum Commands {
 
 fn main() -> Result<()> {
     let args = Cli::parse();
-    println!("argus: {:?}", args);
+    println!("argus: {args:?}");
     // Create an application.
     let mut app = App::new();
 
@@ -107,11 +107,9 @@ fn main() -> Result<()> {
         tui.draw(&mut app)?;
         // Handle events.
         match tui.events.next()? {
-            Event::Tick => {}
             Event::Key(key_event) => update(&mut app, key_event),
-            Event::Mouse(_) => {}
-            Event::Resize(_, _) => {}
-        };
+            Event::Tick | Event::Mouse(_) | Event::Resize(_, _) => {}
+        }
     }
 
     // Exit the user interface.

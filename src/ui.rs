@@ -5,12 +5,12 @@ use ratatui::layout::{Constraint, Layout, Rect};
 use ratatui::style::Style;
 use ratatui::text::{Line as TextLine, Span};
 
-pub fn render(app: &mut App, frame: &mut Frame) {
+pub fn render(_app: &mut App, frame: &mut Frame) {
     let vertical: Layout =
         Layout::vertical([Constraint::Length(5), Constraint::Fill(1)]).spacing(1);
     let horizontal = Layout::horizontal([Constraint::Percentage(100)]).spacing(1);
     let [top, main] = frame.area().layout(&vertical);
-    let [area] = main.layout(&horizontal);
+    let [_area] = main.layout(&horizontal);
 
     draw_app_name(frame, top);
 }
