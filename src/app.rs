@@ -24,13 +24,13 @@ impl App {
     }
 
     pub fn increment_counter(&mut self) {
-        if let Some(res) = self.counter.checked_add(10) {
+        if let Some(res) = self.counter.checked_add(5) {
             self.counter = res;
         }
     }
 
     pub fn decrement_counter(&mut self) {
-        if let Some(res) = self.counter.checked_sub(10) {
+        if let Some(res) = self.counter.checked_sub(5) {
             self.counter = res;
         }
     }

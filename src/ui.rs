@@ -56,7 +56,7 @@ pub fn render_sprout(_app: &mut App, frame: &mut Frame, sprout_area: Rect) {
             padding_bottom,
         ));
 
-    let sprout_grow_percentage = SproutPercentage::TenPercent;
+    let sprout_grow_percentage = SproutPercentage::from_value(_app.counter);
 
     let canvas_x_bounds = [-40.0, 40.0];
     let canvas_y_bounds = [-40.0, 40.0];
