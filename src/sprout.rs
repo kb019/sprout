@@ -4,8 +4,8 @@ use crate::palette::Palette;
 
 #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum SproutPercentage {
-    FivePercent,
     #[default]
+    FivePercent,
     TenPercent,
     FifteenPercent,
     TwentyPercent,
