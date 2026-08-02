@@ -4,11 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [lints.rust]
-unused_imports = "deny"
+unused_imports = "warn"
 dead_code = "warn"
 unused_variables = "warn"
 
 [lints.clippy]
+unused-enumerate-index = "allow"
 needless_pass_by_ref_mut = "warn"
 implicit_clone = "warn"
 

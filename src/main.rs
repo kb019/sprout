@@ -17,6 +17,9 @@ pub mod update;
 /// Color palette.
 pub mod palette;
 
+/// App Logo Progess Displayer
+pub mod sprout;
+
 use app::App;
 use clap::{Parser, Subcommand, builder::styling};
 use color_eyre::Result;
@@ -96,6 +99,7 @@ fn main() -> Result<()> {
 
     // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(std::io::stderr());
+
     let terminal = Terminal::new(backend)?;
     let events = EventHandler::new(250);
     let mut tui = Tui::new(terminal, events);

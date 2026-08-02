@@ -15,10 +15,11 @@ impl Palette {
     pub const HEATMAP_3: Color = Color::Rgb(47, 161, 85);
     pub const HEATMAP_4: Color = Color::Rgb(75, 227, 116);
     pub const BRAND_GREEN: Color = Color::Rgb(75, 227, 116);
-    pub const AMBER: Color = Color::Rgb(227, 179, 65);
+    pub const AMBER: Color = Color::Rgb(255, 190, 60);
     pub const SELECTION: Color = Color::Rgb(22, 53, 33);
     pub const DANGER: Color = Color::Rgb(194, 84, 84);
     pub const SOIL: Color = Color::Rgb(107, 86, 54);
+    pub const DOT: Color = Color::Black;
 
     pub fn heatmap(level: u8) -> Color {
         match level {

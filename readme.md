@@ -1,0 +1,1 @@
+If you dont like any rules like clippy or commit warnings , you are welcome to make chnges and raise a pr.
