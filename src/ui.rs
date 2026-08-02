@@ -39,7 +39,7 @@ pub fn render_menu_column(app: &mut App, frame: &mut Frame, menu_area: Rect) {
     render_summary(app, frame, summary_box);
 }
 
-pub fn render_sprout(_app: &mut App, frame: &mut Frame, sprout_area: Rect) {
+pub fn render_sprout(app: &mut App, frame: &mut Frame, sprout_area: Rect) {
     let padding_left = 1;
     let padding_right = 1;
     let padding_top = 1;
@@ -56,7 +56,8 @@ pub fn render_sprout(_app: &mut App, frame: &mut Frame, sprout_area: Rect) {
             padding_bottom,
         ));
 
-    let sprout_grow_percentage = SproutPercentage::from_value(_app.counter);
+    let sprout_grow_percentage = SproutPercentage::from_value(app.counter);
+    let app_ref: &App = app;
 
     let canvas_x_bounds = [-40.0, 40.0];
     let canvas_y_bounds = [-40.0, 40.0];
@@ -67,6 +68,7 @@ pub fn render_sprout(_app: &mut App, frame: &mut Frame, sprout_area: Rect) {
         .paint(|ctx| {
             ctx.draw(&Sprout {
                 percentage: sprout_grow_percentage,
+                app: app_ref,
             });
         });
 
@@ -82,6 +84,7 @@ pub fn render_sprout(_app: &mut App, frame: &mut Frame, sprout_area: Rect) {
     if !dot_area.is_empty() {
         let sprout = Sprout {
             percentage: sprout_grow_percentage,
+            app: app_ref,
         };
 
         let points = sprout.percentage.data(&sprout);
