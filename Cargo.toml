@@ -12,6 +12,7 @@ unused_variables = "warn"
 unused-enumerate-index = "allow"
 needless_pass_by_ref_mut = "warn"
 implicit_clone = "warn"
+vec_init_then_push = "allow"
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }

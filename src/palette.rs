@@ -3,7 +3,7 @@ use ratatui::style::Color;
 pub struct Palette;
 
 impl Palette {
-    pub const BACKGROUND: Color = Color::Rgb(10, 15, 12);
+    pub const BACKGROUND: Color = Color::Rgb(33, 37, 41);
     pub const BORDER: Color = Color::Rgb(36, 53, 42);
     pub const BORDER_DIM: Color = Color::Rgb(23, 35, 27);
     pub const TEXT_PRIMARY: Color = Color::Rgb(207, 233, 212);
@@ -19,7 +19,7 @@ impl Palette {
     pub const SELECTION: Color = Color::Rgb(22, 53, 33);
     pub const DANGER: Color = Color::Rgb(194, 84, 84);
     pub const SOIL: Color = Color::Rgb(107, 86, 54);
-    pub const DOT: Color = Color::Black;
+    pub const DOT: Color = Color::Rgb(21, 32, 25);
 
     pub fn heatmap(level: u8) -> Color {
         match level {

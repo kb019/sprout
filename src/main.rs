@@ -24,6 +24,7 @@ use app::App;
 use clap::{Parser, Subcommand, builder::styling};
 use color_eyre::Result;
 use event::{Event, EventHandler};
+use ratatui::widgets::ListState;
 use ratatui::{Terminal, backend::CrosstermBackend};
 use tui::Tui;
 use update::update;
@@ -99,7 +100,7 @@ fn main() -> Result<()> {
 
     // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(std::io::stderr());
-
+    let mut list_state = ListState::default().with_selected(Some(0));
     let terminal = Terminal::new(backend)?;
     let events = EventHandler::new(250);
     let mut tui = Tui::new(terminal, events);
@@ -108,10 +109,10 @@ fn main() -> Result<()> {
     // Start the main loop.
     while !app.should_quit {
         // Render the user interface.
-        tui.draw(&mut app)?;
+        tui.draw(&mut app, &mut list_state)?;
         // Handle events.
         match tui.events.next()? {
-            Event::Key(key_event) => update(&mut app, key_event),
+            Event::Key(key_event) => update(&mut app, key_event, &mut list_state),
             Event::Tick | Event::Mouse(_) | Event::Resize(_, _) => {}
         }
     }

@@ -3,14 +3,16 @@ use crate::palette::Palette;
 use crate::sprout::{Sprout, SproutPercentage};
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Layout, Position, Rect};
-use ratatui::style::{Color, Modifier, Style};
+use ratatui::style::{Color, Modifier, Style, Stylize};
 use ratatui::symbols::Marker;
-use ratatui::text::{Line as TextLine, Span};
+use ratatui::text::{Line as TextLine, Span, Text};
 use ratatui::widgets::canvas::{Canvas, Context, Painter};
-use ratatui::widgets::{Block, Borders, Padding};
+use ratatui::widgets::{
+    Block, Borders, HighlightSpacing, List, ListItem, ListState, Padding, Paragraph,
+};
 use ratatui::{Frame, symbols};
 
-pub fn render(app: &mut App, frame: &mut Frame) {
+pub fn render(app: &mut App, frame: &mut Frame, list_state: &mut ListState) {
     let vertical: Layout =
         Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).spacing(1);
     let horizontal = Layout::horizontal([
@@ -22,20 +24,25 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     let [top, main] = frame.area().layout(&vertical);
     let [menu_column, _column_two, _column_three] = main.layout(&horizontal);
 
-    render_menu_column(app, frame, menu_column);
+    render_menu_column(app, frame, menu_column, list_state);
     draw_app_name(frame, top);
 }
 
-pub fn render_menu_column(app: &mut App, frame: &mut Frame, menu_area: Rect) {
+pub fn render_menu_column(
+    app: &mut App,
+    frame: &mut Frame,
+    menu_area: Rect,
+    list_state: &mut ListState,
+) {
     let vertical_menu_rows: Layout = Layout::vertical([
-        Constraint::Length(20),
-        Constraint::Length(20),
-        Constraint::Length(20),
+        Constraint::Percentage(35),
+        Constraint::Percentage(25),
+        Constraint::Percentage(40),
     ])
     .spacing(1);
     let [sprout_box, navigate_box, summary_box] = menu_area.layout(&vertical_menu_rows);
     render_sprout(app, frame, sprout_box);
-    render_navigate(app, frame, navigate_box);
+    render_navigate(app, frame, navigate_box, list_state);
     render_summary(app, frame, summary_box);
 }
 
@@ -112,7 +119,7 @@ pub fn render_dots(frame_buffer_mut: &mut Buffer, padding_bottom: u16, dot_area:
     let dot_area_left_point = dot_area.left();
     if !dot_area.is_empty() {
         for (_i, position) in dot_area.positions().enumerate() {
-            let mut dot_style = Style::new().fg(Palette::DOT).add_modifier(Modifier::DIM);
+            let mut dot_style = Style::new().fg(Palette::TEXT_SECONDARY).dim();
             if position.y == dot_area_bottom_point && position.x >= dot_area_left_point {
                 //make the last line of the sprout dots yellow
                 dot_style = Style::new().fg(Palette::SOIL);
@@ -162,13 +169,45 @@ pub fn reset_color_plant_cells(
     }
 }
 
-pub fn render_navigate(_app: &mut App, frame: &mut Frame, navigate_area: Rect) {
+pub fn render_navigate(
+    _app: &mut App,
+    frame: &mut Frame,
+    navigate_area: Rect,
+    list_state: &mut ListState,
+) {
     let navigate_block = Block::default()
         .title(" navigate ")
         .title_style(Style::new().fg(Palette::TEXT_SECONDARY))
         .borders(Borders::ALL)
-        .border_style(Style::new().fg(Palette::BORDER));
+        .border_style(Style::new().fg(Palette::BORDER))
+        .padding(Padding::new(1, 1, 1, 1));
+    let menu_area = navigate_block.inner(navigate_area);
     frame.render_widget(navigate_block, navigate_area);
+    render_menu(_app, frame, menu_area, list_state);
+}
+
+pub fn render_menu(app: &mut App, frame: &mut Frame, menu_area: Rect, list_state: &mut ListState) {
+    let mut menu_items = vec![];
+
+    for (i, menu_item) in app.menu.iter().enumerate() {
+        let mut bold_modifier = Modifier::empty();
+
+        if let Some(select) = list_state.selected()
+            && select == i
+        {
+            bold_modifier = Modifier::BOLD;
+        }
+        let text = Text::from(*menu_item).add_modifier(bold_modifier);
+        let item = ListItem::new(text);
+        menu_items.push(item);
+    }
+    let list = List::new(menu_items)
+        .style(Palette::TEXT_SECONDARY)
+        .highlight_style(Style::new().fg(Palette::BRAND_GREEN).bg(Palette::SELECTION))
+        .highlight_symbol("▍ ")
+        .highlight_spacing(HighlightSpacing::Always);
+
+    frame.render_stateful_widget(list, menu_area, list_state);
 }
 
 pub fn render_summary(_app: &mut App, frame: &mut Frame, summary_area: Rect) {
@@ -176,7 +215,47 @@ pub fn render_summary(_app: &mut App, frame: &mut Frame, summary_area: Rect) {
         .title(" summary ")
         .title_style(Style::new().fg(Palette::TEXT_SECONDARY))
         .borders(Borders::ALL)
-        .border_style(Style::new().fg(Palette::BORDER));
+        .border_style(Style::new().fg(Palette::BORDER))
+        .padding(Padding::new(1, 1, 1, 1));
+    let summary_inner_area = summary_block.inner(summary_area);
+
+    let mut lines = vec![];
+    lines.push(TextLine::from(vec![
+        Span::styled("TODAY ", Style::default().fg(Palette::TEXT_SECONDARY)),
+        // Span::styled("World", Style::default().fg(Color::Blue).bg(Color::White)),
+    ]));
+    lines.push(TextLine::from(vec![
+        Span::styled("3/5 done", Style::default().fg(Palette::TEXT_PRIMARY))
+            .add_modifier(Modifier::BOLD),
+        Span::styled("    60%", Style::default().fg(Palette::TEXT_PRIMARY)),
+    ]));
+    lines.push(TextLine::from(vec![Span::from("")]));
+    lines.push(TextLine::from(vec![Span::styled(
+        "██████████░░░░░░",
+        Style::default().fg(Palette::BRAND_GREEN),
+    )]));
+    lines.push(TextLine::from(vec![Span::from("")]));
+    lines.push(TextLine::from(vec![Span::styled(
+        "BEST STREAK",
+        Style::default().fg(Palette::TEXT_SECONDARY),
+    )]));
+    lines.push(TextLine::from(vec![Span::styled(
+        "🔥 21 days",
+        Style::default().fg(Palette::AMBER),
+    )]));
+    lines.push(TextLine::from(vec![Span::from("")]));
+    lines.push(TextLine::from(vec![Span::styled(
+        "Habits tracked",
+        Style::default().fg(Palette::TEXT_SECONDARY),
+    )]));
+    lines.push(TextLine::from(vec![Span::styled(
+        "5",
+        Style::default().fg(Palette::TEXT_SECONDARY),
+    )]));
+
+    let text = Text::from(lines);
+    let paragraph = Paragraph::new(text);
+    frame.render_widget(paragraph, summary_inner_area);
     frame.render_widget(summary_block, summary_area);
 }
 

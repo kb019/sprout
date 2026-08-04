@@ -9,6 +9,8 @@ pub struct App {
     pub counter: u8,
     /// sprout points for each percentage
     pub sprout_percentage_points: SproutPercentagePoints,
+    /// menu items
+    pub menu: Vec<&'static str>,
 }
 
 #[derive(Debug, Default)]
@@ -44,6 +46,7 @@ impl App {
         for pct in (5u8..=100).step_by(5) {
             app.set_sprout_points(pct, generate_sprout_points(pct));
         }
+        app.menu = vec!["Dashboard", "Habits", "Heatmap", "Stats", "Settings"];
         app
     }
 
