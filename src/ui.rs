@@ -21,8 +21,10 @@ pub fn render(app: &mut App, frame: &mut Frame, list_state: &mut ListState) {
         Constraint::Percentage(20),
     ])
     .spacing(1);
-    let [top, main] = frame.area().layout(&vertical);
-    let [menu_column, _column_two, _column_three] = main.layout(&horizontal);
+    let layout = vertical.split(frame.area());
+    let (top, main) = (layout[0], layout[1]);
+    let cols = horizontal.split(main);
+    let (menu_column, _column_two, _column_three) = (cols[0], cols[1], cols[2]);
 
     render_menu_column(app, frame, menu_column, list_state);
     draw_app_name(frame, top);
@@ -40,7 +42,8 @@ pub fn render_menu_column(
         Constraint::Percentage(40),
     ])
     .spacing(1);
-    let [sprout_box, navigate_box, summary_box] = menu_area.layout(&vertical_menu_rows);
+    let rows = vertical_menu_rows.split(menu_area);
+    let (sprout_box, navigate_box, summary_box) = (rows[0], rows[1], rows[2]);
     render_sprout(app, frame, sprout_box);
     render_navigate(app, frame, navigate_box, list_state);
     render_summary(app, frame, summary_box);

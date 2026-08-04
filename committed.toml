@@ -1,0 +1,18 @@
+[committed]
+style = "conventional"
+merge_commit = false
+ignore_author_re="(dependabot|renovate)"
+
+allowed_types = [
+    "feat",
+    "fix",
+    "docs",
+    "style",
+    "refactor",
+    "perf",
+    "test",
+    "chore",
+    "build",
+    "ci",
+    "revert",
+]

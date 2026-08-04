@@ -1,0 +1,7 @@
+[files]
+extend-exclude = ["target/", "Cargo.lock"]
+
+[default.extend-words]
+# library / crate names that typos flags as misspellings
+ratatui = "ratatui"
+

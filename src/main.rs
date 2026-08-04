@@ -17,7 +17,7 @@ pub mod update;
 /// Color palette.
 pub mod palette;
 
-/// App Logo Progess Displayer
+/// App Logo Progress Displayer
 pub mod sprout;
 
 use app::App;
