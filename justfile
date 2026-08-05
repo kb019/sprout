@@ -24,7 +24,7 @@ install-hooks:
     @echo "✅ Git hooks installed"
 
 setup: install-hooks
-    cargo install --path .
+    cargo install --path . --locked
     @echo "✅ Finished setup"
 
 clean:

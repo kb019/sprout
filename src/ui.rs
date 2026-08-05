@@ -15,17 +15,53 @@ use ratatui::{Frame, symbols};
 pub fn render(app: &mut App, frame: &mut Frame, list_state: &mut ListState) {
     let vertical: Layout =
         Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).spacing(1);
-    let horizontal = Layout::horizontal([
-        Constraint::Percentage(20),
-        Constraint::Percentage(60),
-        Constraint::Percentage(20),
-    ])
-    .spacing(1);
+    let horizontal =
+        Layout::horizontal([Constraint::Percentage(20), Constraint::Percentage(80)]).spacing(1);
     let [top, main] = frame.area().layout(&vertical);
-    let [menu_column, _column_two, _column_three] = main.layout(&horizontal);
+    let [menu_column, app_column] = main.layout(&horizontal);
 
     render_menu_column(app, frame, menu_column, list_state);
+    render_dashboard(app, frame, app_column);
     draw_app_name(frame, top);
+}
+
+pub fn render_dashboard(_app: &mut App, frame: &mut Frame, app_area: Rect) {
+    let horizontal =
+        Layout::horizontal([Constraint::Percentage(60), Constraint::Percentage(40)]).spacing(1);
+    let [dashboard_column, _stats_column] = app_area.layout(&horizontal);
+    let dashboard_block = Block::default()
+        .title(" active habits ")
+        .title_style(Style::new().fg(Palette::BRAND_GREEN))
+        .borders(Borders::ALL)
+        .border_style(Style::new().fg(Palette::BRAND_GREEN))
+        .padding(Padding::new(1, 1, 1, 1));
+    let dashboard_inner_area = dashboard_block.inner(dashboard_column);
+    frame.render_widget(dashboard_block, dashboard_column);
+    render_empty_state(frame, dashboard_inner_area, " No active habits ");
+}
+
+pub fn render_empty_state(frame: &mut Frame, area: Rect, text: &str) {
+    let paragraph = Span::from(text).style(Style::new().fg(Palette::BRAND_GREEN));
+    let text_len = text.len() as u16;
+    let half_width = text_len / 2;
+    let center_x = area.x + area.width / 2;
+    let middle_rect = Rect {
+        x: center_x.saturating_sub(half_width),
+        y: area.y + area.height / 2,
+        width: area.width,
+        height: 1,
+    };
+    frame.render_widget(paragraph, middle_rect);
+    let frame_buffer_mut = frame.buffer_mut();
+    for position in area.positions() {
+        let style = Style::new().fg(Palette::TEXT_SECONDARY).dim();
+        let cell_style = frame_buffer_mut[position].style();
+        if let Some(fg_color) = cell_style.fg
+            && fg_color != Palette::BRAND_GREEN
+        {
+            frame_buffer_mut[position].set_symbol("░").set_style(style);
+        }
+    }
 }
 
 pub fn render_menu_column(
@@ -118,7 +154,7 @@ pub fn render_dots(frame_buffer_mut: &mut Buffer, padding_bottom: u16, dot_area:
     let dot_area_bottom_point = dot_area.bottom().saturating_sub(padding_bottom);
     let dot_area_left_point = dot_area.left();
     if !dot_area.is_empty() {
-        for (_i, position) in dot_area.positions().enumerate() {
+        for position in dot_area.positions() {
             let mut dot_style = Style::new().fg(Palette::TEXT_SECONDARY).dim();
             if position.y == dot_area_bottom_point && position.x >= dot_area_left_point {
                 //make the last line of the sprout dots yellow
