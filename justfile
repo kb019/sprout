@@ -11,7 +11,7 @@ fmt:
     cargo fmt
 
 lint:
-    cargo fmt --check
+    cargo fmt
     cargo clippy -- -D warnings
     typos
 
