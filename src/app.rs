@@ -46,7 +46,7 @@ impl App {
         for pct in (5u8..=100).step_by(5) {
             app.set_sprout_points(pct, generate_sprout_points(pct));
         }
-        app.menu = vec!["Dashboard", "Habits", "Heatmap", "Stats", "Settings"];
+        app.menu = vec!["Dashboard", "Heatmap", "Stats", "Settings"];
         app
     }
 
