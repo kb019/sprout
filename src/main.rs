@@ -27,9 +27,9 @@ use std::io::{Write, stderr, stdout};
 use std::thread;
 use std::time::Duration;
 
+use anyhow::Result;
 use app::App;
 use clap::{Parser, Subcommand, builder::styling};
-use color_eyre::Result;
 use event::{Event, EventHandler};
 use ratatui::widgets::ListState;
 use ratatui::{Terminal, backend::CrosstermBackend};

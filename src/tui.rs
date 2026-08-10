@@ -1,6 +1,6 @@
 use std::{io, panic};
 
-use color_eyre::Result;
+use anyhow::{Result, anyhow};
 use ratatui::{
     crossterm::{
         event::{DisableMouseCapture, EnableMouseCapture},
@@ -9,7 +9,6 @@ use ratatui::{
     },
     widgets::ListState,
 };
-
 pub type CrosstermTerminal = ratatui::Terminal<ratatui::backend::CrosstermBackend<std::io::Stdout>>;
 
 use crate::{app::App, event::EventHandler, ui};
@@ -46,8 +45,12 @@ impl Tui {
             panic_hook(panic);
         }));
 
-        self.terminal.hide_cursor()?;
-        self.terminal.clear()?;
+        self.terminal
+            .hide_cursor()
+            .map_err(|e| anyhow!("failed to hide cursor: {e}"))?;
+        self.terminal
+            .clear()
+            .map_err(|e| anyhow!("failed to clear terminal: {e}"))?;
         Ok(())
     }
 
