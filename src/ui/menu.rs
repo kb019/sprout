@@ -69,6 +69,8 @@ fn render_menu(app: &App, frame: &mut Frame, menu_area: Rect, list_state: &mut L
         .highlight_spacing(HighlightSpacing::Always);
 
     frame.render_stateful_widget(list, menu_area, list_state);
+    // This is to make the all possible items appear correctly on resize
+    *list_state.offset_mut() = 0;
 }
 
 fn render_summary(_app: &mut App, frame: &mut Frame, summary_area: Rect) {
