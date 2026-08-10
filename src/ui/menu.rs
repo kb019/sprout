@@ -91,6 +91,7 @@ fn render_summary(_app: &mut App, frame: &mut Frame, summary_area: Rect) {
         Span::styled("    60%", Style::default().fg(Palette::TEXT_PRIMARY)),
     ]));
     lines.push(TextLine::from(vec![Span::from("")]));
+    //LIGHT import from rtatui::symbols::LIGHT;
     lines.push(TextLine::from(vec![Span::styled(
         "██████████░░░░░░",
         Style::default().fg(Palette::BRAND_GREEN),

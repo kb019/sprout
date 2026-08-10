@@ -10,7 +10,7 @@ use ratatui::{
     widgets::ListState,
 };
 
-pub type CrosstermTerminal = ratatui::Terminal<ratatui::backend::CrosstermBackend<std::io::Stderr>>;
+pub type CrosstermTerminal = ratatui::Terminal<ratatui::backend::CrosstermBackend<std::io::Stdout>>;
 
 use crate::{app::App, event::EventHandler, ui};
 
@@ -36,7 +36,7 @@ impl Tui {
     /// It enables the raw mode and sets terminal properties.
     pub fn enter(&mut self) -> Result<()> {
         terminal::enable_raw_mode()?;
-        execute!(io::stderr(), EnterAlternateScreen, EnableMouseCapture)?;
+        execute!(io::stdout(), EnterAlternateScreen, EnableMouseCapture)?;
 
         // Define a custom panic hook to reset the terminal properties.
         // This way, you won't have your terminal messed up if an unexpected error happens.

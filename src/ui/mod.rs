@@ -1,4 +1,5 @@
 mod dashboard;
+mod heatmap;
 mod menu;
 mod stats;
 use crate::app::App;
@@ -17,13 +18,14 @@ pub fn render(app: &mut App, frame: &mut Frame, list_state: &mut ListState) {
     let [top, main] = frame.area().layout(&vertical);
     let [menu_column, app_column] = main.layout(&horizontal);
 
-    // if(list_state.selected())
     menu::render_menu_column(app, frame, menu_column, list_state);
     if let Some(current_menu_selected) = list_state.selected() {
         if current_menu_selected == 0 {
             dashboard::render_dashboard(app, frame, app_column);
         } else if current_menu_selected == 2 {
             stats::render_stats_column(app, frame, app_column);
+        } else if current_menu_selected == 1 {
+            heatmap::render_heatmap(app, frame, app_column);
         }
     };
     draw_app_name(frame, top);

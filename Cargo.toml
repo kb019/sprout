@@ -20,3 +20,9 @@ anyhow = "1.0"
 ratatui = "0.30.2"
 crossterm = "0.29.0"
 color-eyre = "0.6.5"
+time = "0.3.55"
+unicode-width = "0.2.0"
+itertools = "0.14"
+
+[dev-dependencies]
+rstest = "0.26"

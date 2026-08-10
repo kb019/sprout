@@ -3,10 +3,11 @@ use ratatui::layout::{Constraint, Flex, Layout, Rect};
 use ratatui::style::{Modifier, Style};
 use ratatui::symbols::line::HORIZONTAL;
 use ratatui::text::{Line as TextLine, Span, Text};
-use ratatui::widgets::{Bar, BarChart, Block, Borders, Padding, Paragraph};
+use ratatui::widgets::{Block, Borders, Padding, Paragraph};
 
 use crate::app::App;
 use crate::palette::Palette;
+use crate::vendor::barchart::{Bar, BarChart};
 
 pub fn render_stats_column(app: &mut App, frame: &mut Frame, stats_area: Rect) {
     let stats_block = Block::default()
@@ -152,17 +153,23 @@ pub fn render_bar_chart(frame: &mut Frame, area: Rect) {
         .title_style(Style::new().fg(Palette::TEXT_SECONDARY))
         .border_style(Style::new().fg(Palette::BORDER))
         .padding(Padding::new(2, 2, 1, 1));
+
     let bar_chart_inner_area = bar_chart_block.inner(area);
+
     let horizontal_layout = Layout::vertical([
         Constraint::Length(2),
         Constraint::Percentage(80),
         Constraint::Fill(1),
     ]);
+
     let [_top_area, middle_area, _bottom_area] = bar_chart_inner_area.layout(&horizontal_layout);
+
     frame.render_widget(bar_chart_block, area);
+
     let bar_color = Style::new().fg(Palette::HEATMAP_2);
-    let todaay_bar_color = Style::new().fg(Palette::BRAND_GREEN);
+    let today_bar_color = Style::new().fg(Palette::BRAND_GREEN);
     let label_value_style = Style::new().fg(Palette::TEXT_SECONDARY);
+
     let bars = vec![
         Bar::with_label("Sun", 100).style(bar_color),
         Bar::with_label("Mon", 70).style(bar_color),
@@ -170,16 +177,38 @@ pub fn render_bar_chart(frame: &mut Frame, area: Rect) {
         Bar::with_label("Wed", 65).style(bar_color),
         Bar::with_label("Thu", 65).style(bar_color),
         Bar::with_label("Fri", 65).style(bar_color),
-        Bar::with_label("Sat", 7).style(todaay_bar_color),
+        Bar::with_label("Sat", 7).style(today_bar_color),
     ];
-    let bar_width = 6;
-    let bar_gap = (middle_area
-        .width
-        .saturating_sub(bar_width * bars.len() as u16))
-        / (bars.len() as u16 - 1);
-    let mut bar_chart = BarChart::vertical(bars).bar_width(bar_width);
-    bar_chart = bar_chart
-        .bar_gap(bar_gap.max(1))
+
+    let n = bars.len() as u16;
+
+    if n == 0 {
+        return;
+    }
+
+    const MAX_BAR_WIDTH: u16 = 6;
+    const MIN_BAR_GAP: u16 = 1;
+
+    let gap_count = n.saturating_sub(1);
+
+    let minimum_gap_space = MIN_BAR_GAP.saturating_mul(gap_count);
+
+    let available_for_bars = middle_area.width.saturating_sub(minimum_gap_space);
+
+    let bar_width = (available_for_bars / n).clamp(1, MAX_BAR_WIDTH);
+
+    let used_by_bars = bar_width.saturating_mul(n);
+
+    let remaining_space = middle_area.width.saturating_sub(used_by_bars);
+
+    let bar_gap = remaining_space
+        .checked_div(gap_count)
+        .map(|d| d.max(MIN_BAR_GAP))
+        .unwrap_or(0);
+
+    let bar_chart = BarChart::vertical(bars)
+        .bar_width(bar_width)
+        .bar_gap(bar_gap)
         .label_style(label_value_style)
         .value_style(label_value_style);
 

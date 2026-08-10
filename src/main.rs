@@ -20,6 +20,13 @@ pub mod palette;
 /// App Logo Progress Displayer
 pub mod sprout;
 
+/// Vendor widgets.
+pub mod vendor;
+
+use std::io::{Write, stderr, stdout};
+use std::thread;
+use std::time::Duration;
+
 use app::App;
 use clap::{Parser, Subcommand, builder::styling};
 use color_eyre::Result;
@@ -92,14 +99,30 @@ enum Commands {
     List {},
 }
 
+///referred from https://github.com/ClementTsang/bottom/blob/main/src/lib.rs#L93
+/// Check and report to the user if the current environment is not a terminal.
+fn check_if_terminal() {
+    use crossterm::tty::IsTty;
+
+    if !stdout().is_tty() {
+        eprintln!(
+            "Warning: Sprout is not being output to a terminal. Things might not work properly."
+        );
+        eprintln!("If you're stuck, press 'q', 'Q', or 'Ctrl-c' to quit the program.");
+        stderr().flush().expect("should succeed in flushing stderr");
+        thread::sleep(Duration::from_secs(1));
+    }
+}
+
 fn main() -> Result<()> {
     let args = Cli::parse();
+    check_if_terminal();
     println!("argus: {args:?}");
     // Create an application.
     let mut app = App::new();
 
     // Initialize the terminal user interface.
-    let backend = CrosstermBackend::new(std::io::stderr());
+    let backend = CrosstermBackend::new(std::io::stdout());
     let mut list_state = ListState::default().with_selected(Some(0));
     let terminal = Terminal::new(backend)?;
     let events = EventHandler::new(250);

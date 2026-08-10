@@ -24,7 +24,7 @@ pub fn render_dashboard(app: &mut App, frame: &mut Frame, app_area: Rect) {
 }
 
 fn render_empty_state(frame: &mut Frame, area: Rect, text: &str) {
-    let paragraph = Span::from(text).style(Style::new().fg(Palette::BRAND_GREEN));
+    let span = Span::from(text).style(Style::new().fg(Palette::BRAND_GREEN));
     let text_len = text.len() as u16;
     let half_width = text_len / 2;
     let center_x = area.x + area.width / 2;
@@ -34,7 +34,7 @@ fn render_empty_state(frame: &mut Frame, area: Rect, text: &str) {
         width: area.width,
         height: 1,
     };
-    frame.render_widget(paragraph, middle_rect);
+    frame.render_widget(span, middle_rect);
     let frame_buffer_mut = frame.buffer_mut();
     for position in area.positions() {
         let style = Style::new().fg(Palette::TEXT_SECONDARY).dim();

@@ -7,7 +7,7 @@ use crate::app::App;
 
 pub fn update(app: &mut App, key_event: KeyEvent, list_state: &mut ListState) {
     match key_event.code {
-        KeyCode::Esc | KeyCode::Char('q') => app.quit(),
+        KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => app.quit(),
         KeyCode::Char('c' | 'C') if key_event.modifiers == KeyModifiers::CONTROL => {
             app.quit();
         }
