@@ -1,14 +1,14 @@
 use crate::palette::Palette;
-use ratatui::symbols::bar::FULL;
 use ratatui::{
     buffer::Buffer,
-    layout::{Position, Rect},
+    layout::Rect,
     style::Style,
     text::{Line, Span},
     widgets::{Block, Borders, Padding, Widget},
 };
 
 const WEEKDAYS: [&str; 7] = ["ᴍ", "ᴛ", "ᴡ", "ᴛ", "ꜰ", "ꜱ", "ꜱ"];
+
 pub struct HeatMap<'a> {
     month: &'a str,
     row_count: &'a u16,
@@ -30,16 +30,18 @@ impl<'a> HeatMap<'a> {
             Span::from(" 2026"),
         ])
         .style(Palette::TEXT_SECONDARY);
+
         month_line.render(area, buf);
+
         // Render the weekdays
         for (i, weekday) in WEEKDAYS.iter().enumerate() {
             let y = area.y + 1;
             let x = area.x + i as u16 * self.column_count + i as u16;
-            if area.contains(Position::new(x, y)) {
-                buf.set_string(x, y, weekday, Style::default().fg(Palette::TEXT_SECONDARY));
-            }
+
+            buf.set_string(x, y, weekday, Style::default().fg(Palette::TEXT_SECONDARY));
         }
-        // render the heatmap cells
+
+        // Render the heatmap cells
         let start_x = area.x;
         let start_y = area.y + 3;
 
@@ -49,24 +51,29 @@ impl<'a> HeatMap<'a> {
             for weekday in 0..7 {
                 let x = start_x + weekday * (*self.column_count + 1);
 
-                for w in 0..*self.column_count {
-                    for h in 0..*self.row_count {
-                        let cell_x = x + w;
-                        let cell_y = y + h;
+                // Generate one color for this heatmap cell
+                let value = (x.wrapping_mul(31) + y.wrapping_mul(17)) % 5;
 
-                        if area.contains(Position::new(cell_x, cell_y)) {
-                            buf.set_string(
-                                cell_x,
-                                cell_y,
-                                FULL,
-                                Style::default().fg(Palette::HEATMAP_4),
-                            );
-                        }
-                    }
+                let color = match value {
+                    0 => Palette::HEATMAP_0,
+                    1 => Palette::HEATMAP_1,
+                    2 => Palette::HEATMAP_2,
+                    3 => Palette::HEATMAP_3,
+                    4 => Palette::HEATMAP_4,
+                    _ => unreachable!(),
+                };
+
+                let cell_area = Rect::new(x, y, *self.column_count, *self.row_count);
+
+                if area.intersects(cell_area) {
+                    let cell = Block::default().style(Style::default().bg(color));
+
+                    cell.render(cell_area, buf);
                 }
             }
         }
-        //finished rendering heatmap cells
+
+        // Finished rendering heatmap cells
     }
 
     fn render_heat_map(&self, area: Rect, buf: &mut Buffer) {
@@ -74,8 +81,11 @@ impl<'a> HeatMap<'a> {
             .borders(Borders::ALL)
             .border_style(Style::new().fg(Palette::BORDER))
             .padding(Padding::new(1, 1, 0, 1));
+
         let block_inner_area = block.inner(area);
+
         block.render(area, buf);
+
         self.render_month(block_inner_area, buf);
     }
 }
