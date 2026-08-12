@@ -39,7 +39,7 @@ impl HeatMapGen {
         let width_required_for_cells = column_count * 7 + 6 + 1 + 1; //+6 for gap between cells
 
         // 3 for top (week, month, border) + 1 for bottom border
-        let heatmap_height = height_required_for_cells + 3 + 1;
+        let heatmap_height = height_required_for_cells + 3 + 2 + 1;
 
         // Left + right border
         let heatmap_width = width_required_for_cells + 1 + 1;
