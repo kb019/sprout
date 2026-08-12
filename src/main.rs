@@ -23,6 +23,9 @@ pub mod sprout;
 /// Vendor widgets.
 pub mod vendor;
 
+/// Widgets.
+pub mod widgets;
+
 use std::io::{Write, stderr, stdout};
 use std::thread;
 use std::time::Duration;

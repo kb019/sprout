@@ -1,5 +1,5 @@
 mod dashboard;
-mod heatmap;
+mod heatmap_ui;
 mod menu;
 mod stats;
 use crate::app::App;
@@ -25,7 +25,7 @@ pub fn render(app: &mut App, frame: &mut Frame, list_state: &mut ListState) {
         } else if current_menu_selected == 2 {
             stats::render_stats_column(app, frame, app_column);
         } else if current_menu_selected == 1 {
-            heatmap::render_heatmap(app, frame, app_column);
+            heatmap_ui::render_heatmap(app, frame, app_column);
         }
     };
     draw_app_name(frame, top);

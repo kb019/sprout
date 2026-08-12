@@ -23,6 +23,7 @@ color-eyre = "0.6.5"
 time = "0.3.55"
 unicode-width = "0.2.0"
 itertools = "0.14"
+chrono = "0.4.45"
 
 [dev-dependencies]
 rstest = "0.26"
