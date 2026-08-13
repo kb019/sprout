@@ -44,8 +44,8 @@ impl HeatMapGen {
         // Left + right border
         let heatmap_width = width_required_for_cells + 1 + 1;
 
-        let rows_that_can_fit = area.height / heatmap_height;
-        let columns_that_can_fit = area.width / heatmap_width;
+        let rows_that_can_fit = (area.height / heatmap_height).max(1); // always try to fit at least one row of heatmaps
+        let columns_that_can_fit = (area.width / heatmap_width).max(1); // always try to fit at least one column of heatmaps
 
         let total_heatmaps_that_can_fit = rows_that_can_fit * columns_that_can_fit;
 
