@@ -10,7 +10,12 @@ use ratatui::style::Style;
 use ratatui::text::{Line as TextLine, Span};
 use ratatui::widgets::ListState;
 
-pub fn render(app: &mut App, frame: &mut Frame, list_state: &mut ListState) {
+pub fn render(
+    app: &mut App,
+    frame: &mut Frame,
+    list_state: &mut ListState,
+    tile_state: &mut ListState,
+) {
     let vertical: Layout =
         Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).spacing(1);
     let horizontal =
@@ -25,7 +30,7 @@ pub fn render(app: &mut App, frame: &mut Frame, list_state: &mut ListState) {
         } else if current_menu_selected == 2 {
             stats::render_stats_column(app, frame, app_column);
         } else if current_menu_selected == 1 {
-            heatmap_ui::render_heatmap(app, frame, app_column);
+            heatmap_ui::render_heatmap_page(app, frame, app_column, tile_state);
         }
     };
     draw_app_name(frame, top);

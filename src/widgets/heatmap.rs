@@ -36,13 +36,13 @@ impl HeatMapGen {
         area: Rect,
     ) -> HeatMapAreaInfo {
         let height_required_for_cells = 6 * row_count + 5; //+5 for gap between cells
-        let width_required_for_cells = column_count * 7 + 6 + 1 + 1; //+6 for gap between cells
+        let width_required_for_cells = column_count * 7 + 6; //+6 for gap between cells
 
-        // 3 for top (week, month, border) + 1 for bottom border
-        let heatmap_height = height_required_for_cells + 3 + 2 + 1;
+        // 5 for top (week, month, border) + 1 for bottom border
+        let heatmap_height = height_required_for_cells + 5 + 1;
 
         // Left + right border
-        let heatmap_width = width_required_for_cells + 1 + 1;
+        let heatmap_width = width_required_for_cells + 2 + 2;
 
         let rows_that_can_fit = (area.height / heatmap_height).max(1); // always try to fit at least one row of heatmaps
         let columns_that_can_fit = (area.width / heatmap_width).max(1); // always try to fit at least one column of heatmaps
@@ -141,12 +141,17 @@ impl HeatMapGen {
             (months_to_display.len() as u16).div_ceil(no_of_columns_per_row)
         };
         let no_of_columns_per_row = area_info_for_heatmap.columns_that_can_fit;
+        let row_flex_layout = if no_of_rows_required > 1 {
+            Flex::SpaceBetween
+        } else {
+            Flex::Start
+        };
         let row_layout =
             Layout::vertical(vec![
                 Constraint::Length(area_info_for_heatmap.heatmap_height);
                 no_of_rows_required as usize
             ])
-            .flex(Flex::SpaceAround);
+            .flex(row_flex_layout);
         let row_chunks = row_layout.split(area);
 
         // Use .enumerate() on the rows loop to get the row index (r_idx)
@@ -155,12 +160,17 @@ impl HeatMapGen {
             .take(no_of_rows_required as usize)
             .enumerate()
         {
+            let column_flex_layout = if no_of_columns_per_row > 1 {
+                Flex::SpaceBetween
+            } else {
+                Flex::Start
+            };
             let column_layout: Layout =
                 Layout::horizontal(vec![
                     Constraint::Length(area_info_for_heatmap.heatmap_width);
                     no_of_columns_per_row as usize
                 ])
-                .flex(Flex::SpaceAround);
+                .flex(column_flex_layout);
             let column_chunks = column_layout.split(*row);
 
             for (c_idx, column) in column_chunks

@@ -67,10 +67,9 @@ fn render_menu(app: &App, frame: &mut Frame, menu_area: Rect, list_state: &mut L
         .highlight_style(Style::new().fg(Palette::BRAND_GREEN).bg(Palette::SELECTION))
         .highlight_symbol("▍ ")
         .highlight_spacing(HighlightSpacing::Always);
-
-    frame.render_stateful_widget(list, menu_area, list_state);
     // This is to make the all possible items appear correctly on resize
     *list_state.offset_mut() = 0;
+    frame.render_stateful_widget(list, menu_area, list_state);
 }
 
 fn render_summary(_app: &mut App, frame: &mut Frame, summary_area: Rect) {
@@ -133,6 +132,7 @@ fn render_sprout(app: &App, frame: &mut Frame, sprout_area: Rect) {
         .title_style(Style::new().fg(Palette::BRAND_GREEN))
         .borders(Borders::ALL)
         .border_style(Style::new().fg(Palette::BORDER))
+        .bg(Palette::BACKGROUND_COLOR)
         .padding(Padding::new(
             padding_left,
             padding_right,
@@ -149,6 +149,7 @@ fn render_sprout(app: &App, frame: &mut Frame, sprout_area: Rect) {
         .x_bounds(canvas_x_bounds)
         .y_bounds(canvas_y_bounds)
         .marker(Marker::Braille)
+        .background_color(Palette::BACKGROUND_COLOR)
         .paint(|ctx| {
             ctx.draw(&Sprout {
                 percentage: sprout_grow_percentage,
@@ -163,6 +164,7 @@ fn render_sprout(app: &App, frame: &mut Frame, sprout_area: Rect) {
     render_dots(frame_buffer_mut, padding_bottom, dot_area);
 
     frame.render_widget(sprout_block, sprout_area);
+
     frame.render_widget(canvas, dot_area);
 
     if !dot_area.is_empty() {
@@ -196,7 +198,10 @@ fn render_dots(frame_buffer_mut: &mut Buffer, padding_bottom: u16, dot_area: Rec
     let dot_area_left_point = dot_area.left();
     if !dot_area.is_empty() {
         for position in dot_area.positions() {
-            let mut dot_style = Style::new().fg(Palette::TEXT_SECONDARY).dim();
+            let mut dot_style = Style::new()
+                .fg(Palette::TEXT_SECONDARY)
+                .bg(Palette::BACKGROUND_COLOR)
+                .dim();
             if position.y == dot_area_bottom_point && position.x >= dot_area_left_point {
                 dot_style = Style::new().fg(Palette::SOIL);
             }

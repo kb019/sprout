@@ -11,6 +11,8 @@ pub struct App {
     pub sprout_percentage_points: SproutPercentagePoints,
     /// menu items
     pub menu: Vec<&'static str>,
+
+    pub habits: Vec<String>,
 }
 
 #[derive(Debug, Default)]
@@ -47,6 +49,12 @@ impl App {
             app.set_sprout_points(pct, generate_sprout_points(pct));
         }
         app.menu = vec!["Dashboard", "Heatmap", "Stats", "Settings"];
+        app.habits = vec![
+            "All habits".to_string(),
+            "Reading".to_string(),
+            "Pushups".to_string(),
+            "Meditation".to_string(),
+        ];
         app
     }
 

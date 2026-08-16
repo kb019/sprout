@@ -1,6 +1,10 @@
 use crate::palette::Palette;
 use ratatui::{
-    buffer::Buffer, layout::{Position, Rect}, style::Style, text::{Line, Span}, widgets::{Block, Borders, Padding, Widget},
+    buffer::Buffer,
+    layout::{Position, Rect},
+    style::Style,
+    text::{Line, Span},
+    widgets::{Block, Borders, Padding, Widget},
 };
 
 const WEEKDAYS: [&str; 7] = ["ᴍ", "ᴛ", "ᴡ", "ᴛ", "ꜰ", "ꜱ", "ꜱ"];
@@ -33,9 +37,9 @@ impl<'a> HeatMap<'a> {
         for (i, weekday) in WEEKDAYS.iter().enumerate() {
             let y = area.y + 1;
             let x = area.x + i as u16 * self.column_count + i as u16;
-           if area.contains(Position::new(x,y)) {
-            buf.set_string(x, y, weekday, Style::default().fg(Palette::TEXT_SECONDARY));
-           }
+            if area.contains(Position::new(x, y)) {
+                buf.set_string(x, y, weekday, Style::default().fg(Palette::TEXT_SECONDARY));
+            }
         }
 
         // Render the heatmap cells

@@ -7,11 +7,12 @@ use ratatui::{
         execute,
         terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
     },
-    widgets::ListState,
+    style::Style,
+    widgets::{Block, ListState},
 };
 pub type CrosstermTerminal = ratatui::Terminal<ratatui::backend::CrosstermBackend<std::io::Stdout>>;
 
-use crate::{app::App, event::EventHandler, ui};
+use crate::{app::App, event::EventHandler, palette::Palette, ui};
 
 /// Representation of a terminal user interface.
 ///
@@ -58,9 +59,19 @@ impl Tui {
     ///
     /// [`Draw`]: tui::Terminal::draw
     /// [`rendering`]: crate::ui:render
-    pub fn draw(&mut self, app: &mut App, list_state: &mut ListState) -> Result<()> {
-        self.terminal
-            .draw(|frame| ui::render(app, frame, list_state))?;
+    pub fn draw(
+        &mut self,
+        app: &mut App,
+        list_state: &mut ListState,
+        tile_state: &mut ListState,
+    ) -> Result<()> {
+        self.terminal.draw(|frame| {
+            frame.render_widget(
+                Block::default().style(Style::default().bg(Palette::BACKGROUND_COLOR)),
+                frame.area(),
+            );
+            ui::render(app, frame, list_state, tile_state)
+        })?;
         Ok(())
     }
 

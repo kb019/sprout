@@ -20,6 +20,7 @@ impl Palette {
     pub const DANGER: Color = Color::Rgb(194, 84, 84);
     pub const SOIL: Color = Color::Rgb(107, 86, 54);
     pub const DOT: Color = Color::Rgb(21, 32, 25);
+    pub const BACKGROUND_COLOR: Color = Color::Rgb(25, 26, 27);
 
     pub fn heatmap(level: u8) -> Color {
         match level {
