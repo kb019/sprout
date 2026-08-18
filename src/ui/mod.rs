@@ -1,6 +1,7 @@
 mod dashboard;
 mod heatmap_ui;
 mod menu;
+mod settings;
 mod stats;
 use crate::app::App;
 use crate::palette::Palette;
@@ -31,6 +32,8 @@ pub fn render(
             stats::render_stats_column(app, frame, app_column);
         } else if current_menu_selected == 1 {
             heatmap_ui::render_heatmap_page(app, frame, app_column, tile_state);
+        } else if current_menu_selected == 3 {
+            settings::render_settings_page(app, frame, app_column);
         }
     };
     draw_app_name(frame, top);

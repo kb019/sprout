@@ -54,6 +54,7 @@ impl App {
             "Reading".to_string(),
             "Pushups".to_string(),
             "Meditation".to_string(),
+            "loooooooooooooooooo".to_string(),
         ];
         app
     }
