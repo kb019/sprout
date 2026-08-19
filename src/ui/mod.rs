@@ -5,18 +5,13 @@ mod settings;
 mod stats;
 use crate::app::App;
 use crate::palette::Palette;
+use crate::state::State;
 use ratatui::Frame;
 use ratatui::layout::{Constraint, Layout, Rect};
 use ratatui::style::Style;
 use ratatui::text::{Line as TextLine, Span};
-use ratatui::widgets::ListState;
 
-pub fn render(
-    app: &mut App,
-    frame: &mut Frame,
-    list_state: &mut ListState,
-    tile_state: &mut ListState,
-) {
+pub fn render(app: &mut App, frame: &mut Frame, app_state: &mut State) {
     let vertical: Layout =
         Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).spacing(1);
     let horizontal =
@@ -24,18 +19,25 @@ pub fn render(
     let [top, main] = frame.area().layout(&vertical);
     let [menu_column, app_column] = main.layout(&horizontal);
 
-    menu::render_menu_column(app, frame, menu_column, list_state);
-    if let Some(current_menu_selected) = list_state.selected() {
-        if current_menu_selected == 0 {
-            dashboard::render_dashboard(app, frame, app_column);
-        } else if current_menu_selected == 2 {
-            stats::render_stats_column(app, frame, app_column);
-        } else if current_menu_selected == 1 {
-            heatmap_ui::render_heatmap_page(app, frame, app_column, tile_state);
-        } else if current_menu_selected == 3 {
-            settings::render_settings_page(app, frame, app_column);
+    menu::render_menu_column(app, frame, menu_column, app_state.menu_state_mut());
+
+    if let Some(selected) = app_state.menu_state().selected() {
+        match selected {
+            0 => dashboard::render_dashboard(app, frame, app_column),
+            1 => {
+                heatmap_ui::render_heatmap_page(app, frame, app_column, app_state.tile_state_mut())
+            }
+            2 => stats::render_stats_column(app, frame, app_column),
+            3 => settings::render_settings_page(
+                app,
+                frame,
+                app_column,
+                app_state.settings_state_mut(),
+            ),
+            _ => {}
         }
-    };
+    }
+
     draw_app_name(frame, top);
 }
 

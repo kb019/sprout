@@ -5,10 +5,24 @@ use ratatui::widgets::Block;
 mod rendering;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum TileDirection {
+    #[default]
+    LeftToRight,
+    RightToLeft,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum TileType {
     #[default]
     Unbordered,
     Bordered,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum TileBorderType {
+    #[default]
+    Rounded,
+    Sharp,
 }
 
 #[derive(Debug, Clone)]
@@ -63,6 +77,8 @@ pub struct TileList<'a> {
     pub(crate) highlight_style: Style,
     pub(crate) block: Option<Block<'a>>,
     pub(crate) tile_type: TileType,
+    pub(crate) tile_border_type: TileBorderType,
+    pub(crate) direction: TileDirection,
 }
 
 impl<'a> TileList<'a> {
@@ -98,6 +114,18 @@ impl<'a> TileList<'a> {
     #[must_use = "method moves the value of self and returns the modified value"]
     pub fn tile_type(mut self, tile_type: TileType) -> Self {
         self.tile_type = tile_type;
+        self
+    }
+
+    #[must_use = "method moves the value of self and returns the modified value"]
+    pub fn tile_border_type(mut self, tile_border_type: TileBorderType) -> Self {
+        self.tile_border_type = tile_border_type;
+        self
+    }
+
+    #[must_use = "method moves the value of self and returns the modified value"]
+    pub fn direction(mut self, direction: TileDirection) -> Self {
+        self.direction = direction;
         self
     }
 

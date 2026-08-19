@@ -12,7 +12,7 @@ pub fn render_heatmap_page(app: &App, frame: &mut Frame, area: Rect, tile_state:
     let heat_map_block = Block::default()
         .title(" activity heatmap ")
         .borders(Borders::ALL)
-        .border_style(Style::new().fg(crate::palette::Palette::BRAND_GREEN))
+        .border_style(Style::new().fg(Palette::BRAND_GREEN))
         .padding(Padding::new(1, 1, 1, 1));
     let block_inner_area = heat_map_block.inner(area);
     let vertical_layout = Layout::default()

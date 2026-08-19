@@ -26,6 +26,9 @@ pub mod vendor;
 /// Widgets.
 pub mod widgets;
 
+///used to store all the states of the application
+pub mod state;
+
 use std::io::{Write, stderr, stdout};
 use std::thread;
 use std::time::Duration;
@@ -34,10 +37,11 @@ use anyhow::Result;
 use app::App;
 use clap::{Parser, Subcommand, builder::styling};
 use event::{Event, EventHandler};
-use ratatui::widgets::ListState;
 use ratatui::{Terminal, backend::CrosstermBackend};
 use tui::Tui;
 use update::update;
+
+use crate::state::State;
 
 const STYLES: styling::Styles = styling::Styles::styled()
     .header(styling::AnsiColor::Green.on_default().bold())
@@ -126,20 +130,18 @@ fn main() -> Result<()> {
 
     // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(std::io::stdout());
-    let mut list_state = ListState::default().with_selected(Some(0));
-    let mut tile_state = ListState::default().with_selected(Some(0));
     let terminal = Terminal::new(backend)?;
     let events = EventHandler::new(250);
     let mut tui = Tui::new(terminal, events);
     tui.enter()?;
-
+    let mut app_state = State::new();
     // Start the main loop.
     while !app.should_quit {
         // Render the user interface.
-        tui.draw(&mut app, &mut list_state, &mut tile_state)?;
+        tui.draw(&mut app, &mut app_state)?;
         // Handle events.
         match tui.events.next()? {
-            Event::Key(key_event) => update(&mut app, key_event, &mut list_state, &mut tile_state),
+            Event::Key(key_event) => update(&mut app, key_event, &mut app_state),
             Event::Tick => app.tick(),
             Event::Mouse(_) | Event::Resize(_, _) => {}
         }

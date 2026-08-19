@@ -2,7 +2,7 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::widgets::{Block, BlockExt, BorderType, Borders, ListState, StatefulWidget, Widget};
 
-use crate::widgets::tile_list::{TileList, TileType};
+use crate::widgets::tile_list::{TileBorderType, TileDirection, TileList, TileType};
 
 impl Widget for TileList<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
@@ -64,13 +64,18 @@ impl StatefulWidget for &TileList<'_> {
             .take(last_visible - first_visible)
         {
             let tile_width = item.width() as u16 + extra_width;
-            let row_area = Rect::new(
-                list_area.left() + current_width,
-                list_area.top(),
-                tile_width,
-                required_height,
-            );
-            current_width += tile_width + 1; // +1 gap between tiles
+            let x = match self.direction {
+                TileDirection::RightToLeft => {
+                    current_width += tile_width + 1;
+                    list_area.right().saturating_sub(current_width - 1)
+                }
+                TileDirection::LeftToRight => {
+                    let x = list_area.left() + current_width;
+                    current_width += tile_width + 1;
+                    x
+                }
+            };
+            let row_area = Rect::new(x, list_area.top(), tile_width, required_height);
 
             let is_selected = state.selected() == Some(i);
             let border_style = if is_selected {
@@ -81,10 +86,14 @@ impl StatefulWidget for &TileList<'_> {
 
             match self.tile_type {
                 TileType::Bordered => {
+                    let border_type = match self.tile_border_type {
+                        TileBorderType::Rounded => BorderType::Rounded,
+                        TileBorderType::Sharp => BorderType::Plain,
+                    };
                     let block = Block::default()
                         .borders(Borders::ALL)
                         .border_style(border_style)
-                        .border_type(BorderType::Rounded);
+                        .border_type(border_type);
                     let inner = block.inner(row_area);
                     Widget::render(&item.content, inner, buf);
                     block.render(row_area, buf);
@@ -111,10 +120,14 @@ impl StatefulWidget for &TileList<'_> {
                 );
                 match self.tile_type {
                     TileType::Bordered => {
+                        let border_type = match self.tile_border_type {
+                            TileBorderType::Rounded => BorderType::Rounded,
+                            TileBorderType::Sharp => BorderType::Plain,
+                        };
                         let block = Block::default()
                             .borders(Borders::ALL)
                             .border_style(self.highlight_style)
-                            .border_type(BorderType::Rounded);
+                            .border_type(border_type);
                         let inner = block.inner(tile_area);
                         Widget::render(&item.content, inner, buf);
                         block.render(tile_area, buf);
@@ -146,7 +159,7 @@ impl TileList<'_> {
             if width + item.width() + extra_width > max_width {
                 break;
             }
-            width += item.width() + extra_width;
+            width += item.width() + extra_width + 1; // +1 for gap between tiles
             last += 1;
         }
 

@@ -132,7 +132,7 @@ fn render_sprout(app: &App, frame: &mut Frame, sprout_area: Rect) {
         .title_style(Style::new().fg(Palette::BRAND_GREEN))
         .borders(Borders::ALL)
         .border_style(Style::new().fg(Palette::BORDER))
-        .bg(Palette::BACKGROUND_COLOR)
+        .bg(Palette::BACKGROUND)
         .padding(Padding::new(
             padding_left,
             padding_right,
@@ -149,7 +149,7 @@ fn render_sprout(app: &App, frame: &mut Frame, sprout_area: Rect) {
         .x_bounds(canvas_x_bounds)
         .y_bounds(canvas_y_bounds)
         .marker(Marker::Braille)
-        .background_color(Palette::BACKGROUND_COLOR)
+        .background_color(Palette::BACKGROUND)
         .paint(|ctx| {
             ctx.draw(&Sprout {
                 percentage: sprout_grow_percentage,
@@ -200,7 +200,7 @@ fn render_dots(frame_buffer_mut: &mut Buffer, padding_bottom: u16, dot_area: Rec
         for position in dot_area.positions() {
             let mut dot_style = Style::new()
                 .fg(Palette::TEXT_SECONDARY)
-                .bg(Palette::BACKGROUND_COLOR)
+                .bg(Palette::BACKGROUND)
                 .dim();
             if position.y == dot_area_bottom_point && position.x >= dot_area_left_point {
                 dot_style = Style::new().fg(Palette::SOIL);
