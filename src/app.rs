@@ -1,3 +1,4 @@
+use crate::palette::Palette;
 use crate::sprout::{SproutPoints, generate_sprout_points};
 
 /// Application.
@@ -13,6 +14,10 @@ pub struct App {
     pub menu: Vec<&'static str>,
 
     pub habits: Vec<String>,
+
+    pub themes: [&'static str; 3],
+
+    pub active_theme: usize,
 }
 
 #[derive(Debug, Default)]
@@ -56,11 +61,16 @@ impl App {
             "Meditation".to_string(),
             "loooooooooooooooooo".to_string(),
         ];
+        app.themes = ["Sprout", "Amber", "Mono"];
         app
     }
 
     /// Handles the tick event of the terminal.
     pub fn tick(&self) {}
+
+    pub fn palette(&self) -> Palette {
+        Palette::from_index(self.active_theme)
+    }
 
     /// Set should_quit to true to quit the application.
     pub fn quit(&mut self) {

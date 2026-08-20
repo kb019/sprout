@@ -1,4 +1,5 @@
 use self::heatmap_box::HeatMap;
+use crate::palette::Palette;
 use chrono::{Datelike, Local};
 use ratatui::{
     buffer::Buffer,
@@ -7,7 +8,9 @@ use ratatui::{
 };
 
 mod heatmap_box;
-pub struct HeatMapGen {}
+pub struct HeatMapGen {
+    palette: Palette,
+}
 
 struct HeatMapAreaInfo {
     total_heatmaps_that_can_fit: u16,
@@ -20,13 +23,13 @@ struct HeatMapAreaInfo {
 
 impl Default for HeatMapGen {
     fn default() -> Self {
-        Self::new()
+        Self::new(Palette::SPROUT)
     }
 }
 
 impl HeatMapGen {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(palette: Palette) -> Self {
+        Self { palette }
     }
 
     fn check_if_area_sufficient(
@@ -182,7 +185,7 @@ impl HeatMapGen {
                 let flat_index = r_idx * (no_of_columns_per_row as usize) + c_idx;
 
                 if let Some(month) = months_to_display.get(flat_index) {
-                    let heatmap = HeatMap::new(month, &row_count, &column_count);
+                    let heatmap = HeatMap::new(month, &row_count, &column_count, self.palette);
                     heatmap.render(*column, buf);
                 }
             }

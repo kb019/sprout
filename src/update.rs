@@ -19,6 +19,38 @@ pub fn update(app: &mut App, key_event: KeyEvent, state: &mut State) {
             Some(3) => state.prev_settings(3),
             _ => {}
         },
+        KeyCode::Right => {
+            if state.menu_state().selected() == Some(3) {
+                let row = state.settings_state().selected().unwrap_or(0);
+                let len = match row {
+                    0 => app.themes.len(),
+                    1 => app.menu.len(),
+                    _ => 1,
+                };
+                if len > 0 {
+                    state.prev_settings_tile(row, len);
+                    if row == 0 {
+                        app.active_theme = state.active_theme();
+                    }
+                }
+            }
+        }
+        KeyCode::Left => {
+            if state.menu_state().selected() == Some(3) {
+                let row = state.settings_state().selected().unwrap_or(0);
+                let len = match row {
+                    0 => app.themes.len(),
+                    1 => app.menu.len(),
+                    _ => 1,
+                };
+                if len > 0 {
+                    state.next_settings_tile(row, len);
+                    if row == 0 {
+                        app.active_theme = state.active_theme();
+                    }
+                }
+            }
+        }
         KeyCode::Char('l') => app.increment_counter(),
         KeyCode::Char('h') => app.decrement_counter(),
         _ => {}

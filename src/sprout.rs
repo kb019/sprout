@@ -1,6 +1,6 @@
 use ratatui::widgets::canvas::{Painter, Shape};
 
-use crate::{app::App, palette::Palette};
+use crate::app::App;
 
 #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum SproutPercentage {
@@ -110,14 +110,15 @@ impl Shape for Sprout<'_> {
                 &generated
             }
         };
+        let p = self.app.palette();
         for &(x, y) in &points.tree {
             if let Some((x, y)) = painter.get_point(x, y) {
-                painter.paint(x, y, Palette::BRAND_GREEN);
+                painter.paint(x, y, p.accent);
             }
         }
         for &(x, y) in &points.flower {
             if let Some((x, y)) = painter.get_point(x, y) {
-                painter.paint(x, y, Palette::AMBER);
+                painter.paint(x, y, p.amber);
             }
         }
     }
