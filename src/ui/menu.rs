@@ -31,22 +31,30 @@ pub fn render_menu_column(
     render_summary(app, frame, summary_box, p);
 }
 
+#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_navigate(
-    _app: &mut App,
+    app: &mut App,
     frame: &mut Frame,
     navigate_area: Rect,
     list_state: &mut ListState,
     p: Palette,
 ) {
+    let mut border_color = p.border;
+    let mut text_color = p.fg_dim;
+    if app.is_menu_in_focus {
+        border_color = p.accent;
+        text_color = p.accent;
+    }
+
     let navigate_block = Block::default()
         .title(" navigate ")
-        .title_style(Style::new().fg(p.fg_dim))
+        .title_style(Style::new().fg(text_color))
         .borders(Borders::ALL)
-        .border_style(Style::new().fg(p.border))
+        .border_style(Style::new().fg(border_color))
         .padding(Padding::new(1, 1, 1, 1));
     let menu_area = navigate_block.inner(navigate_area);
     frame.render_widget(navigate_block, navigate_area);
-    render_menu(_app, frame, menu_area, list_state, p);
+    render_menu(app, frame, menu_area, list_state, p);
 }
 
 fn render_menu(

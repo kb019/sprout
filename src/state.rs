@@ -2,7 +2,7 @@ use ratatui::widgets::ListState;
 
 pub struct State {
     menu_state: ListState,
-    tile_state: ListState,
+    heatmap_tile_state: ListState,
     settings_state: ListState,
     settings_tile_states: Vec<ListState>,
 }
@@ -11,10 +11,10 @@ impl State {
     pub fn new() -> Self {
         let mut menu_state = ListState::default();
         menu_state.select(Some(0));
-        let mut tile_state = ListState::default();
-        tile_state.select(Some(0));
+        let mut heatmap_tile_state = ListState::default();
+        heatmap_tile_state.select(Some(0));
         let mut settings_state = ListState::default();
-        settings_state.select(Some(0));
+        settings_state.select(None);
         let mut settings_tile_states: Vec<ListState> =
             (0..3).map(|_| ListState::default()).collect();
         for s in &mut settings_tile_states {
@@ -22,7 +22,7 @@ impl State {
         }
         Self {
             menu_state,
-            tile_state,
+            heatmap_tile_state,
             settings_state,
             settings_tile_states,
         }
@@ -32,8 +32,8 @@ impl State {
         &self.menu_state
     }
 
-    pub fn tile_state(&self) -> &ListState {
-        &self.tile_state
+    pub fn heatmap_tile_state(&self) -> &ListState {
+        &self.heatmap_tile_state
     }
 
     pub fn settings_state(&self) -> &ListState {
@@ -44,8 +44,8 @@ impl State {
         &mut self.menu_state
     }
 
-    pub fn tile_state_mut(&mut self) -> &mut ListState {
-        &mut self.tile_state
+    pub fn heatmap_tile_state_mut(&mut self) -> &mut ListState {
+        &mut self.heatmap_tile_state
     }
 
     pub fn settings_state_mut(&mut self) -> &mut ListState {
@@ -98,22 +98,22 @@ impl State {
         self.menu_state.select(Some(prev));
     }
 
-    pub fn next_tile(&mut self, len: usize) {
+    pub fn next_heatmap_tile(&mut self, len: usize) {
         let next = self
-            .tile_state
+            .heatmap_tile_state
             .selected()
             .map(|i| (i + 1) % len)
             .unwrap_or(0);
-        self.tile_state.select(Some(next));
+        self.heatmap_tile_state.select(Some(next));
     }
 
-    pub fn prev_tile(&mut self, len: usize) {
+    pub fn prev_heatmap_tile(&mut self, len: usize) {
         let prev = self
-            .tile_state
+            .heatmap_tile_state
             .selected()
             .map(|i| if i == 0 { len - 1 } else { i - 1 })
             .unwrap_or(0);
-        self.tile_state.select(Some(prev));
+        self.heatmap_tile_state.select(Some(prev));
     }
 
     pub fn next_settings(&mut self, len: usize) {
@@ -132,6 +132,10 @@ impl State {
             .map(|i| if i == 0 { len - 1 } else { i - 1 })
             .unwrap_or(0);
         self.settings_state.select(Some(prev));
+    }
+
+    pub fn clear_settings(&mut self) {
+        self.settings_state.select(None);
     }
 }
 

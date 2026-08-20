@@ -9,10 +9,17 @@ use ratatui::widgets::{Block, Borders, ListState, Padding};
 
 pub fn render_heatmap_page(app: &App, frame: &mut Frame, area: Rect, tile_state: &mut ListState) {
     let p = app.palette();
+    let mut border_color = p.border;
+    let mut text_color = p.fg_dim;
+    if app.is_heatmap_in_focus {
+        border_color = p.accent;
+        text_color = p.accent;
+    }
     let heat_map_block = Block::default()
         .title(" activity heatmap ")
+        .title_style(Style::new().fg(text_color))
         .borders(Borders::ALL)
-        .border_style(Style::new().fg(p.accent))
+        .border_style(Style::new().fg(border_color))
         .padding(Padding::new(1, 1, 1, 1));
     let block_inner_area = heat_map_block.inner(area);
     let vertical_layout = Layout::default()

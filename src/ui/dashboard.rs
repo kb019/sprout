@@ -12,11 +12,17 @@ pub fn render_dashboard(app: &mut App, frame: &mut Frame, app_area: Rect) {
     let horizontal =
         Layout::horizontal([Constraint::Percentage(60), Constraint::Percentage(40)]).spacing(1);
     let [dashboard_column, stats_column] = app_area.layout(&horizontal);
+    let mut border_color = p.border;
+    let mut text_color = p.fg_dim;
+    if app.is_dashboard_in_focus {
+        border_color = p.accent;
+        text_color = p.accent;
+    }
     let dashboard_block = Block::default()
         .title(" active habits ")
-        .title_style(Style::new().fg(p.accent))
+        .title_style(Style::new().fg(text_color))
         .borders(Borders::ALL)
-        .border_style(Style::new().fg(p.accent))
+        .border_style(Style::new().fg(border_color))
         .padding(Padding::new(1, 1, 1, 1));
     let dashboard_inner_area = dashboard_block.inner(dashboard_column);
     frame.render_widget(dashboard_block, dashboard_column);

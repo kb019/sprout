@@ -24,10 +24,17 @@ pub fn render_settings_page(
     settings_tile_states: &mut [ListState],
 ) {
     let p = app.palette();
+    let mut border_color = p.border;
+    let mut text_color = p.fg_dim;
+    if app.is_settings_in_focus {
+        border_color = p.accent;
+        text_color = p.accent;
+    }
     let settings_block = Block::default()
         .title(" settings ")
+        .title_style(Style::new().fg(text_color))
         .borders(Borders::ALL)
-        .border_style(Style::new().fg(p.accent))
+        .border_style(Style::new().fg(border_color))
         .padding(Padding::new(1, 1, 1, 1));
     let block_inner_area = settings_block.inner(area);
     render_settings(

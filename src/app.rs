@@ -18,6 +18,14 @@ pub struct App {
     pub themes: Vec<&'static str>,
 
     pub active_theme: usize,
+
+    pub is_menu_in_focus: bool,
+
+    pub is_dashboard_in_focus: bool,
+
+    pub is_heatmap_in_focus: bool,
+
+    pub is_settings_in_focus: bool,
 }
 
 #[derive(Debug, Default)]
@@ -53,6 +61,7 @@ impl App {
         for pct in (5u8..=100).step_by(5) {
             app.set_sprout_points(pct, generate_sprout_points(pct));
         }
+        app.is_menu_in_focus = true;
         app.menu = vec!["Dashboard", "Heatmap", "Stats", "Settings"];
         app.habits = vec![
             "All habits".to_string(),
@@ -63,6 +72,35 @@ impl App {
         ];
         app.themes = vec!["Sprout", "Amber", "Mono"];
         app
+    }
+
+    pub fn focus_menu(&mut self) {
+        self.remove_all_focus();
+        self.is_menu_in_focus = true;
+    }
+    /// Sets the focus to the dashboard.
+    pub fn focus_dashboard(&mut self) {
+        self.remove_all_focus();
+        self.is_dashboard_in_focus = true;
+    }
+
+    /// Sets the focus to the heatmap.
+    pub fn focus_heatmap(&mut self) {
+        self.remove_all_focus();
+        self.is_heatmap_in_focus = true;
+    }
+
+    /// Sets the focus to the settings.
+    pub fn focus_settings(&mut self) {
+        self.remove_all_focus();
+        self.is_settings_in_focus = true;
+    }
+
+    pub fn remove_all_focus(&mut self) {
+        self.is_dashboard_in_focus = false;
+        self.is_heatmap_in_focus = false;
+        self.is_settings_in_focus = false;
+        self.is_menu_in_focus = false;
     }
 
     /// Handles the tick event of the terminal.

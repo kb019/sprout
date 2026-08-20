@@ -23,9 +23,12 @@ pub fn render(app: &mut App, frame: &mut Frame, app_state: &mut State) {
     if let Some(selected) = app_state.menu_state().selected() {
         match selected {
             0 => dashboard::render_dashboard(app, frame, app_column),
-            1 => {
-                heatmap_ui::render_heatmap_page(app, frame, app_column, app_state.tile_state_mut())
-            }
+            1 => heatmap_ui::render_heatmap_page(
+                app,
+                frame,
+                app_column,
+                app_state.heatmap_tile_state_mut(),
+            ),
             2 => stats::render_stats_column(app, frame, app_column),
             3 => {
                 let (settings_state, settings_tile_states) = app_state.settings_states_mut();
