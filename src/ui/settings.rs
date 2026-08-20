@@ -120,7 +120,16 @@ fn render_setting_dashboard(
         area,
         "Default View on launch",
         "Which tab opens when the app starts",
-        build_items(&app.menu, is_selected, tile_state, p),
+        build_items(
+            &app.menu
+                .iter()
+                .copied()
+                .filter(|menu_name| *menu_name != "Settings")
+                .collect::<Vec<_>>(),
+            is_selected,
+            tile_state,
+            p,
+        ),
         TileType::Unbordered,
         TileBorderType::Rounded,
         Style::new().fg(p.accent),
@@ -158,8 +167,8 @@ fn render_setting_reset(
     );
 }
 
-fn build_items<S: AsRef<str>>(
-    labels: &[S],
+fn build_items(
+    labels: &[&str],
     is_selected: bool,
     tile_state: &ListState,
     p: Palette,
@@ -179,7 +188,7 @@ fn build_items<S: AsRef<str>>(
                 bg = p.selection;
             }
             TileItem::new(
-                Text::from(label.as_ref().to_string())
+                Text::from(label.to_string())
                     .add_modifier(modifier)
                     .centered()
                     .bg(bg),

@@ -15,7 +15,7 @@ pub struct App {
 
     pub habits: Vec<String>,
 
-    pub themes: [&'static str; 3],
+    pub themes: Vec<&'static str>,
 
     pub active_theme: usize,
 }
@@ -61,7 +61,7 @@ impl App {
             "Meditation".to_string(),
             "loooooooooooooooooo".to_string(),
         ];
-        app.themes = ["Sprout", "Amber", "Mono"];
+        app.themes = vec!["Sprout", "Amber", "Mono"];
         app
     }
 
