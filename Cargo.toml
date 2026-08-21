@@ -27,3 +27,4 @@ chrono = "0.4.45"
 
 [dev-dependencies]
 rstest = "0.26"
+cargo-husky = { version = "1", default-features = false, features = ["user-hooks"] }

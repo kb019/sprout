@@ -2,7 +2,14 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::widgets::{Block, BlockExt, BorderType, Borders, ListState, StatefulWidget, Widget};
 
-use crate::widgets::tile_list::{TileBorderType, TileDirection, TileList, TileType};
+use crate::widgets::tile_list::{TileBorderType, TileDirection, TileItem, TileList, TileType};
+
+fn render_content(item: &TileItem, area: Rect, buf: &mut Buffer) {
+    Widget::render(&item.content, area, buf);
+    if item.width() as u16 > area.width && area.width > 0 {
+        buf[(area.right() - 1, area.top())].set_symbol("…");
+    }
+}
 
 impl Widget for TileList<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
@@ -33,10 +40,10 @@ impl StatefulWidget for &TileList<'_> {
         self.block.as_ref().render(area, buf);
         let list_area = self.block.inner_if_some(area);
 
-        // Bordered:  → 3 rows tall, 4 extra cols (2 borders + 2 padding)
+        // Bordered:  → 3 rows tall, 2 extra cols (for left and right borders)
         // Unbordered: 1 row tall, no extra cols
         let (extra_width, required_height) = match self.tile_type {
-            TileType::Bordered => (4u16, 3u16),
+            TileType::Bordered => (2u16, 3u16),
             TileType::Unbordered => (2u16, 1u16),
         };
 
@@ -95,11 +102,11 @@ impl StatefulWidget for &TileList<'_> {
                         .border_style(border_style)
                         .border_type(border_type);
                     let inner = block.inner(row_area);
-                    Widget::render(&item.content, inner, buf);
+                    render_content(item, inner, buf);
                     block.render(row_area, buf);
                 }
                 TileType::Unbordered => {
-                    Widget::render(&item.content, row_area, buf);
+                    render_content(item, row_area, buf);
                 }
             }
 
@@ -129,11 +136,11 @@ impl StatefulWidget for &TileList<'_> {
                             .border_style(self.highlight_style)
                             .border_type(border_type);
                         let inner = block.inner(tile_area);
-                        Widget::render(&item.content, inner, buf);
+                        render_content(item, inner, buf);
                         block.render(tile_area, buf);
                     }
                     TileType::Unbordered => {
-                        Widget::render(&item.content, tile_area, buf);
+                        render_content(item, tile_area, buf);
                     }
                 }
                 buf.set_style(tile_area, self.highlight_style);

@@ -18,6 +18,9 @@ pub fn update(app: &mut App, key_event: KeyEvent, state: &mut State) {
             app.quit();
             return;
         }
+        KeyCode::Char('m' | 'M') => {
+            app.focus_menu();
+        }
         _ => {}
     }
 
@@ -42,8 +45,6 @@ pub fn update(app: &mut App, key_event: KeyEvent, state: &mut State) {
             state.next_heatmap_tile(app.habits.len());
         } else if is_left_key(code) {
             state.prev_heatmap_tile(app.habits.len());
-        } else if matches!(code, KeyCode::Char('m' | 'M')) {
-            app.focus_menu();
         }
         return;
     }
@@ -78,7 +79,6 @@ pub fn update(app: &mut App, key_event: KeyEvent, state: &mut State) {
                 }
             }
         } else if matches!(code, KeyCode::Char('m' | 'M')) {
-            app.focus_menu();
             state.clear_settings();
         }
         return;

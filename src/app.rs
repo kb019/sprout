@@ -68,7 +68,7 @@ impl App {
             "Reading".to_string(),
             "Pushups".to_string(),
             "Meditation".to_string(),
-            "loooooooooooooooooo".to_string(),
+            "loooooooooooooooooogyyggggggggggggggggggggg".to_string(),
         ];
         app.themes = vec!["Sprout", "Amber", "Mono"];
         app

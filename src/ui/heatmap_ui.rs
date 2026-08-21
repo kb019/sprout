@@ -91,7 +91,7 @@ pub fn render_habit_tiles(app: &App, frame: &mut Frame, area: Rect, tile_state: 
             TileItem::new(
                 Text::from(menu_item.clone())
                     .add_modifier(bold_modifier)
-                    .centered(),
+                    .left_aligned(),
             )
         })
         .collect();

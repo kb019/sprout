@@ -19,11 +19,8 @@ lint:
 test:
     cargo test
 
-install-hooks:
-    git config core.hooksPath .githooks
-    @echo "✅ Git hooks installed"
-
-setup: install-hooks
+setup:
+    cargo test
     cargo install --path . --locked
     @echo "✅ Finished setup"
 
