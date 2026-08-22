@@ -17,6 +17,8 @@ pub struct App {
 
     pub themes: Vec<&'static str>,
 
+    pub goal_progress_options: Vec<&'static str>,
+
     pub active_theme: usize,
 
     pub is_menu_in_focus: bool,
@@ -26,6 +28,8 @@ pub struct App {
     pub is_heatmap_in_focus: bool,
 
     pub is_settings_in_focus: bool,
+
+    pub is_goal_progress_in_focus: bool,
 }
 
 #[derive(Debug, Default)]
@@ -71,6 +75,7 @@ impl App {
             "loooooooooooooooooogyyggggggggggggggggggggg".to_string(),
         ];
         app.themes = vec!["Sprout", "Amber", "Mono"];
+        app.goal_progress_options = vec!["Daily", "Weekly", "Monthly", "Yearly"];
         app
     }
 
@@ -96,11 +101,18 @@ impl App {
         self.is_settings_in_focus = true;
     }
 
+    /// Sets the focus to the goal progress.
+    pub fn focus_goal_progress(&mut self) {
+        self.remove_all_focus();
+        self.is_goal_progress_in_focus = true;
+    }
+
     pub fn remove_all_focus(&mut self) {
         self.is_dashboard_in_focus = false;
         self.is_heatmap_in_focus = false;
         self.is_settings_in_focus = false;
         self.is_menu_in_focus = false;
+        self.is_goal_progress_in_focus = false;
     }
 
     /// Handles the tick event of the terminal.

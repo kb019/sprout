@@ -85,7 +85,7 @@ pub fn render_settings(
         )
         .render_line()
         .highlight_background_color(p.row_highlight)
-        .line_color(p.fg_dim);
+        .line_color(p.border);
     *settings_state.offset_mut() = 0;
     frame.render_stateful_widget(simple_list, area, settings_state);
 }

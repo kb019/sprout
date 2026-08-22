@@ -22,7 +22,7 @@ pub fn render(app: &mut App, frame: &mut Frame, app_state: &mut State) {
 
     if let Some(selected) = app_state.menu_state().selected() {
         match selected {
-            0 => dashboard::render_dashboard(app, frame, app_column),
+            0 => dashboard::render_dashboard(app, frame, app_column, app_state),
             1 => heatmap_ui::render_heatmap_page(
                 app,
                 frame,

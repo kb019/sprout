@@ -122,12 +122,13 @@ where
                 Rect::new(area.left(), current_y, area.width, item_height).intersection(area);
 
             let is_selected = state.selected().is_some_and(|s| s == i);
-            if is_selected {
-                buf.set_style(item_rect, Style::default().bg(self.background_color));
-            }
 
             (self.item_draw_callback)(i, item_rect, buf, is_selected);
             current_y += item_height;
+
+            if is_selected {
+                buf.set_style(item_rect, Style::default().bg(self.background_color));
+            }
 
             // Divider between items — not after the last visible one
             if self.render_line && i < last - 1 {
