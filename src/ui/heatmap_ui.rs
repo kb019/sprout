@@ -1,20 +1,16 @@
 use crate::app::App;
+use crate::utils::{focus_colors, selection_modifier};
 use crate::widgets::heatmap::HeatMapGen;
 use crate::widgets::tile_list::{TileItem, TileList, TileType};
 use ratatui::Frame;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use ratatui::style::{Modifier, Style, Stylize};
+use ratatui::style::{Style, Stylize};
 use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, Borders, ListState, Padding};
 
 pub fn render_heatmap_page(app: &App, frame: &mut Frame, area: Rect, tile_state: &mut ListState) {
     let p = app.palette();
-    let mut border_color = p.border;
-    let mut text_color = p.fg_dim;
-    if app.is_heatmap_in_focus {
-        border_color = p.accent;
-        text_color = p.accent;
-    }
+    let (border_color, text_color) = focus_colors(app.is_heatmap_in_focus, p);
     let heat_map_block = Block::default()
         .title(" activity heatmap ")
         .title_style(Style::new().fg(text_color))
@@ -82,12 +78,7 @@ pub fn render_habit_tiles(app: &App, frame: &mut Frame, area: Rect, tile_state: 
         .iter()
         .enumerate()
         .map(|(i, menu_item)| {
-            let mut bold_modifier = Modifier::empty();
-            if let Some(select) = tile_state.selected()
-                && select == i
-            {
-                bold_modifier = Modifier::BOLD;
-            }
+            let bold_modifier = selection_modifier(tile_state, i);
             TileItem::new(
                 Text::from(menu_item.clone())
                     .add_modifier(bold_modifier)

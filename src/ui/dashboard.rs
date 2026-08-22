@@ -2,7 +2,7 @@ use crate::app::App;
 use crate::palette::Palette;
 use crate::state::State;
 use crate::symbols::Symbols;
-use crate::utils::render_ellipsis_if_overflow;
+use crate::utils::{focus_colors, render_ellipsis_if_overflow};
 use crate::widgets::simple_list::SimpleList;
 use crate::widgets::tile_list::{TileItem, TileList, TileType};
 use ratatui::Frame;
@@ -18,12 +18,7 @@ pub fn render_dashboard(app: &mut App, frame: &mut Frame, app_area: Rect, app_st
     let horizontal =
         Layout::horizontal([Constraint::Percentage(60), Constraint::Percentage(40)]).spacing(1);
     let [dashboard_column, stats_column] = app_area.layout(&horizontal);
-    let mut border_color: ratatui::prelude::Color = p.border;
-    let mut text_color = p.fg_dim;
-    if app.is_dashboard_in_focus {
-        border_color = p.accent;
-        text_color = p.accent;
-    }
+    let (border_color, text_color) = focus_colors(app.is_dashboard_in_focus, p);
     let dashboard_block = Block::default()
         .title(" active habits ")
         .title_style(Style::new().fg(text_color))
@@ -243,12 +238,7 @@ fn render_goal_progress(
     goal_row_state: &mut ListState,
 ) {
     let p = app.palette();
-    let mut border_color = p.border;
-    let mut text_color = p.fg_dim;
-    if app.is_goal_progress_in_focus {
-        border_color = p.accent;
-        text_color = p.accent;
-    }
+    let (border_color, text_color) = focus_colors(app.is_goal_progress_in_focus, p);
     let goal_progress = Block::default()
         .title(" goal progress ")
         .title_style(Style::new().fg(text_color))

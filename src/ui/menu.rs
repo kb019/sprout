@@ -1,6 +1,7 @@
 use crate::app::App;
 use crate::palette::Palette;
 use crate::sprout::{Sprout, SproutPercentage};
+use crate::utils::{focus_colors, selection_modifier};
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Layout, Position, Rect};
 use ratatui::style::{Color, Modifier, Style, Stylize};
@@ -39,12 +40,7 @@ fn render_navigate(
     list_state: &mut ListState,
     p: Palette,
 ) {
-    let mut border_color = p.border;
-    let mut text_color = p.fg_dim;
-    if app.is_menu_in_focus {
-        border_color = p.accent;
-        text_color = p.accent;
-    }
+    let (border_color, text_color) = focus_colors(app.is_menu_in_focus, p);
 
     let navigate_block = Block::default()
         .title(" navigate ")
@@ -67,13 +63,7 @@ fn render_menu(
     let mut menu_items = vec![];
 
     for (i, menu_item) in app.menu.iter().enumerate() {
-        let mut bold_modifier = Modifier::empty();
-
-        if let Some(select) = list_state.selected()
-            && select == i
-        {
-            bold_modifier = Modifier::BOLD;
-        }
+        let bold_modifier = selection_modifier(list_state, i);
         let text = Text::from(*menu_item).add_modifier(bold_modifier);
         let item = ListItem::new(text);
         menu_items.push(item);

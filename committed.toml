@@ -1,6 +1,7 @@
 [committed]
 style = "conventional"
 merge_commit = false
+subject_length = 100
 ignore_author_re="(dependabot|renovate)"
 
 allowed_types = [

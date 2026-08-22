@@ -10,6 +10,7 @@ use ratatui::{
 use crate::{
     app::App,
     palette::Palette,
+    utils::focus_colors,
     widgets::{
         simple_list::SimpleList,
         tile_list::{TileBorderType, TileDirection, TileItem, TileList, TileType},
@@ -24,12 +25,7 @@ pub fn render_settings_page(
     settings_tile_states: &mut [ListState],
 ) {
     let p = app.palette();
-    let mut border_color = p.border;
-    let mut text_color = p.fg_dim;
-    if app.is_settings_in_focus {
-        border_color = p.accent;
-        text_color = p.accent;
-    }
+    let (border_color, text_color) = focus_colors(app.is_settings_in_focus, p);
     let settings_block = Block::default()
         .title(" settings ")
         .title_style(Style::new().fg(text_color))
