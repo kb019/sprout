@@ -29,6 +29,8 @@ pub mod widgets;
 ///used to store all the states of the application
 pub mod state;
 
+pub mod symbols;
+
 use std::io::{Write, stderr, stdout};
 use std::thread;
 use std::time::Duration;
