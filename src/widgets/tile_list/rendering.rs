@@ -2,13 +2,12 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::widgets::{Block, BlockExt, BorderType, Borders, ListState, StatefulWidget, Widget};
 
+use crate::utils::render_ellipsis_if_overflow;
 use crate::widgets::tile_list::{TileBorderType, TileDirection, TileItem, TileList, TileType};
 
 fn render_content(item: &TileItem, area: Rect, buf: &mut Buffer) {
     Widget::render(&item.content, area, buf);
-    if item.width() as u16 > area.width && area.width > 0 {
-        buf[(area.right() - 1, area.top())].set_symbol("…");
-    }
+    render_ellipsis_if_overflow(buf, area, item.width());
 }
 
 impl Widget for TileList<'_> {

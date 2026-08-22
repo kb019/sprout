@@ -2,6 +2,7 @@ use crate::app::App;
 use crate::palette::Palette;
 use crate::state::State;
 use crate::symbols::Symbols;
+use crate::utils::render_ellipsis_if_overflow;
 use crate::widgets::simple_list::SimpleList;
 use crate::widgets::tile_list::{TileItem, TileList, TileType};
 use ratatui::Frame;
@@ -11,7 +12,6 @@ use ratatui::style::{Modifier, Style, Stylize};
 use ratatui::symbols::line::HORIZONTAL;
 use ratatui::text::{Line as TextLine, Span, Text};
 use ratatui::widgets::{Block, BorderType, Borders, ListState, Padding, Paragraph, Widget};
-use unicode_width::UnicodeWidthStr;
 
 pub fn render_dashboard(app: &mut App, frame: &mut Frame, app_area: Rect, app_state: &mut State) {
     let p = app.palette();
@@ -118,13 +118,14 @@ pub fn render_habit_item(
     ])
     .right_aligned();
     Widget::render(&status_span, status_area, buf);
-    Widget::render(&line, habit_name_area, buf);
-    let line_width = (1 + UnicodeWidthStr::width(habit_name)) as u16;
-    if line_width > habit_name_area.width && habit_name_area.width > 0 {
-        buf[(habit_name_area.right() - 1, habit_name_area.top())].set_symbol("…");
-    }
+    render_line_with_ellipsis(&line, habit_name_area, buf);
     Widget::render(&streak_symbols, streaks_buttons_area_, buf);
 }
+fn render_line_with_ellipsis(line: &TextLine, area: Rect, buf: &mut Buffer) {
+    Widget::render(line, area, buf);
+    render_ellipsis_if_overflow(buf, area, line.width());
+}
+
 pub fn render_habits_header(frame: &mut Frame, area: Rect, p: Palette) {
     let text = Text::from(Span::styled(
         " + Add habit ",
@@ -301,11 +302,7 @@ fn render_goal_progress_habit_name(app: &App, area: Rect, buf: &mut Buffer, _is_
     let habit_name = "Morning Run"; // Example habit name
     let habit_span = Span::styled(habit_name, Style::default().fg(p.fg));
     let line = TextLine::from(vec![Span::raw(" "), habit_span]);
-    Widget::render(&line, area, buf);
-    let line_width = (1 + UnicodeWidthStr::width(habit_name)) as u16;
-    if line_width > area.width && area.width > 0 {
-        buf[(area.right() - 1, area.top())].set_symbol("…");
-    }
+    render_line_with_ellipsis(&line, area, buf);
 }
 
 fn render_goal_progress_bar(app: &App, area: Rect, buf: &mut Buffer, _is_selected: bool) {

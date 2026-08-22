@@ -31,6 +31,8 @@ pub mod state;
 
 pub mod symbols;
 
+pub mod utils;
+
 use std::io::{Write, stderr, stdout};
 use std::thread;
 use std::time::Duration;
