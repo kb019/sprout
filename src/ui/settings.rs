@@ -10,7 +10,7 @@ use ratatui::{
 use crate::{
     app::App,
     palette::Palette,
-    utils::focus_colors,
+    utils::{focus_colors, render_ellipsis_if_overflow},
     widgets::{
         simple_list::SimpleList,
         tile_list::{TileBorderType, TileDirection, TileItem, TileList, TileType},
@@ -219,14 +219,19 @@ fn render_setting_row(
         .spacing(1)
         .areas(area);
 
-    Widget::render(
-        Text::from_iter([
-            Line::from(Span::from(title).fg(p.fg)),
-            Line::from(Span::from(subtitle).fg(p.fg_dim)),
-        ]),
-        left_area,
-        buf,
-    );
+    let [title_area, subtitle_area] = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Length(1), Constraint::Length(1)])
+        .areas(left_area);
+
+    let title_line = Line::from(Span::from(title).fg(p.fg));
+    let subtitle_line = Line::from(Span::from(subtitle).fg(p.fg_dim));
+
+    Widget::render(&title_line, title_area, buf);
+    render_ellipsis_if_overflow(buf, title_area, title_line.width());
+
+    Widget::render(&subtitle_line, subtitle_area, buf);
+    render_ellipsis_if_overflow(buf, subtitle_area, subtitle_line.width());
 
     let tiles = TileList::new(items)
         .style(Style::new().fg(p.fg_dim))

@@ -80,7 +80,7 @@ pub fn update(app: &mut App, key_event: KeyEvent, state: &mut State) {
             let row = state.settings_state().selected().unwrap_or(0);
             let len = match row {
                 0 => app.themes.len(),
-                1 => app.menu.len(),
+                1 => app.menu.len().saturating_sub(1),
                 _ => 1,
             };
             if len > 0 {
@@ -93,7 +93,7 @@ pub fn update(app: &mut App, key_event: KeyEvent, state: &mut State) {
             let row = state.settings_state().selected().unwrap_or(0);
             let len = match row {
                 0 => app.themes.len(),
-                1 => app.menu.len(),
+                1 => app.menu.len().saturating_sub(1),
                 _ => 1,
             };
             if len > 0 && state.settings_tile_selected(row) == Some(len - 1) {
