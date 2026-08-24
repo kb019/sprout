@@ -3,6 +3,7 @@ mod heatmap_ui;
 mod menu;
 mod settings;
 mod stats;
+
 use crate::app::App;
 use crate::state::State;
 use ratatui::Frame;

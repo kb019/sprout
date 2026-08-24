@@ -8,6 +8,7 @@ pub struct State {
     dashboard_habits_state: ListState,
     goal_progress_tile_state: ListState,
     goal_progress_row_state: Vec<ListState>,
+    modal_button_state: ListState,
 }
 
 impl State {
@@ -29,6 +30,8 @@ impl State {
         //0 is for daily, 1 is for weekly, 2 is for monthly, 3 is for yearly
         let goal_progress_row_state: Vec<ListState> =
             (0..4).map(|_| ListState::default()).collect();
+        let mut modal_button_state = ListState::default();
+        modal_button_state.select(Some(0));
         Self {
             menu_state,
             heatmap_tile_state,
@@ -37,6 +40,7 @@ impl State {
             dashboard_habits_state: ListState::default(),
             goal_progress_tile_state,
             goal_progress_row_state,
+            modal_button_state,
         }
     }
 
@@ -207,6 +211,28 @@ impl State {
             .map(|i| i.saturating_sub(1))
             .unwrap_or(0);
         self.goal_progress_tile_state.select(Some(prev));
+    }
+
+    pub fn modal_button_state_mut(&mut self) -> &mut ListState {
+        &mut self.modal_button_state
+    }
+
+    pub fn next_modal_button(&mut self) {
+        let next = self
+            .modal_button_state
+            .selected()
+            .map(|i| (i + 1).min(1))
+            .unwrap_or(0);
+        self.modal_button_state.select(Some(next));
+    }
+
+    pub fn prev_modal_button(&mut self) {
+        let prev = self
+            .modal_button_state
+            .selected()
+            .map(|i| i.saturating_sub(1))
+            .unwrap_or(0);
+        self.modal_button_state.select(Some(prev));
     }
 
     pub fn goal_progress_states_mut(&mut self) -> (&mut ListState, &mut Vec<ListState>) {

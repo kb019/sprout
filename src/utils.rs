@@ -1,4 +1,5 @@
 use crate::palette::Palette;
+use crossterm::event::KeyCode;
 use ratatui::style::{Color, Modifier};
 use ratatui::widgets::ListState;
 use ratatui::{buffer::Buffer, layout::Rect};
@@ -23,4 +24,29 @@ pub fn selection_modifier(state: &ListState, index: usize) -> Modifier {
     } else {
         Modifier::empty()
     }
+}
+
+pub fn is_right_key(code: KeyCode) -> bool {
+    matches!(
+        code,
+        KeyCode::Char('l') | KeyCode::Char('L') | KeyCode::Right
+    )
+}
+
+pub fn is_left_key(code: KeyCode) -> bool {
+    matches!(
+        code,
+        KeyCode::Char('h') | KeyCode::Char('H') | KeyCode::Left
+    )
+}
+
+pub fn is_up_key(code: KeyCode) -> bool {
+    matches!(code, KeyCode::Char('k') | KeyCode::Char('K') | KeyCode::Up)
+}
+
+pub fn is_down_key(code: KeyCode) -> bool {
+    matches!(
+        code,
+        KeyCode::Char('j') | KeyCode::Char('J') | KeyCode::Down
+    )
 }

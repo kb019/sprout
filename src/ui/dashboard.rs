@@ -126,7 +126,7 @@ pub fn render_habits_header(frame: &mut Frame, area: Rect, p: Palette) {
         " + Add habit ",
         Style::default()
             .bg(p.heatmap[2])
-            .fg(p.fg_dim)
+            .fg(p.fg)
             .add_modifier(Modifier::BOLD),
     ))
     .right_aligned();

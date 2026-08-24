@@ -33,6 +33,8 @@ pub mod symbols;
 
 pub mod utils;
 
+pub mod modals;
+
 use std::io::{Write, stderr, stdout};
 use std::thread;
 use std::time::Duration;
@@ -43,9 +45,10 @@ use clap::{Parser, Subcommand, builder::styling};
 use event::{Event, EventHandler};
 use ratatui::{Terminal, backend::CrosstermBackend};
 use tui::Tui;
-use update::update;
 
 use crate::state::State;
+use crate::update::update_app::handle_app;
+use crate::update::update_modal::handle_modal;
 
 const STYLES: styling::Styles = styling::Styles::styled()
     .header(styling::AnsiColor::Green.on_default().bold())
@@ -145,7 +148,14 @@ fn main() -> Result<()> {
         tui.draw(&mut app, &mut app_state)?;
         // Handle events.
         match tui.events.next()? {
-            Event::Key(key_event) => update(&mut app, key_event, &mut app_state),
+            Event::Key(key_event) => {
+                //if modal is in focus , then focus only on modal logic
+                if app.is_modal_in_focus() {
+                    handle_modal(&mut app, key_event, &mut app_state)
+                } else {
+                    handle_app(&mut app, key_event, &mut app_state)
+                }
+            }
             Event::Tick => app.tick(),
             Event::Mouse(_) | Event::Resize(_, _) => {}
         }

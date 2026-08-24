@@ -30,6 +30,10 @@ pub struct App {
     pub is_settings_in_focus: bool,
 
     pub is_goal_progress_in_focus: bool,
+
+    pub display_add_modal: bool,
+
+    pub display_delete_modal: bool,
 }
 
 #[derive(Debug, Default)]
@@ -79,6 +83,29 @@ impl App {
         app
     }
 
+    pub fn is_modal_in_focus(&self) -> bool {
+        self.display_add_modal || self.display_delete_modal
+    }
+
+    pub fn show_delete_modal(&mut self) {
+        self.display_delete_modal = true;
+    }
+
+    pub fn hide_delete_modal(&mut self) {
+        self.display_delete_modal = false;
+    }
+    pub fn show_add_modal(&mut self) {
+        self.display_add_modal = true;
+    }
+
+    pub fn hide_add_modal(&mut self) {
+        self.display_add_modal = false;
+    }
+
+    pub fn hide_all_modals(&mut self) {
+        self.display_add_modal = false;
+        self.display_delete_modal = false;
+    }
     pub fn focus_menu(&mut self) {
         self.remove_all_focus();
         self.is_menu_in_focus = true;

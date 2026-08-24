@@ -1,0 +1,175 @@
+use crate::app::App;
+use crate::state::State;
+use crate::symbols::Symbols;
+use crate::widgets::tile_list::{TileDirection, TileItem, TileList, TileType};
+use ratatui::Frame;
+use ratatui::buffer::Buffer;
+use ratatui::layout::{Constraint, Layout, Rect};
+use ratatui::style::{Color, Modifier, Style, Stylize};
+use ratatui::text::{Line, Span, Text};
+use ratatui::widgets::{Block, BorderType, Borders, Fill, ListState, Padding};
+
+pub fn render_modals(app: &mut App, frame: &mut Frame, app_state: &mut State) {
+    let p = app.palette();
+    let modal_block = Block::default()
+        .borders(Borders::ALL)
+        .border_type(BorderType::Plain)
+        .reset()
+        .fg(p.accent)
+        .padding(Padding::new(0, 0, 0, 0))
+        .bg(p.background);
+
+    let frame_area = frame.area();
+    let modal_area = centered_rect(50, 18, frame_area);
+    let modal_inner_area = modal_block.inner(modal_area);
+
+    dim_background(frame.buffer_mut(), frame_area, 0.5);
+    clear_modal_area(app, frame, modal_area);
+
+    frame.render_widget(modal_block, modal_area);
+    let buf = frame.buffer_mut();
+    let left_x = modal_area.left();
+    let top_y = modal_area.top();
+    let right_x = modal_area.right();
+    let bottom_y = modal_area.bottom();
+    buf[(left_x, top_y)]
+        .set_symbol(" ")
+        .set_style(Style::new().fg(p.accent));
+    buf[(right_x - 1, top_y)]
+        .set_symbol(" ")
+        .set_style(Style::new().fg(p.accent));
+    buf[(left_x, bottom_y - 1)]
+        .set_symbol(" ")
+        .set_style(Style::new().fg(p.accent));
+    buf[(right_x - 1, bottom_y - 1)]
+        .set_symbol(" ")
+        .set_style(Style::new().fg(p.accent));
+
+    render_add_modal(
+        app,
+        frame,
+        modal_inner_area,
+        app_state.modal_button_state_mut(),
+    );
+}
+
+fn render_add_modal(app: &mut App, frame: &mut Frame, area: Rect, button_state: &mut ListState) {
+    let vertical_layout = Layout::vertical([
+        Constraint::Length(2),
+        Constraint::Fill(1),
+        Constraint::Length(2),
+    ]);
+    let [title_area, add_content_area, footer_area] = area.layout(&vertical_layout);
+    let content_block = Block::default()
+        .bg(Color::Rgb(13, 20, 15))
+        .padding(Padding::new(1, 1, 0, 0));
+    let add_content_inner_area = content_block.inner(add_content_area);
+
+    frame.render_widget(content_block, add_content_area);
+    render_title(app, frame, title_area);
+    render_footer(app, frame, footer_area, button_state);
+    render_add_content(app, frame, add_content_inner_area);
+}
+
+#[allow(clippy::needless_pass_by_ref_mut)]
+fn render_add_content(app: &mut App, frame: &mut Frame, area: Rect) {
+    let p = app.palette();
+    let name = Text::from(Line::from("Habit name:")).style(Style::new().fg(p.fg_dim));
+    frame.render_widget(name, area);
+}
+
+#[allow(clippy::needless_pass_by_ref_mut)]
+fn render_footer(app: &mut App, frame: &mut Frame, area: Rect, button_state: &mut ListState) {
+    let p = app.palette();
+
+    let border_top = Block::default()
+        .borders(Borders::TOP)
+        .border_type(BorderType::Plain)
+        .border_style(Style::new().fg(p.fg_dim))
+        .padding(Padding::new(0, 0, 0, 0));
+    let footer_inner_area = border_top.inner(area);
+    frame.render_widget(border_top, area);
+    let selected = button_state.selected().unwrap_or(0);
+    let tile_items: Vec<TileItem> = ["Add", "Cancel"]
+        .iter()
+        .enumerate()
+        .map(|(i, &label)| {
+            if i == selected {
+                TileItem::new(
+                    Text::from(label)
+                        .add_modifier(Modifier::BOLD)
+                        .bg(p.selection)
+                        .centered(),
+                )
+            } else {
+                TileItem::new(Text::from(label).centered())
+            }
+        })
+        .collect();
+    let tile_list = TileList::new(tile_items)
+        .tile_type(TileType::Unbordered)
+        .style(Style::new().fg(p.fg_dim))
+        .highlight_style(Style::new().fg(p.accent))
+        .direction(TileDirection::RightToLeft);
+    frame.render_stateful_widget(tile_list, footer_inner_area, button_state);
+}
+
+#[allow(clippy::needless_pass_by_ref_mut)]
+fn render_title(app: &mut App, frame: &mut Frame, area: Rect) {
+    let p = app.palette();
+    let horizontal_layout = Layout::horizontal([Constraint::Fill(1), Constraint::Length(2)]);
+    let [title_content_area, close_button_area] = area.layout(&horizontal_layout);
+    let title_text = Text::from(Line::from(" Add habit")).style(Style::new().fg(p.accent));
+    let cross_mark =
+        Line::from(vec![Span::from(Symbols::CROSS_MARK)]).style(Style::new().fg(p.fg_dim));
+    let border_bottom = Block::default()
+        .borders(Borders::BOTTOM)
+        .border_type(BorderType::Plain)
+        .border_style(Style::new().fg(p.fg_dim));
+    frame.render_widget(title_text, title_content_area);
+    frame.render_widget(cross_mark, close_button_area);
+    frame.render_widget(border_bottom, area);
+}
+
+fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
+    let x = area.x.saturating_add(area.width.saturating_sub(width) / 2);
+    let y = area
+        .y
+        .saturating_add(area.height.saturating_sub(height) / 2);
+    Rect {
+        x,
+        y,
+        width: width.min(area.width),
+        height: height.min(area.height),
+    }
+}
+
+#[allow(clippy::needless_pass_by_ref_mut)]
+fn clear_modal_area(app: &mut App, frame: &mut Frame, area: Rect) {
+    let p = app.palette();
+    let fill = Fill::new(" ").style(Style::new().bg(p.background));
+    frame.render_widget(fill, area);
+}
+
+pub fn dim_background(buf: &mut Buffer, area: Rect, amount: f32) {
+    for y in area.top()..area.bottom() {
+        for x in area.left()..area.right() {
+            let cell = &mut buf[(x, y)];
+            if let Color::Rgb(r, g, b) = cell.fg {
+                cell.fg = blend_toward_black(r, g, b, amount);
+            }
+            if let Color::Rgb(r, g, b) = cell.bg {
+                cell.bg = blend_toward_black(r, g, b, amount);
+            }
+        }
+    }
+}
+
+fn blend_toward_black(r: u8, g: u8, b: u8, amount: f32) -> Color {
+    let f = 1.0 - amount;
+    Color::Rgb(
+        (r as f32 * f) as u8,
+        (g as f32 * f) as u8,
+        (b as f32 * f) as u8,
+    )
+}
