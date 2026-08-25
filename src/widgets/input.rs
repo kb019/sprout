@@ -59,25 +59,44 @@ impl Widget for &Input<'_> {
         block.render(block_area, buf); // Block writes its own cells correctly — no manual buf.get_mut() needed
 
         let showing_placeholder = self.input_state.get_value().is_empty();
-        let text: &str = if showing_placeholder {
+        let cursor_position = self.input_state.get_cursor_position();
+        let visible_width = inner.width as usize;
+
+        // Scroll left: keep cursor at the rightmost visible column when text overflows.
+        // Decreasing cursor_position shrinks view_offset, revealing the left portion.
+        let view_offset = if showing_placeholder {
+            0
+        } else {
+            cursor_position.saturating_sub(visible_width.saturating_sub(1))
+        };
+
+        let raw_text = if showing_placeholder {
             &self.placeholder
         } else {
             self.input_state.get_value()
         };
+        let display_text: String = raw_text
+            .chars()
+            .skip(view_offset)
+            .take(visible_width)
+            .collect();
         let text_color = if showing_placeholder {
             self.palette.fg_muted
         } else {
             self.palette.fg
         };
 
-        let spans = vec![Span::styled(text, Style::default().fg(text_color))];
-        let cursor_position = self.input_state.get_cursor_position();
+        Line::from(Span::styled(
+            display_text.as_str(),
+            Style::default().fg(text_color),
+        ))
+        .render(inner, buf);
 
-        Line::from(spans).render(inner, buf);
         if self.input_state.is_focused() {
-            buf[(area.left() + cursor_position as u16 + 1, area.top() + 1)]
-                .set_style(Style::default().fg(self.palette.accent))
-                .set_symbol("█");
+            let cursor_x = inner.left() + (cursor_position - view_offset) as u16;
+            if cursor_x < inner.right() {
+                buf[(cursor_x, inner.top())].set_style(Style::default().bg(self.palette.accent));
+            }
         }
     }
 }

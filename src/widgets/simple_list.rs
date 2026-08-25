@@ -108,7 +108,9 @@ where
                 )
                 .intersection(area);
                 if area.intersects(item_rect) {
-                    buf.set_style(item_rect, Style::default().bg(self.background_color));
+                    if self.background_color != Color::default() {
+                        buf.set_style(item_rect, Style::default().bg(self.background_color));
+                    }
                     (self.item_draw_callback)(index, item_rect, buf, true);
                 }
             }
@@ -126,7 +128,7 @@ where
             (self.item_draw_callback)(i, item_rect, buf, is_selected);
             current_y += item_height;
 
-            if is_selected {
+            if is_selected && self.background_color != Color::default() {
                 buf.set_style(item_rect, Style::default().bg(self.background_color));
             }
 
