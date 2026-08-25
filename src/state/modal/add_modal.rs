@@ -30,15 +30,19 @@ impl AddModalState {
         state
             .daily_goal_input_state
             .set_input_type(InputType::Number);
+        state.daily_goal_input_state.set_max_length(10);
         state
             .weekly_goal_input_state
             .set_input_type(InputType::Number);
+        state.weekly_goal_input_state.set_max_length(10);
         state
             .monthly_goal_input_state
             .set_input_type(InputType::Number);
+        state.monthly_goal_input_state.set_max_length(10);
         state
             .yearly_goal_input_state
             .set_input_type(InputType::Number);
+        state.yearly_goal_input_state.set_max_length(10);
 
         state
     }

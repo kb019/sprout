@@ -99,7 +99,7 @@ fn render_add_content(app: &mut App, frame: &mut Frame, area: Rect, modal_state:
                         daily_goal_input_cursor_delay.saturating_sub(1),
                     );
                     Input::new(
-                        "Enter daily goal".to_string(),
+                        "Enter daily goal (Optional)".to_string(),
                         p,
                         daily_goal_input_state,
                         show_cursor,
@@ -113,7 +113,7 @@ fn render_add_content(app: &mut App, frame: &mut Frame, area: Rect, modal_state:
                         weekly_goal_input_cursor_delay.saturating_sub(1),
                     );
                     Input::new(
-                        "Enter weekly goal".to_string(),
+                        "Enter weekly goal (Optional)".to_string(),
                         p,
                         weekly_goal_input_state,
                         show_cursor,
@@ -127,7 +127,7 @@ fn render_add_content(app: &mut App, frame: &mut Frame, area: Rect, modal_state:
                         monthly_goal_input_cursor_delay.saturating_sub(1),
                     );
                     Input::new(
-                        "Enter monthly goal".to_string(),
+                        "Enter monthly goal (Optional)".to_string(),
                         p,
                         monthly_goal_input_state,
                         show_cursor,
@@ -141,7 +141,7 @@ fn render_add_content(app: &mut App, frame: &mut Frame, area: Rect, modal_state:
                         yearly_goal_input_cursor_delay.saturating_sub(1),
                     );
                     Input::new(
-                        "Enter yearly goal".to_string(),
+                        "Enter yearly goal (Optional)".to_string(),
                         p,
                         yearly_goal_input_state,
                         show_cursor,

@@ -8,6 +8,7 @@ pub struct InputState {
     input_type: InputType,
     cursor_position: usize,
     cursor_visibility_delay: usize,
+    max_length: Option<usize>,
 }
 
 impl InputState {
@@ -18,6 +19,7 @@ impl InputState {
             input_type: InputType::Text,
             cursor_position: 0,
             cursor_visibility_delay: 0,
+            max_length: None,
         }
     }
 
@@ -46,8 +48,15 @@ impl InputState {
     }
 
     pub fn push_char(&mut self, c: char) {
+        if self.max_length.is_some_and(|max| self.value.len() >= max) {
+            return;
+        }
         self.value.insert(self.cursor_position, c);
         self.cursor_position += 1;
+    }
+
+    pub fn set_max_length(&mut self, max: usize) {
+        self.max_length = Some(max);
     }
 
     pub fn backspace(&mut self) {
