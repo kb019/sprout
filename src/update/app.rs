@@ -1,13 +1,16 @@
 use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::app::App;
-use crate::state::State;
+use crate::state::app::AppState;
 use crate::utils::{is_down_key, is_left_key, is_right_key, is_up_key};
 
 // Explicit returns ensure that adding code later in this function
 // does not accidentally change the control flow of the current focus handling.
 #[allow(clippy::needless_return)]
-pub fn handle_app(app: &mut App, key_event: KeyEvent, state: &mut State) {
+pub fn handle_app(app: &mut App, key_event: KeyEvent, state: &mut AppState) {
+    if app.is_modal_in_focus() {
+        return;
+    }
     let code = key_event.code;
 
     match code {

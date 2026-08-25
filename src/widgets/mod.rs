@@ -3,3 +3,5 @@ pub mod heatmap;
 pub mod tile_list;
 
 pub mod simple_list;
+
+pub mod input;

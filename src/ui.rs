@@ -5,13 +5,13 @@ mod settings;
 mod stats;
 
 use crate::app::App;
-use crate::state::State;
+use crate::state::app::AppState;
 use ratatui::Frame;
 use ratatui::layout::{Constraint, Layout, Rect};
 use ratatui::style::Style;
 use ratatui::text::{Line as TextLine, Span};
 
-pub fn render(app: &mut App, frame: &mut Frame, app_state: &mut State) {
+pub fn render(app: &mut App, frame: &mut Frame, app_state: &mut AppState) {
     let vertical: Layout =
         Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).spacing(1);
     let horizontal =

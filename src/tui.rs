@@ -12,7 +12,13 @@ use ratatui::{
 };
 pub type CrosstermTerminal = ratatui::Terminal<ratatui::backend::CrosstermBackend<std::io::Stdout>>;
 
-use crate::{app::App, event::EventHandler, modals, state::State, ui};
+use crate::{
+    app::App,
+    event::EventHandler,
+    modals,
+    state::{app::AppState, modal::ModalState},
+    ui,
+};
 
 /// Representation of a terminal user interface.
 ///
@@ -59,7 +65,12 @@ impl Tui {
     ///
     /// [`Draw`]: tui::Terminal::draw
     /// [`rendering`]: crate::ui:render
-    pub fn draw(&mut self, app: &mut App, app_state: &mut State) -> Result<()> {
+    pub fn draw(
+        &mut self,
+        app: &mut App,
+        app_state: &mut AppState,
+        modal_state: &mut ModalState,
+    ) -> Result<()> {
         self.terminal.draw(|frame| {
             frame.render_widget(
                 Block::default().style(Style::default().bg(app.palette().background)),
@@ -67,7 +78,7 @@ impl Tui {
             );
             ui::render(app, frame, app_state);
             if app.is_modal_in_focus() {
-                modals::render_modals(app, frame, app_state);
+                modals::render_modals(app, frame, modal_state);
             }
         })?;
         Ok(())

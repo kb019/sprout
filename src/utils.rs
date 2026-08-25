@@ -50,3 +50,19 @@ pub fn is_down_key(code: KeyCode) -> bool {
         KeyCode::Char('j') | KeyCode::Char('J') | KeyCode::Down
     )
 }
+
+pub fn is_char_code(code: KeyCode) -> bool {
+    matches!(code, KeyCode::Char(_))
+}
+
+pub fn is_backspace_code(code: KeyCode) -> bool {
+    matches!(code, KeyCode::Backspace)
+}
+
+pub fn get_character_from_keycode(code: KeyCode) -> Option<char> {
+    if let KeyCode::Char(c) = code {
+        Some(c)
+    } else {
+        None
+    }
+}

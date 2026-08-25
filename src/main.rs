@@ -46,9 +46,9 @@ use event::{Event, EventHandler};
 use ratatui::{Terminal, backend::CrosstermBackend};
 use tui::Tui;
 
-use crate::state::State;
-use crate::update::update_app::handle_app;
-use crate::update::update_modal::handle_modal;
+use crate::state::app::AppState;
+use crate::state::modal::ModalState;
+use crate::update::handle;
 
 const STYLES: styling::Styles = styling::Styles::styled()
     .header(styling::AnsiColor::Green.on_default().bold())
@@ -141,20 +141,16 @@ fn main() -> Result<()> {
     let events = EventHandler::new(250);
     let mut tui = Tui::new(terminal, events);
     tui.enter()?;
-    let mut app_state = State::new();
+    let mut app_state = AppState::new();
+    let mut modal_state = ModalState::new();
     // Start the main loop.
     while !app.should_quit {
         // Render the user interface.
-        tui.draw(&mut app, &mut app_state)?;
+        tui.draw(&mut app, &mut app_state, &mut modal_state)?;
         // Handle events.
         match tui.events.next()? {
             Event::Key(key_event) => {
-                //if modal is in focus , then focus only on modal logic
-                if app.is_modal_in_focus() {
-                    handle_modal(&mut app, key_event, &mut app_state)
-                } else {
-                    handle_app(&mut app, key_event, &mut app_state)
-                }
+                handle(&mut app, key_event, &mut app_state, &mut modal_state);
             }
             Event::Tick => app.tick(),
             Event::Mouse(_) | Event::Resize(_, _) => {}

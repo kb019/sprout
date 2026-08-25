@@ -1,6 +1,6 @@
 use crate::app::App;
 use crate::palette::Palette;
-use crate::state::State;
+use crate::state::app::AppState;
 use crate::symbols::Symbols;
 use crate::utils::{focus_colors, render_ellipsis_if_overflow};
 use crate::widgets::simple_list::SimpleList;
@@ -13,7 +13,12 @@ use ratatui::symbols::line::HORIZONTAL;
 use ratatui::text::{Line as TextLine, Span, Text};
 use ratatui::widgets::{Block, BorderType, Borders, ListState, Padding, Paragraph, Widget};
 
-pub fn render_dashboard(app: &mut App, frame: &mut Frame, app_area: Rect, app_state: &mut State) {
+pub fn render_dashboard(
+    app: &mut App,
+    frame: &mut Frame,
+    app_area: Rect,
+    app_state: &mut AppState,
+) {
     let p = app.palette();
     let horizontal =
         Layout::horizontal([Constraint::Percentage(60), Constraint::Percentage(40)]).spacing(1);

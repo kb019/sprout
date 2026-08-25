@@ -1,6 +1,6 @@
 use ratatui::widgets::ListState;
 
-pub struct State {
+pub struct AppState {
     menu_state: ListState,
     heatmap_tile_state: ListState,
     settings_state: ListState,
@@ -8,10 +8,9 @@ pub struct State {
     dashboard_habits_state: ListState,
     goal_progress_tile_state: ListState,
     goal_progress_row_state: Vec<ListState>,
-    modal_button_state: ListState,
 }
 
-impl State {
+impl AppState {
     pub fn new() -> Self {
         let mut menu_state = ListState::default();
         menu_state.select(Some(0));
@@ -26,12 +25,9 @@ impl State {
         }
         let mut goal_progress_tile_state = ListState::default();
         goal_progress_tile_state.select(Some(0));
-
-        //0 is for daily, 1 is for weekly, 2 is for monthly, 3 is for yearly
+        // 0=daily, 1=weekly, 2=monthly, 3=yearly
         let goal_progress_row_state: Vec<ListState> =
             (0..4).map(|_| ListState::default()).collect();
-        let mut modal_button_state = ListState::default();
-        modal_button_state.select(Some(0));
         Self {
             menu_state,
             heatmap_tile_state,
@@ -40,7 +36,6 @@ impl State {
             dashboard_habits_state: ListState::default(),
             goal_progress_tile_state,
             goal_progress_row_state,
-            modal_button_state,
         }
     }
 
@@ -48,20 +43,20 @@ impl State {
         &self.menu_state
     }
 
-    pub fn heatmap_tile_state(&self) -> &ListState {
-        &self.heatmap_tile_state
-    }
-
-    pub fn settings_state(&self) -> &ListState {
-        &self.settings_state
-    }
-
     pub fn menu_state_mut(&mut self) -> &mut ListState {
         &mut self.menu_state
     }
 
+    pub fn heatmap_tile_state(&self) -> &ListState {
+        &self.heatmap_tile_state
+    }
+
     pub fn heatmap_tile_state_mut(&mut self) -> &mut ListState {
         &mut self.heatmap_tile_state
+    }
+
+    pub fn settings_state(&self) -> &ListState {
+        &self.settings_state
     }
 
     pub fn settings_state_mut(&mut self) -> &mut ListState {
@@ -165,10 +160,6 @@ impl State {
         &mut self.dashboard_habits_state
     }
 
-    // pub fn clear_dashboard_habits(&mut self) {
-    //     self.dashboard_habits_state.select(None);
-    // }
-
     pub fn next_dashboard_habit(&mut self, len: usize) {
         let next = self
             .dashboard_habits_state
@@ -213,28 +204,6 @@ impl State {
         self.goal_progress_tile_state.select(Some(prev));
     }
 
-    pub fn modal_button_state_mut(&mut self) -> &mut ListState {
-        &mut self.modal_button_state
-    }
-
-    pub fn next_modal_button(&mut self) {
-        let next = self
-            .modal_button_state
-            .selected()
-            .map(|i| (i + 1).min(1))
-            .unwrap_or(0);
-        self.modal_button_state.select(Some(next));
-    }
-
-    pub fn prev_modal_button(&mut self) {
-        let prev = self
-            .modal_button_state
-            .selected()
-            .map(|i| i.saturating_sub(1))
-            .unwrap_or(0);
-        self.modal_button_state.select(Some(prev));
-    }
-
     pub fn goal_progress_states_mut(&mut self) -> (&mut ListState, &mut Vec<ListState>) {
         (
             &mut self.goal_progress_tile_state,
@@ -257,7 +226,7 @@ impl State {
     }
 }
 
-impl Default for State {
+impl Default for AppState {
     fn default() -> Self {
         Self::new()
     }

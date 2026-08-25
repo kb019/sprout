@@ -1,15 +1,17 @@
 use crate::app::App;
-use crate::state::State;
+use crate::state::modal::ModalState;
 use crate::symbols::Symbols;
+use crate::widgets::input::Input;
+use crate::widgets::simple_list::SimpleList;
 use crate::widgets::tile_list::{TileDirection, TileItem, TileList, TileType};
 use ratatui::Frame;
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Layout, Rect};
 use ratatui::style::{Color, Modifier, Style, Stylize};
 use ratatui::text::{Line, Span, Text};
-use ratatui::widgets::{Block, BorderType, Borders, Fill, ListState, Padding};
+use ratatui::widgets::{Block, BorderType, Borders, Fill, ListState, Padding, Widget};
 
-pub fn render_modals(app: &mut App, frame: &mut Frame, app_state: &mut State) {
+pub fn render_modals(app: &mut App, frame: &mut Frame, modal_state: &mut ModalState) {
     let p = app.palette();
     let modal_block = Block::default()
         .borders(Borders::ALL)
@@ -45,15 +47,11 @@ pub fn render_modals(app: &mut App, frame: &mut Frame, app_state: &mut State) {
         .set_symbol(" ")
         .set_style(Style::new().fg(p.accent));
 
-    render_add_modal(
-        app,
-        frame,
-        modal_inner_area,
-        app_state.modal_button_state_mut(),
-    );
+    render_add_modal(app, frame, modal_inner_area, modal_state);
 }
 
-fn render_add_modal(app: &mut App, frame: &mut Frame, area: Rect, button_state: &mut ListState) {
+fn render_add_modal(app: &mut App, frame: &mut Frame, area: Rect, modal_state: &mut ModalState) {
+    let button_state = modal_state.button_state_mut();
     let vertical_layout = Layout::vertical([
         Constraint::Length(2),
         Constraint::Fill(1),
@@ -62,20 +60,57 @@ fn render_add_modal(app: &mut App, frame: &mut Frame, area: Rect, button_state: 
     let [title_area, add_content_area, footer_area] = area.layout(&vertical_layout);
     let content_block = Block::default()
         .bg(Color::Rgb(13, 20, 15))
-        .padding(Padding::new(1, 1, 0, 0));
+        .padding(Padding::new(1, 1, 1, 1));
     let add_content_inner_area = content_block.inner(add_content_area);
 
     frame.render_widget(content_block, add_content_area);
     render_title(app, frame, title_area);
     render_footer(app, frame, footer_area, button_state);
-    render_add_content(app, frame, add_content_inner_area);
+    render_add_content(app, frame, add_content_inner_area, modal_state);
 }
 
 #[allow(clippy::needless_pass_by_ref_mut)]
-fn render_add_content(app: &mut App, frame: &mut Frame, area: Rect) {
+fn render_add_content(app: &mut App, frame: &mut Frame, area: Rect, modal_state: &mut ModalState) {
+    let add_modal_state = modal_state.add_modal_state_mut();
     let p = app.palette();
-    let name = Text::from(Line::from("Habit name:")).style(Style::new().fg(p.fg_dim));
-    frame.render_widget(name, area);
+    let focused = add_modal_state.get_current_field_focus();
+
+    let list = SimpleList::new(
+        vec!["3", "3", "3", "3", "3"],
+        move |index, item_rect, buf, _| {
+            let input = match index {
+                0 => Input::new(
+                    "Enter habit name".to_string(),
+                    p,
+                    add_modal_state.habit_name_input_state_mut(),
+                ),
+                1 => Input::new(
+                    "Enter daily goal".to_string(),
+                    p,
+                    add_modal_state.daily_goal_input_state_mut(),
+                ),
+                2 => Input::new(
+                    "Enter weekly goal".to_string(),
+                    p,
+                    add_modal_state.weekly_goal_input_state_mut(),
+                ),
+                3 => Input::new(
+                    "Enter monthly goal".to_string(),
+                    p,
+                    add_modal_state.monthly_goal_input_state_mut(),
+                ),
+                _ => Input::new(
+                    "Enter yearly goal".to_string(),
+                    p,
+                    add_modal_state.yearly_goal_input_state_mut(),
+                ),
+            };
+            Widget::render(&input, item_rect, buf);
+        },
+    );
+
+    let mut list_state = ListState::default().with_selected(Some(focused));
+    frame.render_stateful_widget(list, area, &mut list_state);
 }
 
 #[allow(clippy::needless_pass_by_ref_mut)]
