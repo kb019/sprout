@@ -74,7 +74,8 @@ fn render_add_content(app: &mut App, frame: &mut Frame, area: Rect, modal_state:
     let add_modal_state = modal_state.add_modal_state_mut();
     let p = app.palette();
     let focused = add_modal_state.get_current_field_focus();
-
+    let tick_count = app.tick_count;
+    let show_cursor = tick_count == 0;
     let list = SimpleList::new(
         vec!["3", "3", "3", "3", "3"],
         move |index, item_rect, buf, _| {
@@ -83,26 +84,31 @@ fn render_add_content(app: &mut App, frame: &mut Frame, area: Rect, modal_state:
                     "Enter habit name".to_string(),
                     p,
                     add_modal_state.habit_name_input_state_mut(),
+                    show_cursor,
                 ),
                 1 => Input::new(
                     "Enter daily goal".to_string(),
                     p,
                     add_modal_state.daily_goal_input_state_mut(),
+                    show_cursor,
                 ),
                 2 => Input::new(
                     "Enter weekly goal".to_string(),
                     p,
                     add_modal_state.weekly_goal_input_state_mut(),
+                    show_cursor,
                 ),
                 3 => Input::new(
                     "Enter monthly goal".to_string(),
                     p,
                     add_modal_state.monthly_goal_input_state_mut(),
+                    show_cursor,
                 ),
                 _ => Input::new(
                     "Enter yearly goal".to_string(),
                     p,
                     add_modal_state.yearly_goal_input_state_mut(),
+                    show_cursor,
                 ),
             };
             Widget::render(&input, item_rect, buf);

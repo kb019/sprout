@@ -55,6 +55,10 @@ pub fn is_char_code(code: KeyCode) -> bool {
     matches!(code, KeyCode::Char(_))
 }
 
+pub fn is_numeric_keycode(code: KeyCode) -> bool {
+    matches!(code, KeyCode::Char(c) if c.is_ascii_digit())
+}
+
 pub fn is_backspace_code(code: KeyCode) -> bool {
     matches!(code, KeyCode::Backspace)
 }

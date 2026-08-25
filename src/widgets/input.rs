@@ -17,14 +17,21 @@ pub struct Input<'a> {
     placeholder: String,
     palette: Palette,
     input_state: &'a mut InputState,
+    show_cursor: bool,
 }
 
 impl<'a> Input<'a> {
-    pub fn new(placeholder: String, palette: Palette, input_state: &'a mut InputState) -> Self {
+    pub fn new(
+        placeholder: String,
+        palette: Palette,
+        input_state: &'a mut InputState,
+        show_cursor: bool,
+    ) -> Self {
         Input {
             placeholder,
             palette,
             input_state,
+            show_cursor,
         }
     }
 }
@@ -92,7 +99,7 @@ impl Widget for &Input<'_> {
         ))
         .render(inner, buf);
 
-        if self.input_state.is_focused() {
+        if self.input_state.is_focused() && self.show_cursor {
             let cursor_x = inner.left() + (cursor_position - view_offset) as u16;
             if cursor_x < inner.right() {
                 buf[(cursor_x, inner.top())].set_style(Style::default().bg(self.palette.accent));
