@@ -7,6 +7,7 @@ pub struct InputState {
     is_focused: bool,
     input_type: InputType,
     cursor_position: usize,
+    cursor_visibility_delay: usize,
 }
 
 impl InputState {
@@ -16,6 +17,7 @@ impl InputState {
             is_focused: false,
             input_type: InputType::Text,
             cursor_position: 0,
+            cursor_visibility_delay: 0,
         }
     }
 
@@ -74,6 +76,14 @@ impl InputState {
 
     pub fn get_cursor_position(&self) -> usize {
         self.cursor_position
+    }
+
+    pub fn get_cursor_visibility_delay(&self) -> usize {
+        self.cursor_visibility_delay
+    }
+
+    pub fn set_cursor_visibility_delay(&mut self, delay: usize) {
+        self.cursor_visibility_delay = delay;
     }
 }
 

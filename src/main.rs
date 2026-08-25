@@ -33,6 +33,8 @@ pub mod symbols;
 
 pub mod utils;
 
+pub mod constants;
+
 pub mod modals;
 
 use std::io::{Write, stderr, stdout};
@@ -42,6 +44,7 @@ use std::time::Duration;
 use anyhow::Result;
 use app::App;
 use clap::{Parser, Subcommand, builder::styling};
+use constants::TICK_RATE_MS;
 use event::{Event, EventHandler};
 use ratatui::{Terminal, backend::CrosstermBackend};
 use tui::Tui;
@@ -131,6 +134,7 @@ fn check_if_terminal() {
 fn main() -> Result<()> {
     let args = Cli::parse();
     check_if_terminal();
+
     println!("argus: {args:?}");
     // Create an application.
     let mut app = App::new();
@@ -138,7 +142,7 @@ fn main() -> Result<()> {
     // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(std::io::stdout());
     let terminal = Terminal::new(backend)?;
-    let events = EventHandler::new(250);
+    let events = EventHandler::new(TICK_RATE_MS);
     let mut tui = Tui::new(terminal, events);
     tui.enter()?;
     let mut app_state = AppState::new();

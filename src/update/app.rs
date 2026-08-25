@@ -77,9 +77,9 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, state: &mut AppState) {
 
     if app.is_settings_in_focus {
         if is_up_key(code) {
-            state.prev_settings(3);
+            state.prev_settings(4);
         } else if is_down_key(code) {
-            state.next_settings(3);
+            state.next_settings(4);
         }
         //The lft and right key logic can be combined to one and logic seems repetitive, but separating will make it easier to read and understand the logic.
         else if is_right_key(code) {
@@ -87,12 +87,15 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, state: &mut AppState) {
             let len = match row {
                 0 => app.themes.len(),
                 1 => app.menu.len().saturating_sub(1),
+                2 => 2,
                 _ => 1,
             };
             if len > 0 {
                 state.prev_settings_tile(row, len);
                 if row == 0 {
                     app.active_theme = state.active_theme();
+                } else if row == 2 {
+                    app.cursor_blink_enabled = state.settings_tile_selected(2) == Some(0);
                 }
             }
         } else if is_left_key(code) {
@@ -100,6 +103,7 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, state: &mut AppState) {
             let len = match row {
                 0 => app.themes.len(),
                 1 => app.menu.len().saturating_sub(1),
+                2 => 2,
                 _ => 1,
             };
             if len > 0 && state.settings_tile_selected(row) == Some(len - 1) {
@@ -109,6 +113,8 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, state: &mut AppState) {
                 state.next_settings_tile(row, len);
                 if row == 0 {
                     app.active_theme = state.active_theme();
+                } else if row == 2 {
+                    app.cursor_blink_enabled = state.settings_tile_selected(2) == Some(0);
                 }
             }
         } else if matches!(code, KeyCode::Char('m' | 'M')) {

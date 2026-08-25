@@ -98,8 +98,19 @@ impl Widget for &Input<'_> {
             Style::default().fg(text_color),
         ))
         .render(inner, buf);
-
-        if self.input_state.is_focused() && self.show_cursor {
+        #[allow(clippy::if_same_then_else)]
+        //keeping this to make the logic simple to read and understand
+        if self.input_state.is_focused()
+            && self.input_state.get_cursor_visibility_delay() == 0
+            && self.show_cursor
+        {
+            let cursor_x = inner.left() + (cursor_position - view_offset) as u16;
+            if cursor_x < inner.right() {
+                buf[(cursor_x, inner.top())].set_style(Style::default().bg(self.palette.accent));
+            }
+        } else if self.input_state.is_focused()
+            && self.input_state.get_cursor_visibility_delay() > 0
+        {
             let cursor_x = inner.left() + (cursor_position - view_offset) as u16;
             if cursor_x < inner.right() {
                 buf[(cursor_x, inner.top())].set_style(Style::default().bg(self.palette.accent));

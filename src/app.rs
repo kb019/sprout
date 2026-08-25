@@ -1,3 +1,4 @@
+use crate::constants::CURSOR_BLINK_TICKS;
 use crate::palette::Palette;
 use crate::sprout::{SproutPoints, generate_sprout_points};
 
@@ -36,6 +37,8 @@ pub struct App {
     pub display_delete_modal: bool,
 
     pub tick_count: u64,
+
+    pub cursor_blink_enabled: bool,
 }
 
 #[derive(Debug, Default)]
@@ -82,6 +85,7 @@ impl App {
         ];
         app.themes = vec!["Sprout", "Amber", "Mono"];
         app.goal_progress_options = vec!["Daily", "Weekly", "Monthly", "Yearly"];
+        app.cursor_blink_enabled = true;
         app
     }
 
@@ -147,7 +151,7 @@ impl App {
     /// Handles the tick event of the terminal.
     pub fn tick(&mut self) {
         self.tick_count = self.tick_count.saturating_add(1);
-        self.tick_count %= 2; // Reset tick_count after reaching 1000
+        self.tick_count %= CURSOR_BLINK_TICKS;
     }
 
     pub fn palette(&self) -> Palette {

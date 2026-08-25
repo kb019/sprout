@@ -51,37 +51,43 @@ pub fn render_settings(
     settings_tile_states: &mut [ListState],
 ) {
     let p = app.palette();
-    let simple_list =
-        SimpleList::new(
-            vec!["2", "2", "3"],
-            |index, item_area, buf, is_selected| match index {
-                0 => render_setting_accent(
-                    app,
-                    buf,
-                    item_area,
-                    is_selected,
-                    &mut settings_tile_states[0],
-                ),
-                1 => render_setting_dashboard(
-                    app,
-                    buf,
-                    item_area,
-                    is_selected,
-                    &mut settings_tile_states[1],
-                ),
-                2 => render_setting_reset(
-                    app,
-                    buf,
-                    item_area,
-                    is_selected,
-                    &mut settings_tile_states[2],
-                ),
-                _ => {}
-            },
-        )
-        .render_line()
-        .highlight_background_color(p.row_highlight)
-        .line_color(p.border);
+    let simple_list = SimpleList::new(
+        vec!["2", "2", "2", "3"],
+        |index, item_area, buf, is_selected| match index {
+            0 => render_setting_accent(
+                app,
+                buf,
+                item_area,
+                is_selected,
+                &mut settings_tile_states[0],
+            ),
+            1 => render_setting_dashboard(
+                app,
+                buf,
+                item_area,
+                is_selected,
+                &mut settings_tile_states[1],
+            ),
+            2 => render_setting_cursor_blink(
+                app,
+                buf,
+                item_area,
+                is_selected,
+                &mut settings_tile_states[2],
+            ),
+            3 => render_setting_reset(
+                app,
+                buf,
+                item_area,
+                is_selected,
+                &mut settings_tile_states[3],
+            ),
+            _ => {}
+        },
+    )
+    .render_line()
+    .highlight_background_color(p.row_highlight)
+    .line_color(p.border);
     *settings_state.offset_mut() = 0;
     frame.render_stateful_widget(simple_list, area, settings_state);
 }
@@ -133,6 +139,29 @@ fn render_setting_dashboard(
             tile_state,
             p,
         ),
+        TileType::Unbordered,
+        TileBorderType::Rounded,
+        Style::new().fg(p.accent),
+        tile_state,
+        p,
+    );
+}
+
+#[allow(clippy::needless_pass_by_ref_mut)]
+fn render_setting_cursor_blink(
+    app: &mut App,
+    buf: &mut Buffer,
+    area: Rect,
+    is_selected: bool,
+    tile_state: &mut ListState,
+) {
+    let p = app.palette();
+    render_setting_row(
+        buf,
+        area,
+        "Cursor blink",
+        "Enable or Disable cursor blinking",
+        build_items(&["On", "Off"], is_selected, tile_state, p),
         TileType::Unbordered,
         TileBorderType::Rounded,
         Style::new().fg(p.accent),
