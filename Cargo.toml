@@ -24,6 +24,8 @@ time = "0.3.55"
 unicode-width = "0.2.0"
 itertools = "0.14"
 chrono = "0.4.45"
+rusqlite = { version = "0.40.1", features = ["bundled"] }
+dirs = "5"
 
 [dev-dependencies]
 rstest = "0.26"

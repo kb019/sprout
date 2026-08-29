@@ -113,6 +113,9 @@ impl AppState {
     }
 
     pub fn next_heatmap_tile(&mut self, len: usize) {
+        if len == 0 {
+            return;
+        }
         let next = self
             .heatmap_tile_state
             .selected()
@@ -161,6 +164,9 @@ impl AppState {
     }
 
     pub fn next_dashboard_habit(&mut self, len: usize) {
+        if len == 0 {
+            return;
+        }
         let next = self
             .dashboard_habits_state
             .selected()

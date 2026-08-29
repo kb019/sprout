@@ -77,10 +77,10 @@ pub fn render_habit_tiles(app: &App, frame: &mut Frame, area: Rect, tile_state: 
         .habits
         .iter()
         .enumerate()
-        .map(|(i, menu_item)| {
+        .map(|(i, habit_item)| {
             let bold_modifier = selection_modifier(tile_state, i);
             TileItem::new(
-                Text::from(menu_item.clone())
+                Text::from(habit_item.name.clone())
                     .add_modifier(bold_modifier)
                     .left_aligned(),
             )

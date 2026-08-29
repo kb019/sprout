@@ -1,10 +1,11 @@
 use crate::app::App;
 use crate::palette::Palette;
 use crate::state::app::AppState;
-use crate::symbols::Symbols;
+use crate::symbols;
 use crate::utils::{focus_colors, render_ellipsis_if_overflow};
 use crate::widgets::simple_list::SimpleList;
 use crate::widgets::tile_list::{TileItem, TileList, TileType};
+use chrono::Local;
 use ratatui::Frame;
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Flex, Layout, Rect};
@@ -66,17 +67,22 @@ pub fn render_habits_list(
     habits_state: &mut ListState,
 ) {
     let p = app.palette();
-    let simple_list =
-        SimpleList::new(
-            vec!["2", "2", "2"],
-            |index, item_area, buf, is_selected| match index {
-                0 => render_habit_item(item_area, buf, is_selected, "Morning Run", true, p),
-                1 => render_habit_item(item_area, buf, is_selected, "No Sugar", false, p),
-                2 => render_habit_item(item_area, buf, is_selected, "Read", true, p),
-                _ => {}
-            },
-        )
-        .highlight_background_color(p.row_highlight);
+    let habits = app.habits.clone();
+    if habits.is_empty() {
+        let empty = ratatui::text::Text::from(
+            ratatui::text::Line::from(" No habits yet — press A to add one ")
+                .style(ratatui::style::Style::new().fg(p.fg_dim)),
+        );
+        frame.render_widget(empty, area);
+        return;
+    }
+    let heights: Vec<&str> = vec!["2"; habits.len()];
+    let simple_list = SimpleList::new(heights, move |index, item_area, buf, is_selected| {
+        if let Some(habit) = habits.get(index) {
+            render_habit_item(item_area, buf, is_selected, &habit.name, false, p);
+        }
+    })
+    .highlight_background_color(p.row_highlight);
     *habits_state.offset_mut() = 0;
     frame.render_stateful_widget(simple_list, area, habits_state);
 }
@@ -97,9 +103,9 @@ pub fn render_habit_item(
     .spacing(1);
     let [status_area, habit_name_area, streaks_buttons_area_] = area.layout(&horizontal_layout);
     let status_symbol = if is_completed {
-        Symbols::COMPLETED
+        symbols::COMPLETED
     } else {
-        Symbols::NOT_COMPLETED_CIRCLE
+        symbols::NOT_COMPLETED_CIRCLE
     };
     let status_color = if is_completed { p.accent } else { p.fg_dim };
     let status_span = Span::styled(status_symbol, Style::default().fg(status_color));
@@ -111,9 +117,9 @@ pub fn render_habit_item(
         Span::raw(" "),
         Span::styled(streak_count, Style::default().fg(p.amber)),
         Span::raw(" "),
-        Span::styled(Symbols::EDIT_ICON, Style::default().fg(p.fg_dim)),
+        Span::styled(symbols::EDIT_ICON, Style::default().fg(p.fg_dim)),
         Span::raw("  "),
-        Span::styled(Symbols::DELETE_ICON, Style::default().fg(p.fg_dim)),
+        Span::styled(symbols::DELETE_ICON, Style::default().fg(p.fg_dim)),
         Span::raw(" "),
     ])
     .right_aligned();
@@ -199,10 +205,11 @@ fn render_date_card(frame: &mut Frame, area: Rect, p: Palette) {
         .padding(Padding::new(1, 1, 0, 0));
     let date_block_inner_area = date_block.inner(area);
     frame.render_widget(date_block, area);
+    let today = Local::now().format("%Y/%m/%d").to_string();
     let date_lines = vec![
         TextLine::from(vec![Span::styled("TODAY", Style::default().fg(p.fg_dim))]),
         TextLine::from(vec![Span::styled(
-            "2024/06/05",
+            today,
             Style::default().fg(p.accent).add_modifier(Modifier::BOLD),
         )]),
     ];

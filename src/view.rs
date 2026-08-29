@@ -1,6 +1,7 @@
 mod dashboard;
 mod heatmap_ui;
 mod menu;
+pub mod modals;
 mod settings;
 mod stats;
 
@@ -12,8 +13,7 @@ use ratatui::style::Style;
 use ratatui::text::{Line as TextLine, Span};
 
 pub fn render(app: &mut App, frame: &mut Frame, app_state: &mut AppState) {
-    let vertical: Layout =
-        Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).spacing(1);
+    let vertical = Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).spacing(1);
     let horizontal =
         Layout::horizontal([Constraint::Percentage(20), Constraint::Percentage(80)]).spacing(1);
     let [top, main] = frame.area().layout(&vertical);

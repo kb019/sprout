@@ -1,4 +1,3 @@
-// use anyhow::{Context, Result};
 /// Application.
 pub mod app;
 
@@ -6,7 +5,7 @@ pub mod app;
 pub mod event;
 
 /// Widget renderer.
-pub mod ui;
+pub mod view;
 
 /// Terminal user interface.
 pub mod tui;
@@ -35,9 +34,12 @@ pub mod utils;
 
 pub mod constants;
 
-pub mod modals;
+pub mod model;
+
+pub mod controller;
 
 use std::io::{Write, stderr, stdout};
+use std::path::{Path, PathBuf};
 use std::thread;
 use std::time::Duration;
 
@@ -45,13 +47,16 @@ use anyhow::Result;
 use app::App;
 use clap::{Parser, Subcommand, builder::styling};
 use constants::TICK_RATE_MS;
-use event::{Event, EventHandler};
+use event::{AppEvent, EventHandler};
 use ratatui::{Terminal, backend::CrosstermBackend};
 use tui::Tui;
 
-use crate::state::app::AppState;
-use crate::state::modal::ModalState;
-use crate::update::handle;
+use crate::controller::Actions;
+use crate::model::habit::HabitDb;
+use crate::model::settings::SettingsDb;
+use crate::state::States;
+use crate::update::{handle, handle_add_habit_event};
+use crate::widgets::notifier::Notifier;
 
 const STYLES: styling::Styles = styling::Styles::styled()
     .header(styling::AnsiColor::Green.on_default().bold())
@@ -135,33 +140,49 @@ fn main() -> Result<()> {
     let args = Cli::parse();
     check_if_terminal();
 
-    println!("argus: {args:?}");
-    // Create an application.
-    let mut app = App::new();
+    let habit_db_path = PathBuf::from("habit.db");
+    let settings_db_path = Path::new("settings.db");
 
-    // Initialize the terminal user interface.
+    let _settings_db = SettingsDb::new(settings_db_path)?;
+
+    // Load existing habits once at startup, then let Actions handle subsequent writes.
+    let initial_habits = {
+        let habit_db = HabitDb::new(&habit_db_path)?;
+        habit_db.get_all_habits().unwrap_or_default()
+    };
+
+    println!("argus: {args:?}");
+
+    let mut app = App::new();
+    app.habits = initial_habits;
+
     let backend = CrosstermBackend::new(std::io::stdout());
     let terminal = Terminal::new(backend)?;
     let events = EventHandler::new(TICK_RATE_MS);
     let mut tui = Tui::new(terminal, events);
     tui.enter()?;
-    let mut app_state = AppState::new();
-    let mut modal_state = ModalState::new();
-    // Start the main loop.
+
+    let actions = Actions::new(tui.events.sender.clone(), habit_db_path);
+    let mut states = States::new();
+    let mut notifier = Notifier::new();
+
     while !app.should_quit {
-        // Render the user interface.
-        tui.draw(&mut app, &mut app_state, &mut modal_state)?;
-        // Handle events.
+        tui.draw(&mut app, &mut states, &mut notifier)?;
         match tui.events.next()? {
-            Event::Key(key_event) => {
-                handle(&mut app, key_event, &mut app_state, &mut modal_state);
+            AppEvent::Key(key_event) => {
+                handle(&mut app, key_event, &mut states, &actions);
             }
-            Event::Tick => app.tick(),
-            Event::Mouse(_) | Event::Resize(_, _) => {}
+            AppEvent::Tick => {
+                app.tick();
+                notifier.tick();
+            }
+            AppEvent::Mouse(_) | AppEvent::Resize(_, _) => {}
+            AppEvent::AddHabit(event) => {
+                handle_add_habit_event(&mut app, event, &mut states, &mut notifier);
+            }
         }
     }
 
-    // Exit the user interface.
     tui.exit()?;
     Ok(())
 }

@@ -19,6 +19,7 @@ pub struct Palette {
     /// Fixed fire/streak indicator — stays amber regardless of accent theme.
     pub amber: Color,
     pub danger: Color,
+    pub danger_bg: Color,
     pub soil: Color,
     pub dot: Color,
 }
@@ -43,6 +44,7 @@ impl Palette {
         ],
         amber: Color::Rgb(255, 190, 60),
         danger: Color::Rgb(194, 84, 84),
+        danger_bg: Color::Rgb(42, 20, 20),
         soil: Color::Rgb(107, 86, 54),
         dot: Color::Rgb(21, 32, 25),
     };
@@ -66,6 +68,7 @@ impl Palette {
         ],
         amber: Color::Rgb(255, 190, 60),
         danger: Color::Rgb(194, 84, 84),
+        danger_bg: Color::Rgb(42, 20, 20),
         soil: Color::Rgb(107, 86, 54),
         dot: Color::Rgb(21, 32, 25),
     };
@@ -89,6 +92,7 @@ impl Palette {
         ],
         amber: Color::Rgb(255, 190, 60),
         danger: Color::Rgb(194, 84, 84),
+        danger_bg: Color::Rgb(42, 20, 20),
         soil: Color::Rgb(107, 86, 54),
         dot: Color::Rgb(21, 32, 25),
     };

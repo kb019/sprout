@@ -1,6 +1,8 @@
 use crate::app::App;
+use crate::state::States;
 use crate::state::modal::ModalState;
-use crate::symbols::Symbols;
+use crate::symbols;
+use crate::utils::progress;
 use crate::widgets::input::Input;
 use crate::widgets::simple_list::SimpleList;
 use crate::widgets::tile_list::{TileDirection, TileItem, TileList, TileType};
@@ -11,7 +13,7 @@ use ratatui::style::{Color, Modifier, Style, Stylize};
 use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, BorderType, Borders, Fill, ListState, Padding, Widget};
 
-pub fn render_modals(app: &mut App, frame: &mut Frame, modal_state: &mut ModalState) {
+pub fn render_modals(app: &mut App, frame: &mut Frame, states: &mut States) {
     let p = app.palette();
     let modal_block = Block::default()
         .borders(Borders::ALL)
@@ -47,11 +49,10 @@ pub fn render_modals(app: &mut App, frame: &mut Frame, modal_state: &mut ModalSt
         .set_symbol(" ")
         .set_style(Style::new().fg(p.accent));
 
-    render_add_modal(app, frame, modal_inner_area, modal_state);
+    render_add_modal(app, frame, modal_inner_area, states);
 }
 
-fn render_add_modal(app: &mut App, frame: &mut Frame, area: Rect, modal_state: &mut ModalState) {
-    let button_state = modal_state.button_state_mut();
+fn render_add_modal(app: &mut App, frame: &mut Frame, area: Rect, states: &mut States) {
     let vertical_layout = Layout::vertical([
         Constraint::Length(2),
         Constraint::Fill(1),
@@ -65,8 +66,8 @@ fn render_add_modal(app: &mut App, frame: &mut Frame, area: Rect, modal_state: &
 
     frame.render_widget(content_block, add_content_area);
     render_title(app, frame, title_area);
-    render_footer(app, frame, footer_area, button_state);
-    render_add_content(app, frame, add_content_inner_area, modal_state);
+    render_add_content(app, frame, add_content_inner_area, &mut states.modal_state);
+    render_footer(app, frame, footer_area, states);
 }
 
 #[allow(clippy::needless_pass_by_ref_mut)]
@@ -157,7 +158,7 @@ fn render_add_content(app: &mut App, frame: &mut Frame, area: Rect, modal_state:
 }
 
 #[allow(clippy::needless_pass_by_ref_mut)]
-fn render_footer(app: &mut App, frame: &mut Frame, area: Rect, button_state: &mut ListState) {
+fn render_footer(app: &mut App, frame: &mut Frame, area: Rect, states: &mut States) {
     let p = app.palette();
 
     let border_top = Block::default()
@@ -167,29 +168,49 @@ fn render_footer(app: &mut App, frame: &mut Frame, area: Rect, button_state: &mu
         .padding(Padding::new(0, 0, 0, 0));
     let footer_inner_area = border_top.inner(area);
     frame.render_widget(border_top, area);
-    let selected = button_state.selected().unwrap_or(0);
-    let tile_items: Vec<TileItem> = ["Add", "Cancel"]
-        .iter()
+
+    let is_adding = states.add_habit_state.is_adding_habit();
+
+    let add_text = if is_adding {
+        Text::from(Line::from(vec![
+            Span::styled(progress(app), Style::new().fg(p.amber)),
+            Span::raw(" Add"),
+        ]))
+    } else {
+        Text::from("Add")
+    };
+
+    let add_modal_state = states.modal_state.add_modal_state_mut();
+    let selected = add_modal_state.selected_button();
+    let tile_items: Vec<TileItem> = vec![add_text, Text::from("Cancel")]
+        .into_iter()
         .enumerate()
-        .map(|(i, &label)| {
+        .map(|(i, text)| {
             if i == selected {
-                TileItem::new(
-                    Text::from(label)
+                let text = if i == 0 && is_adding {
+                    text.add_modifier(Modifier::BOLD).bg(p.selection).centered()
+                } else {
+                    text.fg(p.accent)
                         .add_modifier(Modifier::BOLD)
                         .bg(p.selection)
-                        .centered(),
-                )
+                        .centered()
+                };
+                TileItem::new(text)
             } else {
-                TileItem::new(Text::from(label).centered())
+                TileItem::new(text.centered())
             }
         })
         .collect();
     let tile_list = TileList::new(tile_items)
         .tile_type(TileType::Unbordered)
         .style(Style::new().fg(p.fg_dim))
-        .highlight_style(Style::new().fg(p.accent))
+        .highlight_style(Style::new())
         .direction(TileDirection::RightToLeft);
-    frame.render_stateful_widget(tile_list, footer_inner_area, button_state);
+    frame.render_stateful_widget(
+        tile_list,
+        footer_inner_area,
+        add_modal_state.button_state_mut(),
+    );
 }
 
 #[allow(clippy::needless_pass_by_ref_mut)]
@@ -199,7 +220,7 @@ fn render_title(app: &mut App, frame: &mut Frame, area: Rect) {
     let [title_content_area, close_button_area] = area.layout(&horizontal_layout);
     let title_text = Text::from(Line::from(" Add habit")).style(Style::new().fg(p.accent));
     let cross_mark =
-        Line::from(vec![Span::from(Symbols::CROSS_MARK)]).style(Style::new().fg(p.fg_dim));
+        Line::from(vec![Span::from(symbols::CROSS_MARK)]).style(Style::new().fg(p.fg_dim));
     let border_bottom = Block::default()
         .borders(Borders::BOTTOM)
         .border_type(BorderType::Plain)

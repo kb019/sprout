@@ -1,17 +1,16 @@
 use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::app::App;
-use crate::state::app::AppState;
+use crate::state::States;
 use crate::utils::{is_down_key, is_left_key, is_right_key, is_up_key};
 
-// Explicit returns ensure that adding code later in this function
-// does not accidentally change the control flow of the current focus handling.
 #[allow(clippy::needless_return)]
-pub fn handle_app(app: &mut App, key_event: KeyEvent, state: &mut AppState) {
+pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States) {
     if app.is_modal_in_focus() {
         return;
     }
     let code = key_event.code;
+    let state = &mut states.app_state;
 
     match code {
         KeyCode::Esc | KeyCode::Char('q' | 'Q') => {
@@ -35,9 +34,7 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, state: &mut AppState) {
             state.next_menu(app.menu.len());
         } else if is_right_key(code) {
             match state.menu_state().selected() {
-                Some(0) => {
-                    app.focus_dashboard();
-                }
+                Some(0) => app.focus_dashboard(),
                 Some(1) => app.focus_heatmap(),
                 Some(3) => app.focus_settings(),
                 _ => {}
@@ -55,7 +52,6 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, state: &mut AppState) {
             } else {
                 state.prev_heatmap_tile(app.habits.len());
             }
-            state.prev_heatmap_tile(app.habits.len());
         }
         return;
     }
@@ -64,9 +60,9 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, state: &mut AppState) {
         if is_left_key(code) {
             app.focus_menu();
         } else if is_up_key(code) {
-            state.prev_dashboard_habit(3);
+            state.prev_dashboard_habit(app.habits.len());
         } else if is_down_key(code) {
-            state.next_dashboard_habit(3);
+            state.next_dashboard_habit(app.habits.len());
         } else if is_right_key(code) {
             app.focus_goal_progress();
         } else if matches!(code, KeyCode::Char('+')) {
@@ -80,9 +76,7 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, state: &mut AppState) {
             state.prev_settings(4);
         } else if is_down_key(code) {
             state.next_settings(4);
-        }
-        //The lft and right key logic can be combined to one and logic seems repetitive, but separating will make it easier to read and understand the logic.
-        else if is_right_key(code) {
+        } else if is_right_key(code) {
             let row = state.settings_state().selected().unwrap_or(0);
             let len = match row {
                 0 => app.themes.len(),
@@ -124,8 +118,9 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, state: &mut AppState) {
     }
 
     if app.is_goal_progress_in_focus {
+        let options_len = app.goal_progress_options.len();
         if is_right_key(code) {
-            state.next_goal_progress(app.goal_progress_options.len());
+            state.next_goal_progress(options_len);
         } else if is_left_key(code) {
             if state.goal_progress_tile_state().selected().unwrap_or(0) == 0 {
                 app.focus_dashboard();
@@ -134,7 +129,7 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, state: &mut AppState) {
             }
         } else if is_down_key(code) {
             let tab = state.goal_progress_tile_state().selected().unwrap_or(0);
-            state.next_goal_progress_row(tab, app.goal_progress_options.len());
+            state.next_goal_progress_row(tab, options_len);
         } else if is_up_key(code) {
             let tab = state.goal_progress_tile_state().selected().unwrap_or(0);
             state.prev_goal_progress_row(tab);

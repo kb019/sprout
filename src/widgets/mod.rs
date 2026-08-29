@@ -5,3 +5,5 @@ pub mod tile_list;
 pub mod simple_list;
 
 pub mod input;
+
+pub mod notifier;

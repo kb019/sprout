@@ -6,10 +6,12 @@ use std::{
 
 use anyhow::Result;
 use ratatui::crossterm::event::{self, Event as CrosstermEvent, KeyEvent, MouseEvent};
+pub mod add_habit;
+pub use add_habit::AddHabitEvent;
 
 /// Terminal events.
-#[derive(Clone, Copy, Debug)]
-pub enum Event {
+#[derive(Clone, Debug)]
+pub enum AppEvent {
     /// Terminal tick.
     Tick,
     /// Key press.
@@ -18,6 +20,8 @@ pub enum Event {
     Mouse(MouseEvent),
     /// Terminal resize.
     Resize(u16, u16),
+
+    AddHabit(AddHabitEvent),
 }
 
 /// Terminal event handler.
@@ -25,9 +29,9 @@ pub enum Event {
 pub struct EventHandler {
     /// Event sender channel.
     #[allow(dead_code)]
-    sender: mpsc::Sender<Event>,
+    pub sender: mpsc::Sender<AppEvent>,
     /// Event receiver channel.
-    receiver: mpsc::Receiver<Event>,
+    receiver: mpsc::Receiver<AppEvent>,
     /// Event handler thread.
     #[allow(dead_code)]
     handler: thread::JoinHandle<()>,
@@ -51,20 +55,22 @@ impl EventHandler {
                         match event::read().expect("unable to read event") {
                             CrosstermEvent::Key(e) => {
                                 if e.kind == event::KeyEventKind::Press {
-                                    sender.send(Event::Key(e))
+                                    sender.send(AppEvent::Key(e))
                                 } else {
                                     Ok(()) // ignore KeyEventKind::Release on windows
                                 }
                             }
-                            CrosstermEvent::Mouse(e) => sender.send(Event::Mouse(e)),
-                            CrosstermEvent::Resize(w, h) => sender.send(Event::Resize(w, h)),
+                            CrosstermEvent::Mouse(e) => sender.send(AppEvent::Mouse(e)),
+                            CrosstermEvent::Resize(w, h) => sender.send(AppEvent::Resize(w, h)),
                             _ => Ok(()),
                         }
                         .expect("failed to send terminal event");
                     }
 
                     if last_tick.elapsed() >= tick_rate {
-                        sender.send(Event::Tick).expect("failed to send tick event");
+                        sender
+                            .send(AppEvent::Tick)
+                            .expect("failed to send tick event");
                         last_tick = Instant::now();
                     }
                 }
@@ -81,7 +87,7 @@ impl EventHandler {
     ///
     /// This function will always block the current thread if
     /// there is no data available and it's possible for more data to be sent.
-    pub fn next(&self) -> Result<Event> {
+    pub fn next(&self) -> Result<AppEvent> {
         Ok(self.receiver.recv()?)
     }
 }

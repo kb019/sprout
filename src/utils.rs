@@ -1,3 +1,4 @@
+use crate::app::App;
 use crate::palette::Palette;
 use crossterm::event::KeyCode;
 use ratatui::style::{Color, Modifier};
@@ -69,4 +70,9 @@ pub fn get_character_from_keycode(code: KeyCode) -> Option<char> {
     } else {
         None
     }
+}
+
+pub fn progress(app: &mut App) -> String {
+    let progress_dots = vec!["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+    progress_dots[app.progress_tick_count as usize].to_string()
 }

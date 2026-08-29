@@ -1,4 +1,5 @@
-use crate::constants::CURSOR_BLINK_TICKS;
+use crate::constants::{CURSOR_BLINK_TICKS, PROGRESS_LOAD_TICKS};
+use crate::model::habit::Habit;
 use crate::palette::Palette;
 use crate::sprout::{SproutPoints, generate_sprout_points};
 
@@ -14,7 +15,7 @@ pub struct App {
     /// menu items
     pub menu: Vec<&'static str>,
 
-    pub habits: Vec<String>,
+    pub habits: Vec<Habit>,
 
     pub themes: Vec<&'static str>,
 
@@ -37,6 +38,8 @@ pub struct App {
     pub display_delete_modal: bool,
 
     pub tick_count: u64,
+
+    pub progress_tick_count: u64,
 
     pub cursor_blink_enabled: bool,
 }
@@ -76,13 +79,7 @@ impl App {
         }
         app.is_menu_in_focus = true;
         app.menu = vec!["Dashboard", "Heatmap", "Stats", "Settings"];
-        app.habits = vec![
-            "All habits".to_string(),
-            "Reading".to_string(),
-            "Pushups".to_string(),
-            "Meditation".to_string(),
-            "loooooooooooooooooogyyggggggggggggggggggggg".to_string(),
-        ];
+        app.habits = vec![];
         app.themes = vec!["Sprout", "Amber", "Mono"];
         app.goal_progress_options = vec!["Daily", "Weekly", "Monthly", "Yearly"];
         app.cursor_blink_enabled = true;
@@ -152,6 +149,8 @@ impl App {
     pub fn tick(&mut self) {
         self.tick_count = self.tick_count.saturating_add(1);
         self.tick_count %= CURSOR_BLINK_TICKS;
+        self.progress_tick_count = self.progress_tick_count.saturating_add(1);
+        self.progress_tick_count %= PROGRESS_LOAD_TICKS;
     }
 
     pub fn palette(&self) -> Palette {

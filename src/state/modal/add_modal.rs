@@ -1,18 +1,21 @@
+use ratatui::widgets::ListState;
+
 use crate::state::input::{InputState, InputType};
 
-//0 is habit field
-//1 is daily goal field
-//2 is weekly goal field
-//3 is monthly goal field
-//4 is yea  rly goal field
+// current_field_focus:
+// 0 = habit name input
+// 1 = daily goal input
+// 2 = weekly goal input
+// 3 = monthly goal input
+// 4 = yearly goal input
 pub struct AddModalState {
     current_field_focus: usize,
     habit_name_input_state: InputState,
     daily_goal_input_state: InputState,
     weekly_goal_input_state: InputState,
-
     monthly_goal_input_state: InputState,
     yearly_goal_input_state: InputState,
+    button_state: ListState, // 0 = Add, 1 = Cancel
 }
 
 impl AddModalState {
@@ -24,6 +27,7 @@ impl AddModalState {
             weekly_goal_input_state: InputState::new(),
             monthly_goal_input_state: InputState::new(),
             yearly_goal_input_state: InputState::new(),
+            button_state: ListState::default(),
         };
 
         state.focus_input_field();
@@ -43,9 +47,11 @@ impl AddModalState {
             .yearly_goal_input_state
             .set_input_type(InputType::Number);
         state.yearly_goal_input_state.set_max_length(10);
-
+        state.button_state.select(Some(0)); // Add button selected initially
         state
     }
+
+    // --- field focus ---
 
     pub fn get_current_field_focus(&self) -> usize {
         self.current_field_focus
@@ -71,26 +77,18 @@ impl AddModalState {
     }
 
     pub fn focus_input_field(&mut self) {
-        self.reset_foculs_for_all_input_fields();
-        let current_focus_field = self.current_field_focus;
-        if current_focus_field == 0 {
-            self.habit_name_input_state.set_focus(true);
-        }
-        if current_focus_field == 1 {
-            self.daily_goal_input_state.set_focus(true);
-        }
-        if current_focus_field == 2 {
-            self.weekly_goal_input_state.set_focus(true);
-        }
-        if current_focus_field == 3 {
-            self.monthly_goal_input_state.set_focus(true);
-        }
-        if current_focus_field == 4 {
-            self.yearly_goal_input_state.set_focus(true);
+        self.unfocus_all_inputs();
+        match self.current_field_focus {
+            0 => self.habit_name_input_state.set_focus(true),
+            1 => self.daily_goal_input_state.set_focus(true),
+            2 => self.weekly_goal_input_state.set_focus(true),
+            3 => self.monthly_goal_input_state.set_focus(true),
+            4 => self.yearly_goal_input_state.set_focus(true),
+            _ => {}
         }
     }
 
-    fn reset_foculs_for_all_input_fields(&mut self) {
+    pub fn unfocus_all_inputs(&mut self) {
         self.habit_name_input_state.set_focus(false);
         self.daily_goal_input_state.set_focus(false);
         self.weekly_goal_input_state.set_focus(false);
@@ -98,9 +96,41 @@ impl AddModalState {
         self.yearly_goal_input_state.set_focus(false);
     }
 
+    // --- button navigation (TileList: 0 = Add, 1 = Cancel) ---
+
+    pub fn button_state_mut(&mut self) -> &mut ListState {
+        &mut self.button_state
+    }
+
+    pub fn selected_button(&self) -> usize {
+        self.button_state.selected().unwrap_or(0)
+    }
+
+    pub fn next_button(&mut self) {
+        let next = self
+            .button_state
+            .selected()
+            .map(|i| (i + 1).min(1))
+            .unwrap_or(0);
+        self.button_state.select(Some(next));
+    }
+
+    pub fn prev_button(&mut self) {
+        let prev = self
+            .button_state
+            .selected()
+            .map(|i| i.saturating_sub(1))
+            .unwrap_or(0);
+        self.button_state.select(Some(prev));
+    }
+
+    // --- reset ---
+
     pub fn reset(&mut self) {
         *self = Self::new();
     }
+
+    // --- input state accessors ---
 
     pub fn habit_name_input_state_mut(&mut self) -> &mut InputState {
         &mut self.habit_name_input_state
