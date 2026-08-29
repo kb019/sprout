@@ -37,14 +37,14 @@ impl Notifier {
 
     pub fn notify_success(&mut self, message: &str) {
         self.messages.push(NotifierMessage {
-            message: format!("{} {}", symbols::CHECK_MARK, message),
+            message: format!("{}  {}", symbols::CHECK_MARK, message),
             is_error: false,
         });
     }
 
     pub fn notify_error(&mut self, message: &str) {
         self.messages.push(NotifierMessage {
-            message: format!("{} {}", symbols::CROSS_MARK, message),
+            message: format!("{}  {}", symbols::CROSS_MARK, message),
             is_error: true,
         });
     }
