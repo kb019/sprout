@@ -26,7 +26,8 @@ impl Actions {
         self.add_habit_action.add_habit(new_habit);
     }
 
-    pub fn log_habit(&self, habit_id: i32, progress: i32) {
-        self.log_habit_action.log_habit(habit_id, progress);
+    pub fn log_habit(&self, habit_id: i32, completed: i32, progress: i32) {
+        self.log_habit_action
+            .log_habit(habit_id, completed, progress);
     }
 }

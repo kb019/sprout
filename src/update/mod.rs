@@ -58,13 +58,29 @@ pub fn handle_log_habit_event(
             } else {
                 app.completed_habits.remove(&log.habit_id);
             }
-            let status = if log.completed {
-                "completed"
-            } else {
-                "uncompleted"
-            };
             if let Some(habit) = app.habits.iter().find(|h| h.id == log.habit_id) {
-                notifier.notify_success(&format!("{} marked as {}", habit.name, status));
+                let has_goals = habit.daily_goal > 0
+                    || habit.weekly_goal > 0
+                    || habit.monthly_goal > 0
+                    || habit.yearly_goal > 0;
+                let message = if has_goals {
+                    format!(
+                        "{} - {} units updated successfully",
+                        habit.name, log.progress
+                    )
+                } else {
+                    let status = if log.completed {
+                        "completed"
+                    } else {
+                        "uncompleted"
+                    };
+                    format!("{} marked as {}", habit.name, status)
+                };
+                notifier.notify_success(&message);
+            }
+            if app.progress_modal_for_habit_id == Some(log.habit_id) {
+                app.hide_log_progress_modal();
+                states.modal_state.reset();
             }
             states.log_habit_state.stop_logging(log.habit_id);
         }

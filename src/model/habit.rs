@@ -12,6 +12,7 @@ pub struct HabitLog {
     pub habit_id: i32,
     pub date: String,
     pub completed: bool,
+    pub progress: i32,
 }
 
 #[derive(Debug, Clone)]
@@ -206,7 +207,12 @@ impl HabitDb {
         Ok(streak)
     }
 
-    pub fn log_habit_progress(&mut self, habit_id: i32, progress: i32) -> Result<HabitLog> {
+    pub fn log_habit_progress(
+        &mut self,
+        habit_id: i32,
+        completed: i32,
+        progress: i32,
+    ) -> Result<HabitLog> {
         let tx = self.conn.transaction().with_context(|| {
             format!(
                 "Failed to begin transaction for log_habit_progress habit_id={}",
@@ -214,33 +220,19 @@ impl HabitDb {
             )
         })?;
 
-        let currently_completed = match tx.query_row(
-            "SELECT completed FROM habit_log WHERE habit_id = ?1 AND date = date('now')",
-            params![habit_id],
-            |row| row.get::<_, i32>(0),
-        ) {
-            Ok(v) => v != 0,
-            Err(Error::QueryReturnedNoRows) => false,
-            Err(e) => {
-                return Err(e).with_context(|| {
-                    format!("Failed to read completion state for habit_id={}", habit_id)
-                });
-            }
-        };
-
         tx.execute(
             "INSERT INTO habit_log (habit_id, date, completed, progress)
              VALUES (?1, date('now'), ?2, ?3)
              ON CONFLICT(habit_id, date) DO UPDATE SET
                  completed = excluded.completed,
                  progress  = excluded.progress",
-            params![habit_id, !currently_completed as i32, progress],
+            params![habit_id, completed, progress],
         )
         .with_context(|| format!("Failed to upsert habit_log for habit_id={}", habit_id))?;
 
         let log = tx
             .query_row(
-                "SELECT id, habit_id, date, completed FROM habit_log \
+                "SELECT id, habit_id, date, completed, progress FROM habit_log \
                  WHERE habit_id = ?1 AND date = date('now')",
                 params![habit_id],
                 |row| {
@@ -249,6 +241,7 @@ impl HabitDb {
                         habit_id: row.get(1)?,
                         date: row.get(2)?,
                         completed: row.get::<_, i32>(3)? != 0,
+                        progress: row.get(4)?,
                     })
                 },
             )

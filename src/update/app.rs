@@ -81,7 +81,11 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
                     || habit.daily_goal > 0;
                 let is_habit_currently_logging = states.log_habit_state.is_habit_logging(habit.id);
                 if !should_show_progress_modal && !is_habit_currently_logging {
-                    actions.log_habit(habit.id, 1);
+                    let is_completed = app.completed_habits.contains(&habit.id);
+                    actions.log_habit(habit.id, if is_completed { 0 } else { 1 }, 0);
+                }
+                if should_show_progress_modal && !is_habit_currently_logging {
+                    app.show_log_progress_modal(habit.id);
                 }
             }
         }

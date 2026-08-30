@@ -46,6 +46,8 @@ pub struct App {
     pub progress_tick_count: u64,
 
     pub cursor_blink_enabled: bool,
+
+    pub progress_modal_for_habit_id: Option<i32>,
 }
 
 #[derive(Debug, Default)]
@@ -90,8 +92,18 @@ impl App {
         app
     }
 
+    pub fn show_log_progress_modal(&mut self, habit_id: i32) {
+        self.progress_modal_for_habit_id = Some(habit_id);
+    }
+
     pub fn is_modal_in_focus(&self) -> bool {
-        self.display_add_modal || self.display_delete_modal
+        self.display_add_modal
+            || self.display_delete_modal
+            || self.progress_modal_for_habit_id.is_some()
+    }
+
+    pub fn hide_log_progress_modal(&mut self) {
+        self.progress_modal_for_habit_id = None;
     }
 
     pub fn show_delete_modal(&mut self) {
@@ -112,6 +124,7 @@ impl App {
     pub fn hide_all_modals(&mut self) {
         self.display_add_modal = false;
         self.display_delete_modal = false;
+        self.progress_modal_for_habit_id = None;
     }
     pub fn focus_menu(&mut self) {
         self.remove_all_focus();

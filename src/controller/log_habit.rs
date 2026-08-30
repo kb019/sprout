@@ -15,7 +15,7 @@ impl LogHabitAction {
         Self { sender, db_path }
     }
 
-    pub fn log_habit(&self, habit_id: i32, progress: i32) {
+    pub fn log_habit(&self, habit_id: i32, completed: i32, progress: i32) {
         let sender = self.sender.clone();
         let path = self.db_path.clone();
         let _ = sender.send(AppEvent::LogHabit(LogHabitEvent::Logging(habit_id)));
@@ -30,9 +30,8 @@ impl LogHabitAction {
                     return;
                 }
             };
-            match habit_db.log_habit_progress(habit_id, progress) {
+            match habit_db.log_habit_progress(habit_id, completed, progress) {
                 Ok(log) => {
-                    // thread::sleep(std::time::Duration::from_millis(5000));
                     let _ = sender.send(AppEvent::LogHabit(LogHabitEvent::Logged(log)));
                 }
                 Err(e) => {

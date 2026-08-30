@@ -148,8 +148,8 @@ fn main() -> Result<()> {
     // Load existing habits and today's completion state once at startup.
     let (initial_habits, initial_completed) = {
         let habit_db = HabitDb::new(&habit_db_path)?;
-        let habits = habit_db.get_all_habits().unwrap_or_default();
-        let completed = habit_db.get_completed_habit_ids_today().unwrap_or_default();
+        let habits = habit_db.get_all_habits()?;
+        let completed = habit_db.get_completed_habit_ids_today()?;
         (habits, completed)
     };
 
