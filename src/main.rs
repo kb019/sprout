@@ -55,7 +55,7 @@ use crate::controller::Actions;
 use crate::model::habit::HabitDb;
 use crate::model::settings::SettingsDb;
 use crate::state::States;
-use crate::update::{handle, handle_add_habit_event};
+use crate::update::{handle, handle_add_habit_event, handle_log_habit_event};
 use crate::widgets::notifier::Notifier;
 
 const STYLES: styling::Styles = styling::Styles::styled()
@@ -137,7 +137,7 @@ fn check_if_terminal() {
 }
 
 fn main() -> Result<()> {
-    let args = Cli::parse();
+    let _args = Cli::parse();
     check_if_terminal();
 
     let habit_db_path = PathBuf::from("habit.db");
@@ -145,16 +145,17 @@ fn main() -> Result<()> {
 
     let _settings_db = SettingsDb::new(settings_db_path)?;
 
-    // Load existing habits once at startup, then let Actions handle subsequent writes.
-    let initial_habits = {
+    // Load existing habits and today's completion state once at startup.
+    let (initial_habits, initial_completed) = {
         let habit_db = HabitDb::new(&habit_db_path)?;
-        habit_db.get_all_habits().unwrap_or_default()
+        let habits = habit_db.get_all_habits().unwrap_or_default();
+        let completed = habit_db.get_completed_habit_ids_today().unwrap_or_default();
+        (habits, completed)
     };
-
-    println!("argus: {args:?}");
 
     let mut app = App::new();
     app.habits = initial_habits;
+    app.completed_habits = initial_completed.into_iter().collect();
 
     let backend = CrosstermBackend::new(std::io::stdout());
     let terminal = Terminal::new(backend)?;
@@ -179,6 +180,9 @@ fn main() -> Result<()> {
             AppEvent::Mouse(_) | AppEvent::Resize(_, _) => {}
             AppEvent::AddHabit(event) => {
                 handle_add_habit_event(&mut app, event, &mut states, &mut notifier);
+            }
+            AppEvent::LogHabit(event) => {
+                handle_log_habit_event(&mut app, event, &mut states, &mut notifier);
             }
         }
     }

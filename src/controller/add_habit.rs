@@ -20,7 +20,7 @@ impl AddHabitAction {
         let path = self.db_path.clone();
         let _ = sender.send(AppEvent::AddHabit(AddHabitEvent::Adding));
         thread::spawn(move || {
-            let habit_db = match HabitDb::new(&path) {
+            let mut habit_db = match HabitDb::new(&path) {
                 Ok(h) => h,
                 Err(e) => {
                     let _ = sender.send(AppEvent::AddHabit(AddHabitEvent::Failed(e.to_string())));

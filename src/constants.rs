@@ -15,4 +15,4 @@ pub const CURSOR_TYPING_DELAY: usize = 5; // 5 × 100ms = 500ms
 // pub const CURSOR_DELAY_THRESHOLD: usize = 2;
 pub const CURSOR_DELAY_THRESHOLD: usize = 3;
 
-pub const NOTIFICATION_DISPLAY_TICKS: u64 = 60; // 30 × 60ms 
+pub const NOTIFICATION_DISPLAY_TICKS: u64 = 50;

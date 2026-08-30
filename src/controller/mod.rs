@@ -1,4 +1,5 @@
 mod add_habit;
+mod log_habit;
 
 use std::path::PathBuf;
 use std::sync::mpsc;
@@ -6,19 +7,26 @@ use std::sync::mpsc;
 use crate::event::AppEvent;
 use crate::model::habit::NewHabit;
 use add_habit::AddHabitAction;
+use log_habit::LogHabitAction;
 
 pub struct Actions {
     add_habit_action: AddHabitAction,
+    log_habit_action: LogHabitAction,
 }
 
 impl Actions {
     pub fn new(sender: mpsc::Sender<AppEvent>, db_path: PathBuf) -> Self {
         Self {
-            add_habit_action: AddHabitAction::new(sender, db_path),
+            add_habit_action: AddHabitAction::new(sender.clone(), db_path.clone()),
+            log_habit_action: LogHabitAction::new(sender, db_path),
         }
     }
 
     pub fn add_habit(&self, new_habit: NewHabit) {
         self.add_habit_action.add_habit(new_habit);
+    }
+
+    pub fn log_habit(&self, habit_id: i32, progress: i32) {
+        self.log_habit_action.log_habit(habit_id, progress);
     }
 }

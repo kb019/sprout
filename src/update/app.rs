@@ -1,11 +1,12 @@
 use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::app::App;
+use crate::controller::Actions;
 use crate::state::States;
 use crate::utils::{is_down_key, is_left_key, is_right_key, is_up_key};
 
 #[allow(clippy::needless_return)]
-pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States) {
+pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actions: &Actions) {
     if app.is_modal_in_focus() {
         return;
     }
@@ -67,6 +68,22 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States) {
             app.focus_goal_progress();
         } else if matches!(code, KeyCode::Char('+')) {
             app.show_add_modal();
+        } else if matches!(code, KeyCode::Enter) {
+            //check if the habit is selected or hughlighlted currently
+            let current_habit_index = state.dashboard_habits_state().selected();
+            if let Some(habit_index) = current_habit_index
+                && habit_index < app.habits.len()
+            {
+                let habit = &app.habits[habit_index];
+                let should_show_progress_modal = habit.monthly_goal > 0
+                    || habit.yearly_goal > 0
+                    || habit.weekly_goal > 0
+                    || habit.daily_goal > 0;
+                let is_habit_currently_logging = states.log_habit_state.is_habit_logging(habit.id);
+                if !should_show_progress_modal && !is_habit_currently_logging {
+                    actions.log_habit(habit.id, 1);
+                }
+            }
         }
         return;
     }

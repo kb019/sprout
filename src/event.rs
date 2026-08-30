@@ -9,6 +9,9 @@ use ratatui::crossterm::event::{self, Event as CrosstermEvent, KeyEvent, MouseEv
 pub mod add_habit;
 pub use add_habit::AddHabitEvent;
 
+pub mod log_habit;
+pub use log_habit::LogHabitEvent;
+
 /// Terminal events.
 #[derive(Clone, Debug)]
 pub enum AppEvent {
@@ -22,6 +25,7 @@ pub enum AppEvent {
     Resize(u16, u16),
 
     AddHabit(AddHabitEvent),
+    LogHabit(LogHabitEvent),
 }
 
 /// Terminal event handler.

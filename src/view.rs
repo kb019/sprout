@@ -6,33 +6,33 @@ mod settings;
 mod stats;
 
 use crate::app::App;
-use crate::state::app::AppState;
+use crate::state::States;
 use ratatui::Frame;
 use ratatui::layout::{Constraint, Layout, Rect};
 use ratatui::style::Style;
 use ratatui::text::{Line as TextLine, Span};
 
-pub fn render(app: &mut App, frame: &mut Frame, app_state: &mut AppState) {
+pub fn render(app: &mut App, frame: &mut Frame, states: &mut States) {
     let vertical = Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).spacing(1);
     let horizontal =
         Layout::horizontal([Constraint::Percentage(20), Constraint::Percentage(80)]).spacing(1);
     let [top, main] = frame.area().layout(&vertical);
     let [menu_column, app_column] = main.layout(&horizontal);
 
-    menu::render_menu_column(app, frame, menu_column, app_state.menu_state_mut());
+    menu::render_menu_column(app, frame, menu_column, states.app_state.menu_state_mut());
 
-    if let Some(selected) = app_state.menu_state().selected() {
+    if let Some(selected) = states.app_state.menu_state().selected() {
         match selected {
-            0 => dashboard::render_dashboard(app, frame, app_column, app_state),
+            0 => dashboard::render_dashboard(app, frame, app_column, states),
             1 => heatmap_ui::render_heatmap_page(
                 app,
                 frame,
                 app_column,
-                app_state.heatmap_tile_state_mut(),
+                states.app_state.heatmap_tile_state_mut(),
             ),
             2 => stats::render_stats_column(app, frame, app_column),
             3 => {
-                let (settings_state, settings_tile_states) = app_state.settings_states_mut();
+                let (settings_state, settings_tile_states) = states.app_state.settings_states_mut();
                 settings::render_settings_page(
                     app,
                     frame,

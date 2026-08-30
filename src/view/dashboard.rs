@@ -1,8 +1,10 @@
 use crate::app::App;
+use crate::model::habit::Habit;
 use crate::palette::Palette;
-use crate::state::app::AppState;
+use crate::state::States;
+use crate::state::habit::log_habit::LogHabitState;
 use crate::symbols;
-use crate::utils::{focus_colors, render_ellipsis_if_overflow};
+use crate::utils::{focus_colors, progress, render_ellipsis_if_overflow};
 use crate::widgets::simple_list::SimpleList;
 use crate::widgets::tile_list::{TileItem, TileList, TileType};
 use chrono::Local;
@@ -14,12 +16,7 @@ use ratatui::symbols::line::HORIZONTAL;
 use ratatui::text::{Line as TextLine, Span, Text};
 use ratatui::widgets::{Block, BorderType, Borders, ListState, Padding, Paragraph, Widget};
 
-pub fn render_dashboard(
-    app: &mut App,
-    frame: &mut Frame,
-    app_area: Rect,
-    app_state: &mut AppState,
-) {
+pub fn render_dashboard(app: &mut App, frame: &mut Frame, app_area: Rect, states: &mut States) {
     let p = app.palette();
     let horizontal =
         Layout::horizontal([Constraint::Percentage(60), Constraint::Percentage(40)]).spacing(1);
@@ -33,67 +30,70 @@ pub fn render_dashboard(
         .padding(Padding::new(1, 1, 1, 1));
     let dashboard_inner_area = dashboard_block.inner(dashboard_column);
     frame.render_widget(dashboard_block, dashboard_column);
-    // render_empty_state(frame, dashboard_inner_area, " No active habits ", p);
-    render_habits_content(
-        app,
-        frame,
-        dashboard_inner_area,
-        app_state.dashboard_habits_state_mut(),
-    );
-    let (goal_tile_state, goal_row_states) = app_state.goal_progress_states_mut();
+    render_habits_content(app, frame, dashboard_inner_area, states);
+    let (goal_tile_state, goal_row_states) = states.app_state.goal_progress_states_mut();
     let tab = goal_tile_state.selected().unwrap_or(0);
     let goal_row_state = &mut goal_row_states[tab];
     render_stats_column(app, frame, stats_column, goal_tile_state, goal_row_state);
 }
 
-pub fn render_habits_content(
-    app: &mut App,
-    frame: &mut Frame,
-    area: Rect,
-    habits_state: &mut ListState,
-) {
+pub fn render_habits_content(app: &mut App, frame: &mut Frame, area: Rect, states: &mut States) {
     let p = app.palette();
     let vertical_layout = Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).spacing(1);
     let [header_area, habits_list_area] = area.layout(&vertical_layout);
     render_habits_header(frame, header_area, p);
-    render_habits_list(app, frame, habits_list_area, habits_state);
+    render_habits_list(app, frame, habits_list_area, states);
 }
 
 #[allow(clippy::needless_pass_by_ref_mut)]
-pub fn render_habits_list(
-    app: &mut App,
-    frame: &mut Frame,
-    area: Rect,
-    habits_state: &mut ListState,
-) {
+pub fn render_habits_list(app: &mut App, frame: &mut Frame, area: Rect, states: &mut States) {
     let p = app.palette();
     let habits = app.habits.clone();
     if habits.is_empty() {
-        let empty = ratatui::text::Text::from(
-            ratatui::text::Line::from(" No habits yet — press A to add one ")
+        let empty = Text::from(
+            TextLine::from(" No habits yet — press A to add one ")
                 .style(ratatui::style::Style::new().fg(p.fg_dim)),
         );
         frame.render_widget(empty, area);
         return;
     }
+    let progress_symbol = progress(app);
+    let completed_habits = &app.completed_habits;
+    // Borrow log_habit_state (disjoint from app_state) so the closure can read it
+    // while we later borrow app_state mutably for the stateful widget.
+    let log_habit_state: &LogHabitState = &states.log_habit_state;
     let heights: Vec<&str> = vec!["2"; habits.len()];
-    let simple_list = SimpleList::new(heights, move |index, item_area, buf, is_selected| {
+    let simple_list = SimpleList::new(heights, |index, item_area, buf, is_selected| {
         if let Some(habit) = habits.get(index) {
-            render_habit_item(item_area, buf, is_selected, &habit.name, false, p);
+            let is_completed = completed_habits.contains(&habit.id);
+            render_habit_item(
+                item_area,
+                buf,
+                is_selected,
+                habit,
+                is_completed,
+                p,
+                log_habit_state,
+                &progress_symbol,
+            );
         }
     })
     .highlight_background_color(p.row_highlight);
+    let habits_state = states.app_state.dashboard_habits_state_mut();
     *habits_state.offset_mut() = 0;
     frame.render_stateful_widget(simple_list, area, habits_state);
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn render_habit_item(
     area: Rect,
-    buf: &mut ratatui::buffer::Buffer,
+    buf: &mut Buffer,
     _is_selected: bool,
-    habit_name: &str,
+    habit: &Habit,
     is_completed: bool,
     p: Palette,
+    log_habit_state: &LogHabitState,
+    progress_symbol: &str,
 ) {
     let horizontal_layout = Layout::horizontal([
         Constraint::Length(3),
@@ -102,14 +102,34 @@ pub fn render_habit_item(
     ])
     .spacing(1);
     let [status_area, habit_name_area, streaks_buttons_area_] = area.layout(&horizontal_layout);
-    let status_symbol = if is_completed {
-        symbols::COMPLETED
+    let habit_contains_progress = habit.daily_goal > 0
+        || habit.weekly_goal > 0
+        || habit.monthly_goal > 0
+        || habit.yearly_goal > 0;
+
+    let mut status_symbol = if habit_contains_progress {
+        if is_completed {
+            symbols::COMPLETED_CIRCLE
+        } else {
+            symbols::NOT_COMPLETED_CIRCLE
+        }
     } else {
-        symbols::NOT_COMPLETED_CIRCLE
+        if is_completed {
+            symbols::COMPLETED
+        } else {
+            symbols::NOT_COMPLETED
+        }
     };
-    let status_color = if is_completed { p.accent } else { p.fg_dim };
+
+    let mut status_color = if is_completed { p.accent } else { p.fg_dim };
+
+    if log_habit_state.is_habit_logging(habit.id) {
+        status_symbol = progress_symbol;
+        status_color = p.amber;
+    }
+
     let status_span = Span::styled(status_symbol, Style::default().fg(status_color));
-    let habit_span = Span::styled(habit_name, Style::default().fg(p.fg));
+    let habit_span = Span::styled(&habit.name, Style::default().fg(p.fg));
     let line = TextLine::from(vec![Span::raw(" "), habit_span]);
 
     let streak_count = if is_completed { "🔥 365" } else { "🔥 23" };

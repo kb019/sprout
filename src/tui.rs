@@ -71,7 +71,7 @@ impl Tui {
                 Block::default().style(Style::default().bg(app.palette().background)),
                 frame.area(),
             );
-            view::render(app, frame, &mut states.app_state);
+            view::render(app, frame, states);
             if app.is_modal_in_focus() {
                 view::modals::render_modals(app, frame, states);
             }

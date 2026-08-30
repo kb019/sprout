@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::constants::{CURSOR_BLINK_TICKS, PROGRESS_LOAD_TICKS};
 use crate::model::habit::Habit;
 use crate::palette::Palette;
@@ -16,6 +18,8 @@ pub struct App {
     pub menu: Vec<&'static str>,
 
     pub habits: Vec<Habit>,
+
+    pub completed_habits: HashSet<i32>,
 
     pub themes: Vec<&'static str>,
 
