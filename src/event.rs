@@ -15,6 +15,9 @@ pub use log_habit::LogHabitEvent;
 pub mod delete_habit;
 pub use delete_habit::DeleteHabitEvent;
 
+pub mod get_streak;
+pub use get_streak::GetStreakEvent;
+
 /// Terminal events.
 #[derive(Clone, Debug)]
 pub enum AppEvent {
@@ -30,6 +33,7 @@ pub enum AppEvent {
     AddHabit(AddHabitEvent),
     LogHabit(LogHabitEvent),
     DeleteHabit(DeleteHabitEvent),
+    GetStreak(GetStreakEvent),
 }
 
 /// Terminal event handler.

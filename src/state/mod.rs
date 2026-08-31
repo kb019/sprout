@@ -4,6 +4,7 @@ pub mod input;
 pub mod modal;
 
 use self::app::AppState;
+use self::habit::get_streak::GetStreakState;
 use self::habit::log_habit::LogHabitState;
 use self::modal::ModalState;
 
@@ -11,6 +12,7 @@ pub struct States {
     pub app_state: AppState,
     pub modal_state: ModalState,
     pub log_habit_state: LogHabitState,
+    pub get_streak_state: GetStreakState,
 }
 
 impl States {
@@ -19,6 +21,7 @@ impl States {
             app_state: AppState::new(),
             modal_state: ModalState::new(),
             log_habit_state: LogHabitState::new(),
+            get_streak_state: GetStreakState::new(),
         }
     }
 }

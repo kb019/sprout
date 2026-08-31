@@ -56,7 +56,8 @@ use crate::model::habit::HabitDb;
 use crate::model::settings::SettingsDb;
 use crate::state::States;
 use crate::update::{
-    handle, handle_add_habit_event, handle_delete_habit_event, handle_log_habit_event,
+    handle, handle_add_habit_event, handle_delete_habit_event, handle_get_streak_event,
+    handle_log_habit_event,
 };
 use crate::widgets::notifier::Notifier;
 
@@ -148,16 +149,21 @@ fn main() -> Result<()> {
     let _settings_db = SettingsDb::new(settings_db_path)?;
 
     // Load existing habits and today's completion state once at startup.
-    let (initial_habits, initial_completed) = {
+    let (initial_habits, initial_completed, initial_streaks) = {
         let habit_db = HabitDb::new(&habit_db_path)?;
         let habits = habit_db.get_all_habits()?;
         let completed = habit_db.get_completed_habit_ids_today()?;
-        (habits, completed)
+        let mut streaks = std::collections::HashMap::new();
+        for h in &habits {
+            streaks.insert(h.id, habit_db.get_streak(h.id)?);
+        }
+        (habits, completed, streaks)
     };
 
     let mut app = App::new();
     app.habits = initial_habits;
     app.completed_habits = initial_completed.into_iter().collect();
+    app.streaks = initial_streaks;
 
     let backend = CrosstermBackend::new(std::io::stdout());
     let terminal = Terminal::new(backend)?;
@@ -184,10 +190,13 @@ fn main() -> Result<()> {
                 handle_add_habit_event(&mut app, event, &mut states, &mut notifier);
             }
             AppEvent::LogHabit(event) => {
-                handle_log_habit_event(&mut app, event, &mut states, &mut notifier);
+                handle_log_habit_event(&mut app, event, &mut states, &mut notifier, &actions);
             }
             AppEvent::DeleteHabit(event) => {
                 handle_delete_habit_event(&mut app, event, &mut states, &mut notifier);
+            }
+            AppEvent::GetStreak(event) => {
+                handle_get_streak_event(&mut app, event, &mut states, &mut notifier);
             }
         }
     }

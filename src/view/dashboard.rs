@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+
 use crate::app::App;
 use crate::model::habit::Habit;
 use crate::palette::Palette;
 use crate::state::States;
+use crate::state::habit::get_streak::GetStreakState;
 use crate::state::habit::log_habit::LogHabitState;
 use crate::symbols;
 use crate::utils::{focus_colors, progress, render_ellipsis_if_overflow};
@@ -62,6 +65,8 @@ pub fn render_habits_list(app: &mut App, frame: &mut Frame, area: Rect, states: 
     // Borrow log_habit_state (disjoint from app_state) so the closure can read it
     // while we later borrow app_state mutably for the stateful widget.
     let log_habit_state: &LogHabitState = &states.log_habit_state;
+    let get_streak_state: &GetStreakState = &states.get_streak_state;
+    let streaks: &HashMap<i32, i32> = &app.streaks;
     let heights: Vec<&str> = vec!["2"; habits.len()];
     let simple_list = SimpleList::new(heights, |index, item_area, buf, is_selected| {
         if let Some(habit) = habits.get(index) {
@@ -74,6 +79,8 @@ pub fn render_habits_list(app: &mut App, frame: &mut Frame, area: Rect, states: 
                 is_completed,
                 p,
                 log_habit_state,
+                get_streak_state,
+                streaks,
                 &progress_symbol,
             );
         }
@@ -93,6 +100,8 @@ pub fn render_habit_item(
     is_completed: bool,
     p: Palette,
     log_habit_state: &LogHabitState,
+    get_streak_state: &GetStreakState,
+    streaks: &HashMap<i32, i32>,
     progress_symbol: &str,
 ) {
     let horizontal_layout = Layout::horizontal([
@@ -123,7 +132,7 @@ pub fn render_habit_item(
 
     let mut status_color = if is_completed { p.accent } else { p.fg_dim };
 
-    if log_habit_state.is_habit_logging(habit.id) {
+    if log_habit_state.is_habit_logging(habit.id) || get_streak_state.is_fetching(habit.id) {
         status_symbol = progress_symbol;
         status_color = p.amber;
     }
@@ -132,9 +141,10 @@ pub fn render_habit_item(
     let habit_span = Span::styled(&habit.name, Style::default().fg(p.fg));
     let line = TextLine::from(vec![Span::raw(" "), habit_span]);
 
-    let streak_count = if is_completed { "🔥 365" } else { "🔥 23" };
+    let streak_count = streaks.get(&habit.id).copied().unwrap_or(0).to_string();
     let streak_symbols = TextLine::from(vec![
         Span::raw(" "),
+        Span::raw("🔥 "),
         Span::styled(streak_count, Style::default().fg(p.amber)),
         Span::raw(" "),
         Span::styled(symbols::EDIT_ICON, Style::default().fg(p.fg_dim)),

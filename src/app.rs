@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::constants::{CURSOR_BLINK_TICKS, PROGRESS_LOAD_TICKS};
 use crate::model::habit::Habit;
@@ -20,6 +20,8 @@ pub struct App {
     pub habits: Vec<Habit>,
 
     pub completed_habits: HashSet<i32>,
+
+    pub streaks: HashMap<i32, i32>,
 
     pub themes: Vec<&'static str>,
 
