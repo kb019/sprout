@@ -23,6 +23,11 @@ pub struct App {
 
     pub streaks: HashMap<i32, i32>,
 
+    pub daily_progress: HashMap<i32, i32>,
+    pub weekly_progress: HashMap<i32, i32>,
+    pub monthly_progress: HashMap<i32, i32>,
+    pub yearly_progress: HashMap<i32, i32>,
+
     pub themes: Vec<&'static str>,
 
     pub goal_progress_options: Vec<&'static str>,

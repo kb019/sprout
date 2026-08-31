@@ -18,6 +18,11 @@ pub use delete_habit::DeleteHabitEvent;
 pub mod get_streak;
 pub use get_streak::GetStreakEvent;
 
+pub mod progress;
+pub use progress::{
+    DailyProgressEvent, MonthlyProgressEvent, WeeklyProgressEvent, YearlyProgressEvent,
+};
+
 /// Terminal events.
 #[derive(Clone, Debug)]
 pub enum AppEvent {
@@ -34,6 +39,10 @@ pub enum AppEvent {
     LogHabit(LogHabitEvent),
     DeleteHabit(DeleteHabitEvent),
     GetStreak(GetStreakEvent),
+    DailyProgress(DailyProgressEvent),
+    WeeklyProgress(WeeklyProgressEvent),
+    MonthlyProgress(MonthlyProgressEvent),
+    YearlyProgress(YearlyProgressEvent),
 }
 
 /// Terminal event handler.

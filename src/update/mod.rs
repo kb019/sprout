@@ -5,7 +5,10 @@ use ratatui::crossterm::event::KeyEvent;
 
 use crate::app::App;
 use crate::controller::Actions;
-use crate::event::{AddHabitEvent, DeleteHabitEvent, GetStreakEvent, LogHabitEvent};
+use crate::event::{
+    AddHabitEvent, DailyProgressEvent, DeleteHabitEvent, GetStreakEvent, LogHabitEvent,
+    MonthlyProgressEvent, WeeklyProgressEvent, YearlyProgressEvent,
+};
 use crate::state::States;
 use crate::widgets::notifier::Notifier;
 
@@ -93,6 +96,20 @@ pub fn handle_log_habit_event(
             }
             states.log_habit_state.stop_logging(log.habit_id);
             actions.get_streak(log.habit_id);
+            if let Some(habit) = app.habits.iter().find(|h| h.id == log.habit_id) {
+                if habit.daily_goal > 0 {
+                    actions.fetch_daily_progress(log.habit_id);
+                }
+                if habit.weekly_goal > 0 {
+                    actions.fetch_weekly_progress(log.habit_id);
+                }
+                if habit.monthly_goal > 0 {
+                    actions.fetch_monthly_progress(log.habit_id);
+                }
+                if habit.yearly_goal > 0 {
+                    actions.fetch_yearly_progress(log.habit_id);
+                }
+            }
         }
         LogHabitEvent::Failed(habit_id, message) => {
             notifier.notify_error(&format!("Failed to log habit: {}", message));
@@ -123,6 +140,114 @@ pub fn handle_get_streak_event(
         GetStreakEvent::Failed(habit_id, message) => {
             states.get_streak_state.stop_fetching(habit_id);
             notifier.notify_error(&format!("Failed to fetch streak: {}", message));
+        }
+    }
+}
+
+pub fn handle_daily_progress_event(
+    app: &mut App,
+    event: DailyProgressEvent,
+    states: &mut States,
+    notifier: &mut Notifier,
+) {
+    match event {
+        DailyProgressEvent::Fetching(habit_id) => {
+            states.daily_progress_state.start_fetching(habit_id);
+        }
+        DailyProgressEvent::Fetched(habit_id, progress) => {
+            app.daily_progress.insert(habit_id, progress);
+            states.daily_progress_state.stop_fetching(habit_id);
+            if let Some(habit) = app.habits.iter().find(|h| h.id == habit_id) {
+                notifier.notify_success(&format!(
+                    "{} - daily progress: {} units",
+                    habit.name, progress
+                ));
+            }
+        }
+        DailyProgressEvent::Failed(habit_id, message) => {
+            states.daily_progress_state.stop_fetching(habit_id);
+            notifier.notify_error(&format!("Failed to fetch daily progress: {}", message));
+        }
+    }
+}
+
+pub fn handle_weekly_progress_event(
+    app: &mut App,
+    event: WeeklyProgressEvent,
+    states: &mut States,
+    notifier: &mut Notifier,
+) {
+    match event {
+        WeeklyProgressEvent::Fetching(habit_id) => {
+            states.weekly_progress_state.start_fetching(habit_id);
+        }
+        WeeklyProgressEvent::Fetched(habit_id, progress) => {
+            app.weekly_progress.insert(habit_id, progress);
+            states.weekly_progress_state.stop_fetching(habit_id);
+            if let Some(habit) = app.habits.iter().find(|h| h.id == habit_id) {
+                notifier.notify_success(&format!(
+                    "{} - weekly progress: {} units",
+                    habit.name, progress
+                ));
+            }
+        }
+        WeeklyProgressEvent::Failed(habit_id, message) => {
+            states.weekly_progress_state.stop_fetching(habit_id);
+            notifier.notify_error(&format!("Failed to fetch weekly progress: {}", message));
+        }
+    }
+}
+
+pub fn handle_monthly_progress_event(
+    app: &mut App,
+    event: MonthlyProgressEvent,
+    states: &mut States,
+    notifier: &mut Notifier,
+) {
+    match event {
+        MonthlyProgressEvent::Fetching(habit_id) => {
+            states.monthly_progress_state.start_fetching(habit_id);
+        }
+        MonthlyProgressEvent::Fetched(habit_id, progress) => {
+            app.monthly_progress.insert(habit_id, progress);
+            states.monthly_progress_state.stop_fetching(habit_id);
+            if let Some(habit) = app.habits.iter().find(|h| h.id == habit_id) {
+                notifier.notify_success(&format!(
+                    "{} - monthly progress: {} units",
+                    habit.name, progress
+                ));
+            }
+        }
+        MonthlyProgressEvent::Failed(habit_id, message) => {
+            states.monthly_progress_state.stop_fetching(habit_id);
+            notifier.notify_error(&format!("Failed to fetch monthly progress: {}", message));
+        }
+    }
+}
+
+pub fn handle_yearly_progress_event(
+    app: &mut App,
+    event: YearlyProgressEvent,
+    states: &mut States,
+    notifier: &mut Notifier,
+) {
+    match event {
+        YearlyProgressEvent::Fetching(habit_id) => {
+            states.yearly_progress_state.start_fetching(habit_id);
+        }
+        YearlyProgressEvent::Fetched(habit_id, progress) => {
+            app.yearly_progress.insert(habit_id, progress);
+            states.yearly_progress_state.stop_fetching(habit_id);
+            if let Some(habit) = app.habits.iter().find(|h| h.id == habit_id) {
+                notifier.notify_success(&format!(
+                    "{} - yearly progress: {} units",
+                    habit.name, progress
+                ));
+            }
+        }
+        YearlyProgressEvent::Failed(habit_id, message) => {
+            states.yearly_progress_state.stop_fetching(habit_id);
+            notifier.notify_error(&format!("Failed to fetch yearly progress: {}", message));
         }
     }
 }

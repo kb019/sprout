@@ -72,7 +72,7 @@ pub fn get_character_from_keycode(code: KeyCode) -> Option<char> {
     }
 }
 
-pub fn progress(app: &mut App) -> String {
+pub fn progress(app: &App) -> String {
     let progress_dots = vec!["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
     progress_dots[app.progress_tick_count as usize].to_string()
 }

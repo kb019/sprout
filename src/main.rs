@@ -56,8 +56,9 @@ use crate::model::habit::HabitDb;
 use crate::model::settings::SettingsDb;
 use crate::state::States;
 use crate::update::{
-    handle, handle_add_habit_event, handle_delete_habit_event, handle_get_streak_event,
-    handle_log_habit_event,
+    handle, handle_add_habit_event, handle_daily_progress_event, handle_delete_habit_event,
+    handle_get_streak_event, handle_log_habit_event, handle_monthly_progress_event,
+    handle_weekly_progress_event, handle_yearly_progress_event,
 };
 use crate::widgets::notifier::Notifier;
 
@@ -149,7 +150,15 @@ fn main() -> Result<()> {
     let _settings_db = SettingsDb::new(settings_db_path)?;
 
     // Load existing habits and today's completion state once at startup.
-    let (initial_habits, initial_completed, initial_streaks) = {
+    let (
+        initial_habits,
+        initial_completed,
+        initial_streaks,
+        initial_daily,
+        initial_weekly,
+        initial_monthly,
+        initial_yearly,
+    ) = {
         let habit_db = HabitDb::new(&habit_db_path)?;
         let habits = habit_db.get_all_habits()?;
         let completed = habit_db.get_completed_habit_ids_today()?;
@@ -157,13 +166,21 @@ fn main() -> Result<()> {
         for h in &habits {
             streaks.insert(h.id, habit_db.get_streak(h.id)?);
         }
-        (habits, completed, streaks)
+        let daily = habit_db.get_daily_progress()?;
+        let weekly = habit_db.get_weekly_progress()?;
+        let monthly = habit_db.get_monthly_progress()?;
+        let yearly = habit_db.get_yearly_progress()?;
+        (habits, completed, streaks, daily, weekly, monthly, yearly)
     };
 
     let mut app = App::new();
     app.habits = initial_habits;
     app.completed_habits = initial_completed.into_iter().collect();
     app.streaks = initial_streaks;
+    app.daily_progress = initial_daily;
+    app.weekly_progress = initial_weekly;
+    app.monthly_progress = initial_monthly;
+    app.yearly_progress = initial_yearly;
 
     let backend = CrosstermBackend::new(std::io::stdout());
     let terminal = Terminal::new(backend)?;
@@ -197,6 +214,18 @@ fn main() -> Result<()> {
             }
             AppEvent::GetStreak(event) => {
                 handle_get_streak_event(&mut app, event, &mut states, &mut notifier);
+            }
+            AppEvent::DailyProgress(event) => {
+                handle_daily_progress_event(&mut app, event, &mut states, &mut notifier);
+            }
+            AppEvent::WeeklyProgress(event) => {
+                handle_weekly_progress_event(&mut app, event, &mut states, &mut notifier);
+            }
+            AppEvent::MonthlyProgress(event) => {
+                handle_monthly_progress_event(&mut app, event, &mut states, &mut notifier);
+            }
+            AppEvent::YearlyProgress(event) => {
+                handle_yearly_progress_event(&mut app, event, &mut states, &mut notifier);
             }
         }
     }

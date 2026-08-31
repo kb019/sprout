@@ -34,10 +34,7 @@ pub fn render_dashboard(app: &mut App, frame: &mut Frame, app_area: Rect, states
     let dashboard_inner_area = dashboard_block.inner(dashboard_column);
     frame.render_widget(dashboard_block, dashboard_column);
     render_habits_content(app, frame, dashboard_inner_area, states);
-    let (goal_tile_state, goal_row_states) = states.app_state.goal_progress_states_mut();
-    let tab = goal_tile_state.selected().unwrap_or(0);
-    let goal_row_state = &mut goal_row_states[tab];
-    render_stats_column(app, frame, stats_column, goal_tile_state, goal_row_state);
+    render_stats_column(app, frame, stats_column, states);
 }
 
 pub fn render_habits_content(app: &mut App, frame: &mut Frame, area: Rect, states: &mut States) {
@@ -199,13 +196,7 @@ fn render_empty_state(frame: &mut Frame, area: Rect, text: &str, p: Palette) {
     }
 }
 
-fn render_stats_column(
-    app: &App,
-    frame: &mut Frame,
-    stats_area: Rect,
-    goal_tile_state: &mut ListState,
-    goal_row_state: &mut ListState,
-) {
+fn render_stats_column(app: &App, frame: &mut Frame, stats_area: Rect, states: &mut States) {
     let p = app.palette();
     let [cards_area, heatmap_area, streaks_area] = stats_area.layout(
         &Layout::vertical([
@@ -216,7 +207,7 @@ fn render_stats_column(
         .spacing(1),
     );
     render_stat_cards(frame, cards_area, p);
-    render_goal_progress(app, frame, heatmap_area, goal_tile_state, goal_row_state);
+    render_goal_progress(app, frame, heatmap_area, states);
     render_top_streaks(frame, streaks_area, p);
 }
 
@@ -272,13 +263,7 @@ fn render_streak_card(frame: &mut Frame, area: Rect, p: Palette) {
     );
 }
 
-fn render_goal_progress(
-    app: &App,
-    frame: &mut Frame,
-    area: Rect,
-    goal_tile_state: &mut ListState,
-    goal_row_state: &mut ListState,
-) {
+fn render_goal_progress(app: &App, frame: &mut Frame, area: Rect, states: &mut States) {
     let p = app.palette();
     let (border_color, text_color) = focus_colors(app.is_goal_progress_in_focus, p);
     let goal_progress = Block::default()
@@ -292,74 +277,168 @@ fn render_goal_progress(
     let [goal_progress_header_area, goal_progress_list_area] =
         goal_progress_inner_area.layout(&vertical_layout);
     frame.render_widget(&goal_progress, area);
-    render_goal_progress_header(app, frame, goal_progress_header_area, goal_tile_state);
-    render_goal_progress_list(app, frame, goal_progress_list_area, goal_row_state);
+    render_goal_progress_header(
+        app,
+        frame,
+        goal_progress_header_area,
+        states.app_state.goal_progress_tile_state_mut(),
+    );
+    render_goal_progress_list(app, frame, goal_progress_list_area, states);
 }
 
-fn render_goal_progress_list(
-    app: &App,
-    frame: &mut Frame,
-    area: Rect,
-    goal_row_state: &mut ListState,
-) {
+fn render_goal_progress_list(app: &App, frame: &mut Frame, area: Rect, states: &mut States) {
     let p = app.palette();
-    let simple_list =
-        SimpleList::new(
-            vec!["2", "2", "2"],
-            |index, item_area, buf, is_selected| match index {
-                0 => render_goal_progress_items(app, item_area, buf, is_selected),
-                1 => render_goal_progress_items(app, item_area, buf, is_selected),
-                2 => render_goal_progress_items(app, item_area, buf, is_selected),
-                _ => {}
-            },
-        )
-        .highlight_background_color(p.row_highlight)
-        .render_line()
-        .line_color(p.border);
+    let selected_tab = states
+        .app_state
+        .goal_progress_tile_state()
+        .selected()
+        .unwrap_or(0);
+
+    let eligible: Vec<(&Habit, i32, i32)> = app
+        .habits
+        .iter()
+        .filter_map(|habit| {
+            let (goal, progress) = match selected_tab {
+                0 => (
+                    habit.daily_goal,
+                    app.daily_progress.get(&habit.id).copied().unwrap_or(0),
+                ),
+                1 => (
+                    habit.weekly_goal,
+                    app.weekly_progress.get(&habit.id).copied().unwrap_or(0),
+                ),
+                2 => (
+                    habit.monthly_goal,
+                    app.monthly_progress.get(&habit.id).copied().unwrap_or(0),
+                ),
+                _ => (
+                    habit.yearly_goal,
+                    app.yearly_progress.get(&habit.id).copied().unwrap_or(0),
+                ),
+            };
+            if goal > 0 {
+                Some((habit, goal, progress))
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    if eligible.is_empty() {
+        let empty = Text::from(
+            TextLine::from(" No habits with this goal set ").style(Style::new().fg(p.fg_dim)),
+        );
+        frame.render_widget(empty, area);
+        return;
+    }
+
+    let daily_ps = &states.daily_progress_state;
+    let weekly_ps = &states.weekly_progress_state;
+    let monthly_ps = &states.monthly_progress_state;
+    let yearly_ps = &states.yearly_progress_state;
+
+    let heights: Vec<&str> = vec!["2"; eligible.len()];
+    let simple_list = SimpleList::new(heights, |index, item_area, buf, is_selected| {
+        if let Some((habit, goal, progress)) = eligible.get(index) {
+            let is_loading = daily_ps.is_fetching(habit.id)
+                || weekly_ps.is_fetching(habit.id)
+                || monthly_ps.is_fetching(habit.id)
+                || yearly_ps.is_fetching(habit.id);
+            render_goal_progress_items(
+                app,
+                item_area,
+                buf,
+                is_selected,
+                habit,
+                *goal,
+                *progress,
+                is_loading,
+            );
+        }
+    })
+    .highlight_background_color(p.row_highlight)
+    .render_line()
+    .line_color(p.border);
+
+    let (_, goal_row_states) = states.app_state.goal_progress_states_mut();
+    let goal_row_state = &mut goal_row_states[selected_tab];
     *goal_row_state.offset_mut() = 0;
     frame.render_stateful_widget(simple_list, area, goal_row_state);
 }
 
-fn render_goal_progress_items(app: &App, item_area: Rect, buf: &mut Buffer, is_selected: bool) {
-    // Implementation for rendering individual goal progress items
+#[allow(clippy::too_many_arguments)]
+fn render_goal_progress_items(
+    app: &App,
+    item_area: Rect,
+    buf: &mut Buffer,
+    is_selected: bool,
+    habit: &Habit,
+    goal: i32,
+    progress: i32,
+    is_loading: bool,
+) {
     let vertical_layout =
         Layout::vertical([Constraint::Length(1), Constraint::Length(1)]).spacing(0);
     let [habit_name_area, progress_bar_area] = item_area.layout(&vertical_layout);
-    render_goal_progress_habit_name(app, habit_name_area, buf, is_selected);
-    render_goal_progress_bar(app, progress_bar_area, buf, is_selected);
+    render_goal_progress_habit_name(app, habit_name_area, buf, is_selected, habit, is_loading);
+    render_goal_progress_bar(app, progress_bar_area, buf, is_selected, goal, progress);
 }
 
-fn render_goal_progress_habit_name(app: &App, area: Rect, buf: &mut Buffer, _is_selected: bool) {
+fn render_goal_progress_habit_name(
+    app: &App,
+    area: Rect,
+    buf: &mut Buffer,
+    _is_selected: bool,
+    habit: &Habit,
+    is_loading: bool,
+) {
     let p = app.palette();
-    let habit_name = "Morning Run"; // Example habit name
-    let habit_span = Span::styled(habit_name, Style::default().fg(p.fg));
-    let line = TextLine::from(vec![Span::raw(" "), habit_span]);
+    let prefix = if is_loading {
+        Span::styled(progress(app), Style::default().fg(p.amber))
+    } else {
+        Span::raw(" ")
+    };
+    let habit_span = Span::styled(&habit.name, Style::default().fg(p.fg));
+    let line = TextLine::from(vec![prefix, Span::raw(" "), habit_span]);
     render_line_with_ellipsis(&line, area, buf);
 }
 
-fn render_goal_progress_bar(app: &App, area: Rect, buf: &mut Buffer, _is_selected: bool) {
+fn render_goal_progress_bar(
+    app: &App,
+    area: Rect,
+    buf: &mut Buffer,
+    _is_selected: bool,
+    goal: i32,
+    progress: i32,
+) {
     let p = app.palette();
+    let ratio = if goal > 0 {
+        (progress as f32 / goal as f32).min(1.0)
+    } else {
+        0.0
+    };
     let horizontal_layout =
         Layout::horizontal([Constraint::Fill(1), Constraint::Length(5)]).spacing(1);
     let [progress_bar_area, percentage_area] = area.layout(&horizontal_layout);
     let empty_progress_block = Block::default()
         .borders(Borders::BOTTOM)
         .border_type(BorderType::Thick)
-        .border_style(Style::new().fg(app.palette().border));
+        .border_style(Style::new().fg(p.border));
     Widget::render(&empty_progress_block, progress_bar_area, buf);
-    let completed_progress_block = Block::default()
+    let filled_width = (progress_bar_area.width as f32 * ratio) as u16;
+    let filled_area = Rect {
+        x: progress_bar_area.x,
+        y: progress_bar_area.y,
+        width: filled_width,
+        height: progress_bar_area.height,
+    };
+    let filled_progress_block = Block::default()
         .borders(Borders::BOTTOM)
         .border_type(BorderType::Thick)
         .border_style(Style::new().fg(p.heatmap[2]));
-    let completed_area = Rect {
-        x: progress_bar_area.x,
-        y: progress_bar_area.y,
-        width: (progress_bar_area.width as f32 * 0.75) as u16, // Example completion percentage
-        height: progress_bar_area.height,
-    };
-    Widget::render(&completed_progress_block, completed_area, buf);
-    let percentage = "100%"; // Example percentage
-    let percentage_span = Span::styled(percentage, Style::default().fg(p.amber));
+    Widget::render(&filled_progress_block, filled_area, buf);
+    let percentage_str = format!("{:.0}%", ratio * 100.0);
+    let percentage_span = Span::styled(percentage_str, Style::default().fg(p.amber));
 
     Widget::render(&percentage_span, percentage_area, buf);
 }

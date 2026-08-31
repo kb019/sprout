@@ -8,8 +8,6 @@ use crate::{
     utils::{get_character_from_keycode, is_backspace_code, is_numeric_keycode},
 };
 
-#[allow(clippy::needless_pass_by_ref_mut)]
-#[allow(clippy::needless_return)]
 pub fn handle_progress_modal(
     app: &mut App,
     key_event: KeyEvent,

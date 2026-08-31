@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::path::Path;
 
 use anyhow::{Context, Result};
@@ -278,6 +279,51 @@ impl HabitDb {
             )
         })?;
         Ok(())
+    }
+
+    fn query_progress_in_period(&self, sql: &str) -> Result<HashMap<i32, i32>> {
+        let mut stmt = self
+            .conn
+            .prepare(sql)
+            .context("Failed to prepare progress query")?;
+        let map = stmt
+            .query_map([], |row| Ok((row.get::<_, i32>(0)?, row.get::<_, i32>(1)?)))
+            .context("Failed to query progress")?
+            .collect::<std::result::Result<HashMap<_, _>, _>>()
+            .context("Failed to collect progress")?;
+        Ok(map)
+    }
+
+    pub fn get_daily_progress(&self) -> Result<HashMap<i32, i32>> {
+        self.query_progress_in_period(
+            "SELECT habit_id, COALESCE(SUM(progress), 0) FROM habit_log \
+             WHERE date = date('now') GROUP BY habit_id",
+        )
+        .context("Failed to get daily progress")
+    }
+
+    pub fn get_weekly_progress(&self) -> Result<HashMap<i32, i32>> {
+        self.query_progress_in_period(
+            "SELECT habit_id, COALESCE(SUM(progress), 0) FROM habit_log \
+             WHERE strftime('%Y-%W', date) = strftime('%Y-%W', 'now') GROUP BY habit_id",
+        )
+        .context("Failed to get weekly progress")
+    }
+
+    pub fn get_monthly_progress(&self) -> Result<HashMap<i32, i32>> {
+        self.query_progress_in_period(
+            "SELECT habit_id, COALESCE(SUM(progress), 0) FROM habit_log \
+             WHERE strftime('%Y-%m', date) = strftime('%Y-%m', 'now') GROUP BY habit_id",
+        )
+        .context("Failed to get monthly progress")
+    }
+
+    pub fn get_yearly_progress(&self) -> Result<HashMap<i32, i32>> {
+        self.query_progress_in_period(
+            "SELECT habit_id, COALESCE(SUM(progress), 0) FROM habit_log \
+             WHERE strftime('%Y', date) = strftime('%Y', 'now') GROUP BY habit_id",
+        )
+        .context("Failed to get yearly progress")
     }
 
     fn create_habit_table(&self) -> Result<()> {
