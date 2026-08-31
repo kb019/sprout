@@ -12,6 +12,9 @@ pub use add_habit::AddHabitEvent;
 pub mod log_habit;
 pub use log_habit::LogHabitEvent;
 
+pub mod delete_habit;
+pub use delete_habit::DeleteHabitEvent;
+
 /// Terminal events.
 #[derive(Clone, Debug)]
 pub enum AppEvent {
@@ -26,6 +29,7 @@ pub enum AppEvent {
 
     AddHabit(AddHabitEvent),
     LogHabit(LogHabitEvent),
+    DeleteHabit(DeleteHabitEvent),
 }
 
 /// Terminal event handler.

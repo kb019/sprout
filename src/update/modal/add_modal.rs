@@ -17,7 +17,7 @@ pub fn handle_add_modal(
     states: &mut States,
     actions: &Actions,
 ) {
-    let is_adding_habit = states.add_habit_state.is_adding_habit();
+    let is_adding_habit = states.modal_state.add_modal_state_mut().is_adding_habit();
     if !app.display_add_modal || is_adding_habit {
         return;
     }

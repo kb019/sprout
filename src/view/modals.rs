@@ -6,6 +6,7 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Style, Stylize};
 use ratatui::widgets::{Block, BorderType, Borders, Fill, Padding};
 mod add_modal;
+mod delete_modal;
 mod progress_modal;
 
 pub fn render_modals(app: &mut App, frame: &mut Frame, states: &mut States) {
@@ -49,6 +50,10 @@ pub fn render_modals(app: &mut App, frame: &mut Frame, states: &mut States) {
 
     if app.progress_modal_for_habit_id.is_some() {
         progress_modal::render_progress_modal(app, frame, modal_inner_area, states);
+    }
+
+    if app.display_delete_modal.is_some() {
+        delete_modal::render_delete_modal(app, frame, modal_inner_area, states);
     }
 }
 

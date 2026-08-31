@@ -262,6 +262,24 @@ impl HabitDb {
         Ok(log)
     }
 
+    pub fn delete_habit(&mut self, habit_id: i32) -> Result<()> {
+        let tx = self.conn.transaction().with_context(|| {
+            format!(
+                "Failed to begin transaction for delete_habit id={}",
+                habit_id
+            )
+        })?;
+        tx.execute("DELETE FROM habit WHERE id = ?1", params![habit_id])
+            .with_context(|| format!("Failed to delete habit id={}", habit_id))?;
+        tx.commit().with_context(|| {
+            format!(
+                "Failed to commit delete_habit transaction for id={}",
+                habit_id
+            )
+        })?;
+        Ok(())
+    }
+
     fn create_habit_table(&self) -> Result<()> {
         self.conn
             .execute(

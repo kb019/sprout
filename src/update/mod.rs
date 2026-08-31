@@ -5,7 +5,7 @@ use ratatui::crossterm::event::KeyEvent;
 
 use crate::app::App;
 use crate::controller::Actions;
-use crate::event::{AddHabitEvent, LogHabitEvent};
+use crate::event::{AddHabitEvent, DeleteHabitEvent, LogHabitEvent};
 use crate::state::States;
 use crate::widgets::notifier::Notifier;
 
@@ -25,19 +25,27 @@ pub fn handle_add_habit_event(
 ) {
     match event {
         AddHabitEvent::Adding => {
-            states.add_habit_state.set_is_adding_habit(true);
+            states
+                .modal_state
+                .add_modal_state_mut()
+                .set_is_adding_habit(true);
         }
         AddHabitEvent::Added(habit) => {
             notifier.notify_success(&format!("{} added successfully", habit.name));
             app.habits.push(habit);
             app.hide_all_modals();
-
+            states
+                .modal_state
+                .add_modal_state_mut()
+                .set_is_adding_habit(false);
             states.modal_state.reset();
-            states.add_habit_state.set_is_adding_habit(false);
         }
         AddHabitEvent::Failed(message) => {
             notifier.notify_error(&format!("Failed to add habit: {}", message));
-            states.add_habit_state.set_is_adding_habit(false);
+            states
+                .modal_state
+                .add_modal_state_mut()
+                .set_is_adding_habit(false);
         }
     }
 }
@@ -87,6 +95,43 @@ pub fn handle_log_habit_event(
         LogHabitEvent::Failed(habit_id, message) => {
             notifier.notify_error(&format!("Failed to log habit: {}", message));
             states.log_habit_state.stop_logging(habit_id);
+        }
+    }
+}
+
+pub fn handle_delete_habit_event(
+    app: &mut App,
+    event: DeleteHabitEvent,
+    states: &mut States,
+    notifier: &mut Notifier,
+) {
+    match event {
+        DeleteHabitEvent::Deleting(_) => {
+            states
+                .modal_state
+                .delete_modal_state_mut()
+                .set_is_deleting(true);
+        }
+        DeleteHabitEvent::Deleted(habit_id) => {
+            if let Some(pos) = app.habits.iter().position(|h| h.id == habit_id) {
+                let name = app.habits[pos].name.clone();
+                app.habits.remove(pos);
+                app.completed_habits.remove(&habit_id);
+                notifier.notify_success(&format!("{} deleted successfully", name));
+            }
+            app.hide_delete_modal();
+            states
+                .modal_state
+                .delete_modal_state_mut()
+                .set_is_deleting(false);
+            states.modal_state.reset();
+        }
+        DeleteHabitEvent::Failed(_, message) => {
+            notifier.notify_error(&format!("Failed to delete habit: {}", message));
+            states
+                .modal_state
+                .delete_modal_state_mut()
+                .set_is_deleting(false);
         }
     }
 }

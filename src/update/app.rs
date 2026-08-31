@@ -88,6 +88,14 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
                     app.show_log_progress_modal(habit.id);
                 }
             }
+        } else if matches!(code, KeyCode::Char('x' | 'X')) {
+            let current_habit_index = state.dashboard_habits_state().selected();
+            if let Some(habit_index) = current_habit_index
+                && habit_index < app.habits.len()
+            {
+                let habit = &app.habits[habit_index];
+                app.show_delete_modal(habit.id);
+            }
         }
         return;
     }

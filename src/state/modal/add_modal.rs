@@ -16,6 +16,7 @@ pub struct AddModalState {
     monthly_goal_input_state: InputState,
     yearly_goal_input_state: InputState,
     button_state: ListState, // 0 = Add, 1 = Cancel
+    is_adding: bool,
 }
 
 impl AddModalState {
@@ -28,6 +29,7 @@ impl AddModalState {
             monthly_goal_input_state: InputState::new(),
             yearly_goal_input_state: InputState::new(),
             button_state: ListState::default(),
+            is_adding: false,
         };
 
         state.focus_input_field();
@@ -49,6 +51,14 @@ impl AddModalState {
         state.yearly_goal_input_state.set_max_length(10);
         state.button_state.select(Some(0)); // Add button selected initially
         state
+    }
+
+    pub fn is_adding_habit(&self) -> bool {
+        self.is_adding
+    }
+
+    pub fn set_is_adding_habit(&mut self, value: bool) {
+        self.is_adding = value;
     }
 
     // --- field focus ---

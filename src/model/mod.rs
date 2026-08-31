@@ -10,6 +10,9 @@ pub fn open_db(path: &Path) -> Result<Connection> {
     if let Some(parent) = path.parent() {
         create_dir_all(parent)?;
     }
-    Connection::open(path)
-        .with_context(|| format!("Failed to open database at: {}", path.display()))
+    let conn = Connection::open(path)
+        .with_context(|| format!("Failed to open database at: {}", path.display()))?;
+    conn.execute_batch("PRAGMA foreign_keys = ON;")
+        .context("Failed to enable foreign key enforcement")?;
+    Ok(conn)
 }

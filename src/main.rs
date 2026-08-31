@@ -55,7 +55,9 @@ use crate::controller::Actions;
 use crate::model::habit::HabitDb;
 use crate::model::settings::SettingsDb;
 use crate::state::States;
-use crate::update::{handle, handle_add_habit_event, handle_log_habit_event};
+use crate::update::{
+    handle, handle_add_habit_event, handle_delete_habit_event, handle_log_habit_event,
+};
 use crate::widgets::notifier::Notifier;
 
 const STYLES: styling::Styles = styling::Styles::styled()
@@ -183,6 +185,9 @@ fn main() -> Result<()> {
             }
             AppEvent::LogHabit(event) => {
                 handle_log_habit_event(&mut app, event, &mut states, &mut notifier);
+            }
+            AppEvent::DeleteHabit(event) => {
+                handle_delete_habit_event(&mut app, event, &mut states, &mut notifier);
             }
         }
     }

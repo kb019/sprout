@@ -135,7 +135,7 @@ fn render_footer(app: &mut App, frame: &mut Frame, area: Rect, states: &mut Stat
     let footer_inner_area = border_top.inner(area);
     frame.render_widget(border_top, area);
 
-    let is_adding = states.add_habit_state.is_adding_habit();
+    let is_adding = states.modal_state.add_modal_state_mut().is_adding_habit();
 
     let add_text = if is_adding {
         Text::from(Line::from(vec![
