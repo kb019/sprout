@@ -13,9 +13,8 @@ use crate::widgets::tile_list::{TileItem, TileList, TileType};
 use chrono::Local;
 use ratatui::Frame;
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Constraint, Flex, Layout, Rect};
+use ratatui::layout::{Constraint, Layout, Rect};
 use ratatui::style::{Modifier, Style, Stylize};
-use ratatui::symbols::line::HORIZONTAL;
 use ratatui::text::{Line as TextLine, Span, Text};
 use ratatui::widgets::{Block, BorderType, Borders, ListState, Padding, Paragraph, Widget};
 
@@ -208,7 +207,7 @@ fn render_stats_column(app: &App, frame: &mut Frame, stats_area: Rect, states: &
     );
     render_stat_cards(frame, cards_area, p);
     render_goal_progress(app, frame, heatmap_area, states);
-    render_top_streaks(frame, streaks_area, p);
+    render_top_streaks(app, frame, streaks_area, p);
 }
 
 fn render_stat_cards(frame: &mut Frame, area: Rect, p: Palette) {
@@ -498,63 +497,62 @@ fn render_goal_progress_header(
     frame.render_stateful_widget(tile_list, area, goal_tile_state);
 }
 
-fn render_top_streaks(frame: &mut Frame, area: Rect, p: Palette) {
+fn render_top_streaks(app: &App, frame: &mut Frame, area: Rect, p: Palette) {
     let top_streaks_block = Block::default()
         .title(" top streaks ")
         .title_style(Style::new().fg(p.fg_dim))
         .borders(Borders::ALL)
         .border_style(Style::new().fg(p.border))
         .padding(Padding::new(1, 1, 1, 1));
-    let top_streaks_inner_area = top_streaks_block.inner(area);
+    let inner_area = top_streaks_block.inner(area);
     frame.render_widget(top_streaks_block, area);
 
-    let top_streaks_horizontal_layout =
-        Layout::horizontal([Constraint::Fill(1), Constraint::Length(5)]).flex(Flex::SpaceBetween);
-    let [left_streak, right_streak] = top_streaks_horizontal_layout.areas(top_streaks_inner_area);
+    let mut ranked: Vec<(&str, i32)> = app
+        .habits
+        .iter()
+        .filter_map(|h| {
+            let s = app.streaks.get(&h.id).unwrap_or(&0);
+            if s > &0 {
+                Some((h.name.as_str(), *s))
+            } else {
+                None
+            }
+        })
+        .collect();
+    ranked.sort_by_key(|b| std::cmp::Reverse(b.1));
 
-    let mut top_streaks_line = String::new();
-    for _ in 0..top_streaks_inner_area.width {
-        top_streaks_line.push(HORIZONTAL.chars().next().unwrap());
+    if ranked.is_empty() {
+        let empty = Text::from(TextLine::from(" No streaks yet").style(Style::new().fg(p.fg_dim)));
+        frame.render_widget(empty, inner_area);
+        return;
     }
 
-    let mut left_streaks_lines = vec![];
-    let mut right_streak_lines = vec![];
+    let heights: Vec<&str> = vec!["1"; ranked.len()];
+    let list = SimpleList::new(heights, move |index, item_area, buf, _| {
+        if let Some((name, streak)) = ranked.get(index) {
+            let rank = format!("#{} ", index + 1);
+            let streak_str = format!("🔥 {}", streak);
+            let streak_len = streak_str.chars().count() as u16 + 1;
+            let [name_area, streak_area] = item_area.layout(&Layout::horizontal([
+                Constraint::Fill(1),
+                Constraint::Length(streak_len),
+            ]));
+            let name_line = TextLine::from(vec![
+                Span::styled(rank, Style::default().fg(p.fg_dim)),
+                Span::styled(*name, Style::default().fg(p.fg)),
+            ]);
+            render_line_with_ellipsis(&name_line, name_area, buf);
+            Widget::render(
+                TextLine::from(Span::styled(streak_str, Style::default().fg(p.amber)))
+                    .right_aligned(),
+                streak_area,
+                buf,
+            );
+        }
+    })
+    .render_line()
+    .line_color(p.border);
 
-    left_streaks_lines.push(TextLine::from(vec![
-        Span::styled("#1", Style::default().fg(p.fg_dim)),
-        Span::styled("   Morning Run", Style::default().fg(p.fg)),
-    ]));
-    right_streak_lines.push(TextLine::from(vec![Span::styled(
-        "🔥 21",
-        Style::default().fg(p.amber),
-    )]));
-    left_streaks_lines
-        .push(TextLine::from(top_streaks_line.clone()).style(Style::default().fg(p.border)));
-    right_streak_lines
-        .push(TextLine::from(top_streaks_line.clone()).style(Style::default().fg(p.border)));
-
-    left_streaks_lines.push(TextLine::from(vec![
-        Span::styled("#2", Style::default().fg(p.fg_dim)),
-        Span::styled("   No Sugar", Style::default().fg(p.fg)),
-    ]));
-    right_streak_lines.push(TextLine::from(vec![Span::styled(
-        "🔥 40",
-        Style::default().fg(p.amber),
-    )]));
-    left_streaks_lines
-        .push(TextLine::from(top_streaks_line.clone()).style(Style::default().fg(p.border)));
-    right_streak_lines
-        .push(TextLine::from(top_streaks_line.clone()).style(Style::default().fg(p.border)));
-
-    left_streaks_lines.push(TextLine::from(vec![
-        Span::styled("#3", Style::default().fg(p.fg_dim)),
-        Span::styled("   Read", Style::default().fg(p.fg)),
-    ]));
-    right_streak_lines.push(TextLine::from(vec![Span::styled(
-        "🔥 16",
-        Style::default().fg(p.amber),
-    )]));
-
-    frame.render_widget(Paragraph::new(Text::from(left_streaks_lines)), left_streak);
-    frame.render_widget(Paragraph::new(Text::from(right_streak_lines)), right_streak);
+    let mut list_state = ListState::default();
+    frame.render_stateful_widget(list, inner_area, &mut list_state);
 }
