@@ -137,7 +137,7 @@ impl HabitDb {
     pub fn get_completed_habit_ids_today(&self) -> Result<Vec<i32>> {
         let mut stmt = self
             .conn
-            .prepare("SELECT habit_id FROM habit_log WHERE date = date('now') AND completed = 1")
+            .prepare("SELECT habit_id FROM habit_log WHERE date = date('now', 'localtime') AND completed = 1")
             .context("Failed to prepare get_completed_habit_ids_today statement")?;
 
         let ids = stmt
@@ -153,7 +153,7 @@ impl HabitDb {
         self.conn
             .execute(
                 "INSERT INTO habit_log (habit_id, date, completed)
-                 VALUES (?1, date('now'), ?2)
+                 VALUES (?1, date('now', 'localtime'), ?2)
                  ON CONFLICT(habit_id, date) DO UPDATE SET completed = excluded.completed",
                 params![habit_id, completed as i32],
             )
@@ -168,7 +168,7 @@ impl HabitDb {
 
     pub fn is_completed_today(&self, habit_id: i32) -> Result<bool> {
         let result = self.conn.query_row(
-            "SELECT completed FROM habit_log WHERE habit_id = ?1 AND date = date('now')",
+            "SELECT completed FROM habit_log WHERE habit_id = ?1 AND date = date('now', 'localtime')",
             params![habit_id],
             |row| row.get::<_, i32>(0),
         );
@@ -232,7 +232,7 @@ impl HabitDb {
 
         tx.execute(
             "INSERT INTO habit_log (habit_id, date, completed, progress)
-             VALUES (?1, date('now'), ?2, ?3)
+             VALUES (?1, date('now', 'localtime'), ?2, ?3)
              ON CONFLICT(habit_id, date) DO UPDATE SET
                  completed = excluded.completed,
                  progress  = excluded.progress",
@@ -243,7 +243,7 @@ impl HabitDb {
         let log = tx
             .query_row(
                 "SELECT id, habit_id, date, completed, progress FROM habit_log \
-                 WHERE habit_id = ?1 AND date = date('now')",
+                 WHERE habit_id = ?1 AND date = date('now', 'localtime')",
                 params![habit_id],
                 |row| {
                     Ok(HabitLog {
@@ -335,7 +335,7 @@ impl HabitDb {
     pub fn get_daily_progress(&self) -> Result<HashMap<i32, i32>> {
         self.query_progress_in_period(
             "SELECT habit_id, COALESCE(SUM(progress), 0) FROM habit_log \
-             WHERE date = date('now') GROUP BY habit_id",
+             WHERE date = date('now', 'localtime') GROUP BY habit_id",
         )
         .context("Failed to get daily progress")
     }
@@ -343,7 +343,7 @@ impl HabitDb {
     pub fn get_weekly_progress(&self) -> Result<HashMap<i32, i32>> {
         self.query_progress_in_period(
             "SELECT habit_id, COALESCE(SUM(progress), 0) FROM habit_log \
-             WHERE strftime('%Y-%W', date) = strftime('%Y-%W', 'now') GROUP BY habit_id",
+             WHERE strftime('%Y-%W', date) = strftime('%Y-%W', 'now', 'localtime') GROUP BY habit_id",
         )
         .context("Failed to get weekly progress")
     }
@@ -351,7 +351,7 @@ impl HabitDb {
     pub fn get_monthly_progress(&self) -> Result<HashMap<i32, i32>> {
         self.query_progress_in_period(
             "SELECT habit_id, COALESCE(SUM(progress), 0) FROM habit_log \
-             WHERE strftime('%Y-%m', date) = strftime('%Y-%m', 'now') GROUP BY habit_id",
+             WHERE strftime('%Y-%m', date) = strftime('%Y-%m', 'now', 'localtime') GROUP BY habit_id",
         )
         .context("Failed to get monthly progress")
     }
@@ -359,7 +359,7 @@ impl HabitDb {
     pub fn get_yearly_progress(&self) -> Result<HashMap<i32, i32>> {
         self.query_progress_in_period(
             "SELECT habit_id, COALESCE(SUM(progress), 0) FROM habit_log \
-             WHERE strftime('%Y', date) = strftime('%Y', 'now') GROUP BY habit_id",
+             WHERE strftime('%Y', date) = strftime('%Y', 'now', 'localtime') GROUP BY habit_id",
         )
         .context("Failed to get yearly progress")
     }
@@ -375,7 +375,7 @@ impl HabitDb {
                     weekly_goal  INTEGER NOT NULL DEFAULT 0,
                     monthly_goal INTEGER NOT NULL DEFAULT 0,
                     yearly_goal  INTEGER NOT NULL DEFAULT 0,
-                    created_at   TEXT    NOT NULL DEFAULT (datetime('now'))
+                    created_at   TEXT    NOT NULL DEFAULT (datetime('now', 'localtime'))
                 )",
                 [],
             )
