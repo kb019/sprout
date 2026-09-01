@@ -167,7 +167,14 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
             }
         } else if is_down_key(code) {
             let tab = state.goal_progress_tile_state().selected().unwrap_or(0);
-            state.next_goal_progress_row(tab, options_len);
+            let len = match tab {
+                0 => app.daily_progress.len(),
+                1 => app.weekly_progress.len(),
+                2 => app.monthly_progress.len(),
+                3 => app.yearly_progress.len(),
+                _ => 0,
+            };
+            state.next_goal_progress_row(tab, len);
         } else if is_up_key(code) {
             let tab = state.goal_progress_tile_state().selected().unwrap_or(0);
             state.prev_goal_progress_row(tab);

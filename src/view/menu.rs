@@ -77,7 +77,8 @@ fn render_menu(
     frame.render_stateful_widget(list, menu_area, list_state);
 }
 
-fn render_summary(_app: &mut App, frame: &mut Frame, summary_area: Rect, p: Palette) {
+#[allow(clippy::needless_pass_by_ref_mut)]
+fn render_summary(app: &mut App, frame: &mut Frame, summary_area: Rect, p: Palette) {
     let summary_block = Block::default()
         .title(" summary ")
         .title_style(Style::new().fg(p.fg_dim))
@@ -86,32 +87,44 @@ fn render_summary(_app: &mut App, frame: &mut Frame, summary_area: Rect, p: Pale
         .padding(Padding::new(1, 1, 1, 1));
     let summary_inner_area = summary_block.inner(summary_area);
 
+    let total = app.habits.len();
+    let completed = app.completed_habits.len();
+    let pct = (completed * 100).checked_div(total).unwrap_or(0);
+    let bar_len = 16usize;
+    let filled = bar_len * pct / 100;
+    let bar: String = "█".repeat(filled) + &"░".repeat(bar_len - filled);
+    let best_streak = app.streaks.values().max().unwrap_or(&0);
+
     let lines = vec![
-        TextLine::from(vec![Span::styled("TODAY ", Style::default().fg(p.fg_dim))]),
+        TextLine::from(Span::styled("TODAY", Style::default().fg(p.fg_dim))),
         TextLine::from(vec![
-            Span::styled("3/5 done", Style::default().fg(p.fg)).add_modifier(Modifier::BOLD),
-            Span::styled("    60%", Style::default().fg(p.fg)),
+            Span::styled(
+                format!("{}/{} done", completed, total),
+                Style::default().fg(p.fg),
+            )
+            .add_modifier(Modifier::BOLD),
+            Span::styled(format!("    {}%", pct), Style::default().fg(p.fg)),
         ]),
-        TextLine::from(vec![Span::from("")]),
-        TextLine::from(vec![Span::styled(
-            "██████████░░░░░░",
-            Style::default().fg(p.accent),
-        )]),
-        TextLine::from(vec![Span::from("")]),
-        TextLine::from(vec![Span::styled(
-            "BEST STREAK",
+        TextLine::from(""),
+        TextLine::from(Span::styled(bar, Style::default().fg(p.accent))),
+        TextLine::from(""),
+        TextLine::from(Span::styled(
+            "ACTIVE BEST STREAK",
             Style::default().fg(p.fg_dim),
-        )]),
-        TextLine::from(vec![Span::styled(
-            "🔥 21 days",
+        )),
+        TextLine::from(Span::styled(
+            format!("🔥 {} days", best_streak),
             Style::default().fg(p.amber),
-        )]),
-        TextLine::from(vec![Span::from("")]),
-        TextLine::from(vec![Span::styled(
+        )),
+        TextLine::from(""),
+        TextLine::from(Span::styled(
             "Habits tracked",
             Style::default().fg(p.fg_dim),
-        )]),
-        TextLine::from(vec![Span::styled("5", Style::default().fg(p.fg_dim))]),
+        )),
+        TextLine::from(Span::styled(
+            format!("{}", total),
+            Style::default().fg(p.fg_dim),
+        )),
     ];
 
     frame.render_widget(Paragraph::new(Text::from(lines)), summary_inner_area);
@@ -136,7 +149,10 @@ fn render_sprout(app: &App, frame: &mut Frame, sprout_area: Rect, p: Palette) {
             padding_bottom,
         ));
 
-    let sprout_grow_percentage = SproutPercentage::from_value(app.counter);
+    let total = app.habits.len();
+    let completed = app.completed_habits.len();
+    let pct = (completed * 100).checked_div(total).unwrap_or(0) as u8;
+    let sprout_grow_percentage = SproutPercentage::from_value(pct);
     let app_ref: &App = app;
 
     let canvas_x_bounds = [-40.0, 40.0];
