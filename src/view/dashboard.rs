@@ -380,27 +380,48 @@ fn render_goal_progress_items(
     let vertical_layout =
         Layout::vertical([Constraint::Length(1), Constraint::Length(1)]).spacing(0);
     let [habit_name_area, progress_bar_area] = item_area.layout(&vertical_layout);
-    render_goal_progress_habit_name(app, habit_name_area, buf, is_selected, habit, is_loading);
+    render_goal_progress_habit_name(
+        app,
+        habit_name_area,
+        buf,
+        is_selected,
+        habit,
+        goal,
+        progress,
+        is_loading,
+    );
     render_goal_progress_bar(app, progress_bar_area, buf, is_selected, goal, progress);
 }
 
+#[allow(clippy::too_many_arguments)]
 fn render_goal_progress_habit_name(
     app: &App,
     area: Rect,
     buf: &mut Buffer,
     _is_selected: bool,
     habit: &Habit,
+    goal: i32,
+    progress_val: i32,
     is_loading: bool,
 ) {
     let p = app.palette();
+    let fraction = format!("{}/{}", progress_val, goal);
+    let fraction_len = fraction.len() as u16 + 1;
+    let [name_area, fraction_area] = area.layout(&Layout::horizontal([
+        Constraint::Fill(1),
+        Constraint::Length(fraction_len),
+    ]));
     let prefix = if is_loading {
         Span::styled(progress(app), Style::default().fg(p.amber))
     } else {
         Span::raw(" ")
     };
     let habit_span = Span::styled(&habit.name, Style::default().fg(p.fg));
-    let line = TextLine::from(vec![prefix, Span::raw(" "), habit_span]);
-    render_line_with_ellipsis(&line, area, buf);
+    let name_line = TextLine::from(vec![prefix, Span::raw(" "), habit_span]);
+    render_line_with_ellipsis(&name_line, name_area, buf);
+    let fraction_line =
+        TextLine::from(Span::styled(fraction, Style::default().fg(p.fg_dim))).right_aligned();
+    Widget::render(&fraction_line, fraction_area, buf);
 }
 
 fn render_goal_progress_bar(
@@ -438,9 +459,11 @@ fn render_goal_progress_bar(
         .border_style(Style::new().fg(p.heatmap[2]));
     Widget::render(&filled_progress_block, filled_area, buf);
     let percentage_str = format!("{:.0}%", ratio * 100.0);
-    let percentage_span = Span::styled(percentage_str, Style::default().fg(p.amber));
-
-    Widget::render(&percentage_span, percentage_area, buf);
+    Widget::render(
+        TextLine::from(Span::styled(percentage_str, Style::default().fg(p.amber))).right_aligned(),
+        percentage_area,
+        buf,
+    );
 }
 
 fn render_goal_progress_header(
