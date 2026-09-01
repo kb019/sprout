@@ -36,6 +36,15 @@ pub struct NewHabit {
     pub yearly_goal: i32,
 }
 
+pub struct HabitUpdate {
+    pub id: i32,
+    pub name: String,
+    pub daily_goal: i32,
+    pub weekly_goal: i32,
+    pub monthly_goal: i32,
+    pub yearly_goal: i32,
+}
+
 pub struct HabitDb {
     conn: Connection,
 }
@@ -261,6 +270,35 @@ impl HabitDb {
         })?;
 
         Ok(log)
+    }
+
+    pub fn update_habit(&mut self, update: &HabitUpdate, created_at: String) -> Result<Habit> {
+        let tx = self.conn.transaction().with_context(|| {
+            format!(
+                "Failed to begin transaction for update_habit id={}",
+                update.id
+            )
+        })?;
+        tx.execute(
+            "UPDATE habit SET habit_name=?1, daily_goal=?2, weekly_goal=?3, monthly_goal=?4, yearly_goal=?5 WHERE id=?6",
+            params![update.name, update.daily_goal, update.weekly_goal, update.monthly_goal, update.yearly_goal, update.id],
+        )
+        .with_context(|| format!("Failed to update habit id={}", update.id))?;
+        tx.commit().with_context(|| {
+            format!(
+                "Failed to commit update_habit transaction for id={}",
+                update.id
+            )
+        })?;
+        Ok(Habit {
+            id: update.id,
+            name: update.name.clone(),
+            daily_goal: update.daily_goal,
+            weekly_goal: update.weekly_goal,
+            monthly_goal: update.monthly_goal,
+            yearly_goal: update.yearly_goal,
+            created_at,
+        })
     }
 
     pub fn delete_habit(&mut self, habit_id: i32) -> Result<()> {

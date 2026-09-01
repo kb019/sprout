@@ -28,6 +28,7 @@ impl InputState {
     }
 
     pub fn set_value(&mut self, new_value: String) {
+        self.cursor_position = new_value.len();
         self.value = new_value;
     }
 

@@ -6,8 +6,8 @@ use ratatui::crossterm::event::KeyEvent;
 use crate::app::App;
 use crate::controller::Actions;
 use crate::event::{
-    AddHabitEvent, DailyProgressEvent, DeleteHabitEvent, GetStreakEvent, LogHabitEvent,
-    MonthlyProgressEvent, WeeklyProgressEvent, YearlyProgressEvent,
+    AddHabitEvent, DailyProgressEvent, DeleteHabitEvent, EditHabitEvent, GetStreakEvent,
+    LogHabitEvent, MonthlyProgressEvent, WeeklyProgressEvent, YearlyProgressEvent,
 };
 use crate::state::States;
 use crate::widgets::notifier::Notifier;
@@ -248,6 +248,41 @@ pub fn handle_yearly_progress_event(
         YearlyProgressEvent::Failed(habit_id, message) => {
             states.yearly_progress_state.stop_fetching(habit_id);
             notifier.notify_error(&format!("Failed to fetch yearly progress: {}", message));
+        }
+    }
+}
+
+pub fn handle_edit_habit_event(
+    app: &mut App,
+    event: EditHabitEvent,
+    states: &mut States,
+    notifier: &mut Notifier,
+) {
+    match event {
+        EditHabitEvent::Editing(_) => {
+            states
+                .modal_state
+                .edit_modal_state_mut()
+                .set_is_editing(true);
+        }
+        EditHabitEvent::Edited(habit) => {
+            notifier.notify_success(&format!("{} updated successfully", habit.name));
+            if let Some(pos) = app.habits.iter().position(|h| h.id == habit.id) {
+                app.habits[pos] = habit;
+            }
+            app.hide_all_modals();
+            states
+                .modal_state
+                .edit_modal_state_mut()
+                .set_is_editing(false);
+            states.modal_state.reset();
+        }
+        EditHabitEvent::Failed(_, message) => {
+            notifier.notify_error(&format!("Failed to update habit: {}", message));
+            states
+                .modal_state
+                .edit_modal_state_mut()
+                .set_is_editing(false);
         }
     }
 }

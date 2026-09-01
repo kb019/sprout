@@ -15,6 +15,9 @@ pub use log_habit::LogHabitEvent;
 pub mod delete_habit;
 pub use delete_habit::DeleteHabitEvent;
 
+pub mod edit_habit;
+pub use edit_habit::EditHabitEvent;
+
 pub mod get_streak;
 pub use get_streak::GetStreakEvent;
 
@@ -36,6 +39,7 @@ pub enum AppEvent {
     Resize(u16, u16),
 
     AddHabit(AddHabitEvent),
+    EditHabit(EditHabitEvent),
     LogHabit(LogHabitEvent),
     DeleteHabit(DeleteHabitEvent),
     GetStreak(GetStreakEvent),

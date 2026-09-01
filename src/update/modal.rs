@@ -1,5 +1,6 @@
 mod add_modal;
 mod delete_modal;
+mod edit_modal;
 mod progress_modal;
 
 use crossterm::event::KeyEvent;
@@ -20,5 +21,7 @@ pub fn handle_modal(app: &mut App, key_event: KeyEvent, states: &mut States, act
         progress_modal::handle_progress_modal(app, key_event, states, actions);
     } else if app.display_delete_modal.is_some() {
         delete_modal::handle_delete_modal(app, key_event, states, actions);
+    } else if app.display_edit_modal.is_some() {
+        edit_modal::handle_edit_modal(app, key_event, states, actions);
     }
 }

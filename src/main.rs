@@ -57,8 +57,8 @@ use crate::model::settings::SettingsDb;
 use crate::state::States;
 use crate::update::{
     handle, handle_add_habit_event, handle_daily_progress_event, handle_delete_habit_event,
-    handle_get_streak_event, handle_log_habit_event, handle_monthly_progress_event,
-    handle_weekly_progress_event, handle_yearly_progress_event,
+    handle_edit_habit_event, handle_get_streak_event, handle_log_habit_event,
+    handle_monthly_progress_event, handle_weekly_progress_event, handle_yearly_progress_event,
 };
 use crate::widgets::notifier::Notifier;
 
@@ -226,6 +226,9 @@ fn main() -> Result<()> {
             }
             AppEvent::YearlyProgress(event) => {
                 handle_yearly_progress_event(&mut app, event, &mut states, &mut notifier);
+            }
+            AppEvent::EditHabit(event) => {
+                handle_edit_habit_event(&mut app, event, &mut states, &mut notifier);
             }
         }
     }

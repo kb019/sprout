@@ -68,6 +68,15 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
             app.focus_goal_progress();
         } else if matches!(code, KeyCode::Char('+')) {
             app.show_add_modal();
+        } else if matches!(code, KeyCode::Char('e' | 'E')) {
+            let current_habit_index = state.dashboard_habits_state().selected();
+            if let Some(habit_index) = current_habit_index
+                && habit_index < app.habits.len()
+            {
+                let habit = app.habits[habit_index].clone();
+                app.show_edit_modal(habit.id);
+                states.modal_state.edit_modal_state_mut().initialize(&habit);
+            }
         } else if matches!(code, KeyCode::Enter) {
             //check if the habit is selected or hughlighlted currently
             let current_habit_index = state.dashboard_habits_state().selected();

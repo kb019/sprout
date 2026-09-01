@@ -7,8 +7,8 @@ use ratatui::style::{Color, Style, Stylize};
 use ratatui::widgets::{Block, BorderType, Borders, Fill, Padding};
 mod add_modal;
 mod delete_modal;
+mod edit_modal;
 mod progress_modal;
-
 pub fn render_modals(app: &mut App, frame: &mut Frame, states: &mut States) {
     let p = app.palette();
     let modal_block = Block::default()
@@ -54,6 +54,10 @@ pub fn render_modals(app: &mut App, frame: &mut Frame, states: &mut States) {
 
     if app.display_delete_modal.is_some() {
         delete_modal::render_delete_modal(app, frame, modal_inner_area, states);
+    }
+
+    if app.display_edit_modal.is_some() {
+        edit_modal::render_edit_modal(app, frame, modal_inner_area, states);
     }
 }
 
