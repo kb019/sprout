@@ -19,3 +19,6 @@ pub const NOTIFICATION_DISPLAY_TICKS: u64 = 40;
 
 /// Ticks to wait after the last log before refreshing best streaks (20 × 100ms = 2s).
 pub const BEST_STREAK_REFRESH_DELAY_TICKS: u32 = 20;
+
+/// Ticks to wait after the last log before refreshing active days (20 × 100ms = 2s).
+pub const ACTIVE_DAYS_REFRESH_DELAY_TICKS: u32 = 20;

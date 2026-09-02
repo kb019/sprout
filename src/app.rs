@@ -21,6 +21,8 @@ pub struct App {
 
     pub best_streaks: Vec<BestStreak>,
 
+    pub active_days: u32,
+
     pub completed_habits: HashSet<i32>,
 
     pub active_streaks: HashMap<i32, i32>,
@@ -55,6 +57,10 @@ pub struct App {
     pub display_edit_modal: Option<i32>,
 
     pub best_streak_refresh_delay: u32,
+    pub active_days_refresh_delay: u32,
+
+    // 0 = All, 1 = Errors only, 2 = Off
+    pub notification_level: usize,
 
     pub tick_count: u64,
 

@@ -66,6 +66,7 @@ impl Tui {
         notifier: &mut Notifier,
     ) -> Result<()> {
         notifier.set_palette(app.palette());
+        notifier.set_level(app.notification_level);
         self.terminal.draw(|frame| {
             frame.render_widget(
                 Block::default().style(Style::default().bg(app.palette().background)),

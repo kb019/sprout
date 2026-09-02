@@ -473,6 +473,18 @@ impl HabitDb {
         .context("Failed to get yearly progress")
     }
 
+    pub fn get_active_days_count(&self) -> Result<u32> {
+        self.conn
+            .query_row(
+                "SELECT COUNT(DISTINCT date) FROM habit_log \
+                 WHERE strftime('%Y', date) = strftime('%Y', 'now', 'localtime') \
+                 AND completed = 1",
+                [],
+                |row| row.get::<_, u32>(0),
+            )
+            .context("Failed to get active days count")
+    }
+
     fn create_habit_table(&self) -> Result<()> {
         self.conn
             .execute(

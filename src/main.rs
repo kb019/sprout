@@ -56,10 +56,10 @@ use crate::model::habit::HabitDb;
 use crate::model::settings::SettingsDb;
 use crate::state::States;
 use crate::update::{
-    handle, handle_add_habit_event, handle_best_streaks_event, handle_daily_progress_event,
-    handle_delete_habit_event, handle_edit_habit_event, handle_get_streak_event,
-    handle_log_habit_event, handle_monthly_progress_event, handle_weekly_progress_event,
-    handle_yearly_progress_event,
+    handle, handle_active_days_event, handle_add_habit_event, handle_best_streaks_event,
+    handle_daily_progress_event, handle_delete_habit_event, handle_edit_habit_event,
+    handle_get_streak_event, handle_log_habit_event, handle_monthly_progress_event,
+    handle_weekly_progress_event, handle_yearly_progress_event,
 };
 use crate::widgets::notifier::Notifier;
 
@@ -160,6 +160,7 @@ fn main() -> Result<()> {
         initial_monthly,
         initial_yearly,
         initial_best_streaks,
+        initial_active_days,
     ) = {
         let habit_db = HabitDb::new(&habit_db_path)?;
         let habits = habit_db.get_all_habits()?;
@@ -173,6 +174,7 @@ fn main() -> Result<()> {
         let monthly = habit_db.get_monthly_progress()?;
         let yearly = habit_db.get_yearly_progress()?;
         let best_streaks = habit_db.get_best_streaks()?;
+        let active_days = habit_db.get_active_days_count()?;
         (
             habits,
             completed,
@@ -182,6 +184,7 @@ fn main() -> Result<()> {
             monthly,
             yearly,
             best_streaks,
+            active_days,
         )
     };
 
@@ -194,6 +197,7 @@ fn main() -> Result<()> {
     app.monthly_progress = initial_monthly;
     app.yearly_progress = initial_yearly;
     app.best_streaks = initial_best_streaks;
+    app.active_days = initial_active_days;
 
     let backend = CrosstermBackend::new(std::io::stdout());
     let terminal = Terminal::new(backend)?;
@@ -218,6 +222,12 @@ fn main() -> Result<()> {
                     app.best_streak_refresh_delay -= 1;
                     if app.best_streak_refresh_delay == 0 {
                         actions.fetch_best_streaks();
+                    }
+                }
+                if app.active_days_refresh_delay > 0 {
+                    app.active_days_refresh_delay -= 1;
+                    if app.active_days_refresh_delay == 0 {
+                        actions.fetch_active_days();
                     }
                 }
             }
@@ -251,6 +261,9 @@ fn main() -> Result<()> {
             }
             AppEvent::BestStreaks(event) => {
                 handle_best_streaks_event(&mut app, event, &mut states, &mut notifier);
+            }
+            AppEvent::ActiveDays(event) => {
+                handle_active_days_event(&mut app, event, &mut states, &mut notifier);
             }
         }
     }

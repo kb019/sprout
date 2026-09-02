@@ -1,3 +1,4 @@
+use chrono::Local;
 use ratatui::Frame;
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Flex, Layout, Rect};
@@ -43,7 +44,7 @@ pub fn render_stat_cards(app: &App, frame: &mut Frame, area: Rect, p: Palette, s
     ] = area.layout(&horizontal_layout);
     render_streak_card(app, frame, streak_card_area, p, states);
     render_week_card(frame, week_card_area, p);
-    render_active_days_card(frame, active_days_card_area, p);
+    render_active_days_card(app, frame, active_days_card_area, p, states);
     render_habits_tracked_card(app, frame, habits_tracked_area, p);
 }
 
@@ -94,20 +95,36 @@ pub fn render_week_card(frame: &mut Frame, area: Rect, p: Palette) {
     frame.render_widget(Paragraph::new(Text::from(lines)), inner);
 }
 
-pub fn render_active_days_card(frame: &mut Frame, area: Rect, p: Palette) {
+pub fn render_active_days_card(
+    app: &App,
+    frame: &mut Frame,
+    area: Rect,
+    p: Palette,
+    states: &States,
+) {
     let block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::new().fg(p.border))
         .padding(Padding::new(1, 1, 1, 1));
     let inner = block.inner(area);
     frame.render_widget(block, area);
+    let year = Local::now().format("%Y").to_string();
+    let is_loading = states.active_days_state.is_fetching();
+    let initial_span = if is_loading {
+        Span::styled(format!("{} ", progress(app)), Style::default().fg(p.amber))
+    } else {
+        Span::raw("")
+    };
     let lines = vec![
+        TextLine::from(vec![
+            initial_span,
+            Span::styled(
+                format!("ACTIVE DAYS ({})", year),
+                Style::default().fg(p.fg_dim),
+            ),
+        ]),
         TextLine::from(vec![Span::styled(
-            "ACTIVE DAYS (2026)",
-            Style::default().fg(p.fg_dim),
-        )]),
-        TextLine::from(vec![Span::styled(
-            "172",
+            app.active_days.to_string(),
             Style::default().fg(p.fg).add_modifier(Modifier::BOLD),
         )]),
     ];

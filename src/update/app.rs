@@ -124,15 +124,16 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
 
     if app.is_settings_in_focus {
         if is_up_key(code) {
-            state.prev_settings(4);
+            state.prev_settings(5);
         } else if is_down_key(code) {
-            state.next_settings(4);
+            state.next_settings(5);
         } else if is_right_key(code) {
             let row = state.settings_state().selected().unwrap_or(0);
             let len = match row {
                 0 => app.themes.len(),
                 1 => app.menu.len().saturating_sub(1),
                 2 => 2,
+                3 => 3,
                 _ => 1,
             };
             if len > 0 {
@@ -141,6 +142,8 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
                     app.active_theme = state.active_theme();
                 } else if row == 2 {
                     app.cursor_blink_enabled = state.settings_tile_selected(2) == Some(0);
+                } else if row == 3 {
+                    app.notification_level = state.settings_tile_selected(3).unwrap_or(0);
                 }
             }
         } else if is_left_key(code) {
@@ -149,6 +152,7 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
                 0 => app.themes.len(),
                 1 => app.menu.len().saturating_sub(1),
                 2 => 2,
+                3 => 3,
                 _ => 1,
             };
             if len > 0 && state.settings_tile_selected(row) == Some(len - 1) {
@@ -160,6 +164,8 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
                     app.active_theme = state.active_theme();
                 } else if row == 2 {
                     app.cursor_blink_enabled = state.settings_tile_selected(2) == Some(0);
+                } else if row == 3 {
+                    app.notification_level = state.settings_tile_selected(3).unwrap_or(0);
                 }
             }
         } else if matches!(code, KeyCode::Char('m' | 'M')) {
@@ -169,27 +175,25 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
     }
 
     if app.is_goal_progress_in_focus {
-        let options_len = app.goal_progress_options.len();
+        let tab = state.goal_progress_tile_state().selected().unwrap_or(0);
+        let len = match tab {
+            0 => app.habits.iter().filter(|h| h.daily_goal > 0).count(),
+            1 => app.habits.iter().filter(|h| h.weekly_goal > 0).count(),
+            2 => app.habits.iter().filter(|h| h.monthly_goal > 0).count(),
+            3 => app.habits.iter().filter(|h| h.yearly_goal > 0).count(),
+            _ => 0,
+        };
         if is_right_key(code) {
-            state.next_goal_progress(options_len);
+            state.next_goal_progress(len);
         } else if is_left_key(code) {
-            if state.goal_progress_tile_state().selected().unwrap_or(0) == 0 {
+            if tab == 0 {
                 app.focus_dashboard();
             } else {
                 state.prev_goal_progress();
             }
         } else if is_down_key(code) {
-            let tab = state.goal_progress_tile_state().selected().unwrap_or(0);
-            let len = match tab {
-                0 => app.daily_progress.len(),
-                1 => app.weekly_progress.len(),
-                2 => app.monthly_progress.len(),
-                3 => app.yearly_progress.len(),
-                _ => 0,
-            };
             state.next_goal_progress_row(tab, len);
         } else if is_up_key(code) {
-            let tab = state.goal_progress_tile_state().selected().unwrap_or(0);
             state.prev_goal_progress_row(tab);
         }
         return;

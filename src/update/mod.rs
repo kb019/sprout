@@ -4,11 +4,12 @@ pub mod modal;
 use ratatui::crossterm::event::KeyEvent;
 
 use crate::app::App;
-use crate::constants::BEST_STREAK_REFRESH_DELAY_TICKS;
+use crate::constants::{ACTIVE_DAYS_REFRESH_DELAY_TICKS, BEST_STREAK_REFRESH_DELAY_TICKS};
 use crate::controller::Actions;
 use crate::event::{
-    AddHabitEvent, BestStreaksEvent, DailyProgressEvent, DeleteHabitEvent, EditHabitEvent,
-    GetStreakEvent, LogHabitEvent, MonthlyProgressEvent, WeeklyProgressEvent, YearlyProgressEvent,
+    ActiveDaysEvent, AddHabitEvent, BestStreaksEvent, DailyProgressEvent, DeleteHabitEvent,
+    EditHabitEvent, GetStreakEvent, LogHabitEvent, MonthlyProgressEvent, WeeklyProgressEvent,
+    YearlyProgressEvent,
 };
 use crate::state::States;
 use crate::widgets::notifier::Notifier;
@@ -60,6 +61,11 @@ pub fn handle_add_habit_event(
 fn update_best_streaks_with_delay(app: &mut App, states: &mut States) {
     app.best_streak_refresh_delay = BEST_STREAK_REFRESH_DELAY_TICKS;
     states.best_streaks_state.start_fetching();
+}
+
+fn update_active_days_with_delay(app: &mut App, states: &mut States) {
+    app.active_days_refresh_delay = ACTIVE_DAYS_REFRESH_DELAY_TICKS;
+    states.active_days_state.start_fetching();
 }
 
 pub fn handle_log_habit_event(
@@ -120,6 +126,7 @@ pub fn handle_log_habit_event(
                 }
             }
             update_best_streaks_with_delay(app, states);
+            update_active_days_with_delay(app, states);
         }
         LogHabitEvent::Failed(habit_id, message) => {
             notifier.notify_error(&format!("Failed to log habit: {}", message));
@@ -352,6 +359,28 @@ pub fn handle_delete_habit_event(
                 .modal_state
                 .delete_modal_state_mut()
                 .set_is_deleting(false);
+        }
+    }
+}
+
+pub fn handle_active_days_event(
+    app: &mut App,
+    event: ActiveDaysEvent,
+    states: &mut States,
+    notifier: &mut Notifier,
+) {
+    match event {
+        ActiveDaysEvent::Fetching => {
+            states.active_days_state.start_fetching();
+        }
+        ActiveDaysEvent::Fetched(count) => {
+            app.active_days = count;
+            states.active_days_state.stop_fetching();
+            notifier.notify_success(&format!("Active days: {}", count));
+        }
+        ActiveDaysEvent::Failed(message) => {
+            states.active_days_state.stop_fetching();
+            notifier.notify_error(&format!("Failed to fetch active days: {}", message));
         }
     }
 }

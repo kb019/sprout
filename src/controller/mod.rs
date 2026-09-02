@@ -1,3 +1,4 @@
+mod active_days;
 mod add_habit;
 mod best_streaks;
 mod delete_habit;
@@ -11,6 +12,7 @@ use std::sync::mpsc;
 
 use crate::event::AppEvent;
 use crate::model::habit::{HabitUpdate, NewHabit};
+use active_days::ActiveDaysAction;
 use add_habit::AddHabitAction;
 use best_streaks::BestStreaksAction;
 use delete_habit::DeleteHabitAction;
@@ -22,6 +24,7 @@ use progress::{
 };
 
 pub struct Actions {
+    active_days_action: ActiveDaysAction,
     add_habit_action: AddHabitAction,
     best_streaks_action: BestStreaksAction,
     edit_habit_action: EditHabitAction,
@@ -37,6 +40,7 @@ pub struct Actions {
 impl Actions {
     pub fn new(sender: mpsc::Sender<AppEvent>, db_path: PathBuf) -> Self {
         Self {
+            active_days_action: ActiveDaysAction::new(sender.clone(), db_path.clone()),
             add_habit_action: AddHabitAction::new(sender.clone(), db_path.clone()),
             best_streaks_action: BestStreaksAction::new(sender.clone(), db_path.clone()),
             edit_habit_action: EditHabitAction::new(sender.clone(), db_path.clone()),
@@ -89,5 +93,9 @@ impl Actions {
 
     pub fn fetch_best_streaks(&self) {
         self.best_streaks_action.fetch();
+    }
+
+    pub fn fetch_active_days(&self) {
+        self.active_days_action.fetch();
     }
 }

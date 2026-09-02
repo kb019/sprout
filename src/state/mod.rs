@@ -4,6 +4,7 @@ pub mod input;
 pub mod modal;
 
 use self::app::AppState;
+use self::habit::active_days::ActiveDaysState;
 use self::habit::best_streaks::BestStreaksState;
 use self::habit::get_streak::GetStreakState;
 use self::habit::log_habit::LogHabitState;
@@ -22,6 +23,7 @@ pub struct States {
     pub monthly_progress_state: MonthlyProgressState,
     pub yearly_progress_state: YearlyProgressState,
     pub best_streaks_state: BestStreaksState,
+    pub active_days_state: ActiveDaysState,
 }
 
 impl States {
@@ -36,6 +38,7 @@ impl States {
             monthly_progress_state: MonthlyProgressState::new(),
             yearly_progress_state: YearlyProgressState::new(),
             best_streaks_state: BestStreaksState::new(),
+            active_days_state: ActiveDaysState::new(),
         }
     }
 }

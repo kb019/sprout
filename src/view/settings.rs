@@ -52,7 +52,7 @@ pub fn render_settings(
 ) {
     let p = app.palette();
     let simple_list = SimpleList::new(
-        vec!["2", "2", "2", "3"],
+        vec!["2", "2", "2", "2", "3"],
         |index, item_area, buf, is_selected| match index {
             0 => render_setting_accent(
                 app,
@@ -75,12 +75,19 @@ pub fn render_settings(
                 is_selected,
                 &mut settings_tile_states[2],
             ),
-            3 => render_setting_reset(
+            3 => render_setting_notifications(
                 app,
                 buf,
                 item_area,
                 is_selected,
                 &mut settings_tile_states[3],
+            ),
+            4 => render_setting_reset(
+                app,
+                buf,
+                item_area,
+                is_selected,
+                &mut settings_tile_states[4],
             ),
             _ => {}
         },
@@ -162,6 +169,29 @@ fn render_setting_cursor_blink(
         "Cursor blink",
         "Enable or Disable cursor blinking",
         build_items(&["On", "Off"], is_selected, tile_state, p),
+        TileType::Unbordered,
+        TileBorderType::Rounded,
+        Style::new().fg(p.accent),
+        tile_state,
+        p,
+    );
+}
+
+#[allow(clippy::needless_pass_by_ref_mut)]
+fn render_setting_notifications(
+    app: &mut App,
+    buf: &mut Buffer,
+    area: Rect,
+    is_selected: bool,
+    tile_state: &mut ListState,
+) {
+    let p = app.palette();
+    render_setting_row(
+        buf,
+        area,
+        "Notifications",
+        "Which notifications are shown",
+        build_items(&["All", "Errors", "Off"], is_selected, tile_state, p),
         TileType::Unbordered,
         TileBorderType::Rounded,
         Style::new().fg(p.accent),

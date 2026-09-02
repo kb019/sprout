@@ -21,6 +21,9 @@ pub use edit_habit::EditHabitEvent;
 pub mod get_streak;
 pub use get_streak::GetStreakEvent;
 
+pub mod active_days;
+pub use active_days::ActiveDaysEvent;
+
 pub mod best_streaks;
 pub use best_streaks::BestStreaksEvent;
 
@@ -51,6 +54,7 @@ pub enum AppEvent {
     MonthlyProgress(MonthlyProgressEvent),
     YearlyProgress(YearlyProgressEvent),
     BestStreaks(BestStreaksEvent),
+    ActiveDays(ActiveDaysEvent),
 }
 
 /// Terminal event handler.

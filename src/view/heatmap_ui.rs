@@ -1,5 +1,6 @@
 use crate::app::App;
-use crate::utils::{focus_colors, selection_modifier};
+use crate::state::States;
+use crate::utils::{focus_colors, progress, selection_modifier};
 use crate::widgets::heatmap::HeatMapGen;
 use crate::widgets::tile_list::{TileItem, TileList, TileType};
 use ratatui::Frame;
@@ -8,7 +9,7 @@ use ratatui::style::{Style, Stylize};
 use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, Borders, ListState, Padding};
 
-pub fn render_heatmap_page(app: &App, frame: &mut Frame, area: Rect, tile_state: &mut ListState) {
+pub fn render_heatmap_page(app: &App, frame: &mut Frame, area: Rect, states: &mut States) {
     let p = app.palette();
     let (border_color, text_color) = focus_colors(app.is_heatmap_in_focus, p);
     let heat_map_block = Block::default()
@@ -28,23 +29,36 @@ pub fn render_heatmap_page(app: &App, frame: &mut Frame, area: Rect, tile_state:
     let [habit_tiles_area, heatmap_area, legend_area] = block_inner_area.layout(&vertical_layout);
     frame.render_widget(heat_map_block, area);
     render_heatmap(app, frame, heatmap_area);
-    render_habits(app, frame, habit_tiles_area, tile_state);
+    render_habits(app, frame, habit_tiles_area, states);
     render_legend(app, frame, legend_area);
 }
 
-pub fn render_habits(app: &App, frame: &mut Frame, area: Rect, tile_state: &mut ListState) {
+pub fn render_habits(app: &App, frame: &mut Frame, area: Rect, states: &mut States) {
     let p = app.palette();
     let vertical_layout = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Min(15), Constraint::Max(15)])
         .spacing(2);
-    let active_line = Line::from_iter([
-        Span::from("176").style(Style::new().fg(p.accent)),
-        Span::from(" active days").style(Style::new().fg(p.fg_dim)),
-    ]);
+    let is_loading = states.active_days_state.is_fetching();
+    let active_line = if is_loading {
+        Line::from_iter([
+            Span::from(format!("{} ", progress(app))).style(Style::new().fg(p.amber)),
+            Span::from(" active days").style(Style::new().fg(p.fg_dim)),
+        ])
+    } else {
+        Line::from_iter([
+            Span::from(app.active_days.to_string()).style(Style::new().fg(p.accent)),
+            Span::from(" active days").style(Style::new().fg(p.fg_dim)),
+        ])
+    };
     let [habit_tiles_area, active_days_area] = area.layout(&vertical_layout);
     frame.render_widget(active_line, active_days_area);
-    render_habit_tiles(app, frame, habit_tiles_area, tile_state);
+    render_habit_tiles(
+        app,
+        frame,
+        habit_tiles_area,
+        states.app_state.heatmap_tile_state_mut(),
+    );
 }
 
 pub fn render_heatmap(app: &App, frame: &mut Frame, area: Rect) {

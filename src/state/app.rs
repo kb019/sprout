@@ -20,7 +20,7 @@ impl AppState {
         let mut settings_state = ListState::default();
         settings_state.select(None);
         let mut settings_tile_states: Vec<ListState> =
-            (0..4).map(|_| ListState::default()).collect();
+            (0..5).map(|_| ListState::default()).collect();
         for s in &mut settings_tile_states {
             s.select(Some(0));
         }

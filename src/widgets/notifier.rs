@@ -20,6 +20,7 @@ pub struct NotifierMessage {
 pub struct Notifier {
     messages: Vec<NotifierMessage>,
     palette: Palette,
+    level: usize,
 }
 
 impl Notifier {
@@ -27,6 +28,7 @@ impl Notifier {
         Self {
             messages: Vec::new(),
             palette: Palette::default(),
+            level: 0,
         }
     }
 
@@ -34,7 +36,14 @@ impl Notifier {
         self.palette = palette;
     }
 
+    pub fn set_level(&mut self, level: usize) {
+        self.level = level;
+    }
+
     pub fn notify_success(&mut self, message: &str) {
+        if self.level != 0 {
+            return;
+        }
         self.messages.push(NotifierMessage {
             message: format!("{}  {}", symbols::CHECK_MARK, message),
             is_error: false,
@@ -43,6 +52,9 @@ impl Notifier {
     }
 
     pub fn notify_error(&mut self, message: &str) {
+        if self.level == 2 {
+            return;
+        }
         self.messages.push(NotifierMessage {
             message: format!("{}  {}", symbols::CROSS_MARK, message),
             is_error: true,
