@@ -66,11 +66,18 @@ pub fn handle_progress_modal(
                 .get_value()
                 .parse::<i32>()
                 .unwrap_or(0);
-            actions.log_habit(
-                habit_id,
-                if progress_value > 0 { 1 } else { 0 },
-                progress_value,
-            );
+            let daily_goal = app
+                .habits
+                .iter()
+                .find(|h| h.id == habit_id)
+                .map(|h| h.daily_goal)
+                .unwrap_or(0);
+            let completed = if daily_goal > 0 {
+                if progress_value >= daily_goal { 1 } else { 0 }
+            } else {
+                if progress_value > 0 { 1 } else { 0 }
+            };
+            actions.log_habit(habit_id, completed, progress_value);
         }
         return;
     }

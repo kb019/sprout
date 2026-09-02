@@ -93,7 +93,7 @@ fn render_summary(app: &mut App, frame: &mut Frame, summary_area: Rect, p: Palet
     let bar_len = 16usize;
     let filled = bar_len * pct / 100;
     let bar: String = "█".repeat(filled) + &"░".repeat(bar_len - filled);
-    let best_streak = app.streaks.values().max().unwrap_or(&0);
+    let best_streak = app.active_streaks.values().max().unwrap_or(&0);
 
     let lines = vec![
         TextLine::from(Span::styled("TODAY", Style::default().fg(p.fg_dim))),

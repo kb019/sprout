@@ -7,3 +7,4 @@ pub const NOT_COMPLETED_CIRCLE: &str = "○";
 pub const EDIT_ICON: &str = "✎";
 pub const DELETE_ICON: &str = "🗑";
 pub const ELLIPSIS: &str = "…";
+pub const CUP: &str = "🏆";

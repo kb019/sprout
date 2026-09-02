@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::constants::{CURSOR_BLINK_TICKS, PROGRESS_LOAD_TICKS};
-use crate::model::habit::Habit;
+use crate::model::habit::{BestStreak, Habit};
 use crate::palette::Palette;
 use crate::sprout::{SproutPoints, generate_sprout_points};
 
@@ -19,9 +19,11 @@ pub struct App {
 
     pub habits: Vec<Habit>,
 
+    pub best_streaks: Vec<BestStreak>,
+
     pub completed_habits: HashSet<i32>,
 
-    pub streaks: HashMap<i32, i32>,
+    pub active_streaks: HashMap<i32, i32>,
 
     pub daily_progress: HashMap<i32, i32>,
     pub weekly_progress: HashMap<i32, i32>,
@@ -49,6 +51,8 @@ pub struct App {
     pub display_delete_modal: Option<i32>,
 
     pub display_edit_modal: Option<i32>,
+
+    pub best_streak_refresh_delay: u32,
 
     pub tick_count: u64,
 

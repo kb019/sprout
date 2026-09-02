@@ -36,6 +36,15 @@ pub struct NewHabit {
     pub yearly_goal: i32,
 }
 
+#[derive(Debug, Clone)]
+pub struct BestStreak {
+    pub habit_id: i32,
+    pub habit_name: String,
+    pub count: i32,
+    pub start: chrono::NaiveDate,
+    pub end: chrono::NaiveDate,
+}
+
 pub struct HabitUpdate {
     pub id: i32,
     pub name: String,
@@ -178,6 +187,106 @@ impl HabitDb {
             Err(e) => Err(e)
                 .with_context(|| format!("Failed to check completion for habit_id={}", habit_id)),
         }
+    }
+
+    pub fn get_best_streaks(&self) -> Result<Vec<BestStreak>> {
+        let mut stmt = self
+            .conn
+            .prepare(
+                "SELECT hl.habit_id, h.habit_name, hl.date \
+                 FROM habit_log hl \
+                 JOIN habit h ON h.id = hl.habit_id \
+                 WHERE hl.completed = 1 \
+                 ORDER BY hl.habit_id, hl.date ASC",
+            )
+            .context("Failed to prepare get_best_streaks statement")?;
+
+        let rows: Vec<(i32, String, String)> = stmt
+            .query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))
+            .context("Failed to query best streaks")?
+            .collect::<std::result::Result<Vec<_>, _>>()
+            .context("Failed to collect best streaks rows")?;
+
+        let mut results: Vec<BestStreak> = Vec::new();
+        let mut current_habit_id: Option<i32> = None;
+        let mut current_name = String::new();
+        let mut current_start: Option<chrono::NaiveDate> = None;
+        let mut current_streak = 0i32;
+        let mut best_start: Option<chrono::NaiveDate> = None;
+        let mut best_end: Option<chrono::NaiveDate> = None;
+        let mut best_count = 0i32;
+        let mut prev_date: Option<chrono::NaiveDate> = None;
+
+        let record_best = |results: &mut Vec<BestStreak>,
+                           habit_id: i32,
+                           name: &str,
+                           best_count: i32,
+                           best_start: Option<chrono::NaiveDate>,
+                           best_end: Option<chrono::NaiveDate>| {
+            #[allow(clippy::collapsible_if)]
+            if best_count > 0 {
+                if let (Some(start), Some(end)) = (best_start, best_end) {
+                    results.push(BestStreak {
+                        habit_id,
+                        habit_name: name.to_string(),
+                        count: best_count,
+                        start,
+                        end,
+                    });
+                }
+            }
+        };
+
+        for (habit_id, name, date_str) in &rows {
+            let Ok(date) = date_str.parse::<chrono::NaiveDate>() else {
+                continue;
+            };
+            if current_habit_id != Some(*habit_id) {
+                if let Some(id) = current_habit_id {
+                    record_best(
+                        &mut results,
+                        id,
+                        &current_name,
+                        best_count,
+                        best_start,
+                        best_end,
+                    );
+                }
+                current_habit_id = Some(*habit_id);
+                current_name = name.clone();
+                current_start = Some(date);
+                current_streak = 1;
+                best_start = Some(date);
+                best_end = Some(date);
+                best_count = 1;
+            } else if let Some(prev) = prev_date {
+                if date == prev.succ_opt().unwrap_or(prev) {
+                    current_streak += 1;
+                    if current_streak > best_count {
+                        best_count = current_streak;
+                        best_start = current_start;
+                        best_end = Some(date);
+                    }
+                } else {
+                    current_start = Some(date);
+                    current_streak = 1;
+                }
+            }
+            prev_date = Some(date);
+        }
+        if let Some(id) = current_habit_id {
+            record_best(
+                &mut results,
+                id,
+                &current_name,
+                best_count,
+                best_start,
+                best_end,
+            );
+        }
+
+        results.sort_by_key(|b| std::cmp::Reverse(b.count));
+        Ok(results)
     }
 
     pub fn get_streak(&self, habit_id: i32) -> Result<i32> {

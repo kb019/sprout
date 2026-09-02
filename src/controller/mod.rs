@@ -1,4 +1,5 @@
 mod add_habit;
+mod best_streaks;
 mod delete_habit;
 mod edit_habit;
 mod get_streak;
@@ -11,6 +12,7 @@ use std::sync::mpsc;
 use crate::event::AppEvent;
 use crate::model::habit::{HabitUpdate, NewHabit};
 use add_habit::AddHabitAction;
+use best_streaks::BestStreaksAction;
 use delete_habit::DeleteHabitAction;
 use edit_habit::EditHabitAction;
 use get_streak::GetStreakAction;
@@ -21,6 +23,7 @@ use progress::{
 
 pub struct Actions {
     add_habit_action: AddHabitAction,
+    best_streaks_action: BestStreaksAction,
     edit_habit_action: EditHabitAction,
     log_habit_action: LogHabitAction,
     delete_habit_action: DeleteHabitAction,
@@ -35,6 +38,7 @@ impl Actions {
     pub fn new(sender: mpsc::Sender<AppEvent>, db_path: PathBuf) -> Self {
         Self {
             add_habit_action: AddHabitAction::new(sender.clone(), db_path.clone()),
+            best_streaks_action: BestStreaksAction::new(sender.clone(), db_path.clone()),
             edit_habit_action: EditHabitAction::new(sender.clone(), db_path.clone()),
             log_habit_action: LogHabitAction::new(sender.clone(), db_path.clone()),
             delete_habit_action: DeleteHabitAction::new(sender.clone(), db_path.clone()),
@@ -81,5 +85,9 @@ impl Actions {
 
     pub fn fetch_yearly_progress(&self, habit_id: i32) {
         self.yearly_progress_action.fetch(habit_id);
+    }
+
+    pub fn fetch_best_streaks(&self) {
+        self.best_streaks_action.fetch();
     }
 }

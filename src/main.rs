@@ -56,9 +56,10 @@ use crate::model::habit::HabitDb;
 use crate::model::settings::SettingsDb;
 use crate::state::States;
 use crate::update::{
-    handle, handle_add_habit_event, handle_daily_progress_event, handle_delete_habit_event,
-    handle_edit_habit_event, handle_get_streak_event, handle_log_habit_event,
-    handle_monthly_progress_event, handle_weekly_progress_event, handle_yearly_progress_event,
+    handle, handle_add_habit_event, handle_best_streaks_event, handle_daily_progress_event,
+    handle_delete_habit_event, handle_edit_habit_event, handle_get_streak_event,
+    handle_log_habit_event, handle_monthly_progress_event, handle_weekly_progress_event,
+    handle_yearly_progress_event,
 };
 use crate::widgets::notifier::Notifier;
 
@@ -158,6 +159,7 @@ fn main() -> Result<()> {
         initial_weekly,
         initial_monthly,
         initial_yearly,
+        initial_best_streaks,
     ) = {
         let habit_db = HabitDb::new(&habit_db_path)?;
         let habits = habit_db.get_all_habits()?;
@@ -170,17 +172,28 @@ fn main() -> Result<()> {
         let weekly = habit_db.get_weekly_progress()?;
         let monthly = habit_db.get_monthly_progress()?;
         let yearly = habit_db.get_yearly_progress()?;
-        (habits, completed, streaks, daily, weekly, monthly, yearly)
+        let best_streaks = habit_db.get_best_streaks()?;
+        (
+            habits,
+            completed,
+            streaks,
+            daily,
+            weekly,
+            monthly,
+            yearly,
+            best_streaks,
+        )
     };
 
     let mut app = App::new();
     app.habits = initial_habits;
     app.completed_habits = initial_completed.into_iter().collect();
-    app.streaks = initial_streaks;
+    app.active_streaks = initial_streaks;
     app.daily_progress = initial_daily;
     app.weekly_progress = initial_weekly;
     app.monthly_progress = initial_monthly;
     app.yearly_progress = initial_yearly;
+    app.best_streaks = initial_best_streaks;
 
     let backend = CrosstermBackend::new(std::io::stdout());
     let terminal = Terminal::new(backend)?;
@@ -201,6 +214,12 @@ fn main() -> Result<()> {
             AppEvent::Tick => {
                 app.tick();
                 notifier.tick();
+                if app.best_streak_refresh_delay > 0 {
+                    app.best_streak_refresh_delay -= 1;
+                    if app.best_streak_refresh_delay == 0 {
+                        actions.fetch_best_streaks();
+                    }
+                }
             }
             AppEvent::Mouse(_) | AppEvent::Resize(_, _) => {}
             AppEvent::AddHabit(event) => {
@@ -229,6 +248,9 @@ fn main() -> Result<()> {
             }
             AppEvent::EditHabit(event) => {
                 handle_edit_habit_event(&mut app, event, &mut states, &mut notifier);
+            }
+            AppEvent::BestStreaks(event) => {
+                handle_best_streaks_event(&mut app, event, &mut states, &mut notifier);
             }
         }
     }

@@ -23,16 +23,34 @@ pub fn render_dashboard(app: &mut App, frame: &mut Frame, app_area: Rect, states
     let horizontal =
         Layout::horizontal([Constraint::Percentage(60), Constraint::Percentage(40)]).spacing(1);
     let [dashboard_column, stats_column] = app_area.layout(&horizontal);
+    let vertical = Layout::vertical([Constraint::Percentage(60), Constraint::Percentage(40)]);
+    let [active_habits_area, best_streak_area] = dashboard_column.layout(&vertical);
     let (border_color, text_color) = focus_colors(app.is_dashboard_in_focus, p);
-    let dashboard_block = Block::default()
+    let active_habits_block = Block::default()
         .title(" active habits ")
         .title_style(Style::new().fg(text_color))
         .borders(Borders::ALL)
         .border_style(Style::new().fg(border_color))
         .padding(Padding::new(1, 1, 1, 1));
-    let dashboard_inner_area = dashboard_block.inner(dashboard_column);
-    frame.render_widget(dashboard_block, dashboard_column);
-    render_habits_content(app, frame, dashboard_inner_area, states);
+    let best_streaks_title = if states.best_streaks_state.is_fetching() {
+        TextLine::from(vec![
+            Span::styled(format!(" {} ", progress(app)), Style::default().fg(p.amber)),
+            Span::raw("best streaks "),
+        ])
+    } else {
+        TextLine::from(" best streaks ")
+    };
+    let best_streaks_block = Block::default()
+        .title(best_streaks_title)
+        .title_style(Style::new().fg(p.fg_dim))
+        .borders(Borders::ALL)
+        .border_style(Style::new().fg(p.border))
+        .padding(Padding::new(1, 1, 1, 1));
+    let active_habits_inner_area = active_habits_block.inner(active_habits_area);
+    let _best_streaks_inner_area = best_streaks_block.inner(best_streak_area);
+    frame.render_widget(active_habits_block, active_habits_area);
+    frame.render_widget(best_streaks_block, best_streak_area);
+    render_habits_content(app, frame, active_habits_inner_area, states);
     render_stats_column(app, frame, stats_column, states);
 }
 
@@ -62,7 +80,7 @@ pub fn render_habits_list(app: &mut App, frame: &mut Frame, area: Rect, states: 
     // while we later borrow app_state mutably for the stateful widget.
     let log_habit_state: &LogHabitState = &states.log_habit_state;
     let get_streak_state: &GetStreakState = &states.get_streak_state;
-    let streaks: &HashMap<i32, i32> = &app.streaks;
+    let streaks: &HashMap<i32, i32> = &app.active_streaks;
     let heights: Vec<&str> = vec!["2"; habits.len()];
     let simple_list = SimpleList::new(heights, |index, item_area, buf, is_selected| {
         if let Some(habit) = habits.get(index) {
@@ -205,17 +223,17 @@ fn render_stats_column(app: &App, frame: &mut Frame, stats_area: Rect, states: &
         ])
         .spacing(1),
     );
-    render_stat_cards(frame, cards_area, p);
+    render_stat_cards(app, frame, cards_area, p, states);
     render_goal_progress(app, frame, heatmap_area, states);
     render_top_streaks(app, frame, streaks_area, p);
 }
 
-fn render_stat_cards(frame: &mut Frame, area: Rect, p: Palette) {
+fn render_stat_cards(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &States) {
     let [date_block_area, streak_count_block_area] = area.layout(
         &Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]).spacing(1),
     );
     render_date_card(frame, date_block_area, p);
-    render_streak_card(frame, streak_count_block_area, p);
+    render_streak_card(app, frame, streak_count_block_area, p, states);
 }
 
 fn render_date_card(frame: &mut Frame, area: Rect, p: Palette) {
@@ -239,20 +257,27 @@ fn render_date_card(frame: &mut Frame, area: Rect, p: Palette) {
     );
 }
 
-fn render_streak_card(frame: &mut Frame, area: Rect, p: Palette) {
+fn render_streak_card(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &States) {
     let streak_count_block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::new().fg(p.border))
         .padding(Padding::new(1, 1, 0, 0));
     let streak_count_block_inner_area = streak_count_block.inner(area);
     frame.render_widget(streak_count_block, area);
+    let best_count = app.best_streaks.iter().map(|s| s.count).max().unwrap_or(0);
+    let is_loading = states.best_streaks_state.is_fetching();
+    let initial_span = if is_loading {
+        Span::styled(format!("{} ", progress(app)), Style::default().fg(p.amber))
+    } else {
+        Span::raw("")
+    };
     let streak_count_lines = vec![
+        TextLine::from(vec![
+            initial_span,
+            Span::styled("BEST STREAK", Style::default().fg(p.fg_dim)),
+        ]),
         TextLine::from(vec![Span::styled(
-            "BEST STREAK",
-            Style::default().fg(p.fg_dim),
-        )]),
-        TextLine::from(vec![Span::styled(
-            "🔥 21 days",
+            format!("🔥 {} days", best_count),
             Style::default().fg(p.amber).add_modifier(Modifier::BOLD),
         )]),
     ];
@@ -511,7 +536,7 @@ fn render_top_streaks(app: &App, frame: &mut Frame, area: Rect, p: Palette) {
         .habits
         .iter()
         .filter_map(|h| {
-            let s = app.streaks.get(&h.id).unwrap_or(&0);
+            let s = app.active_streaks.get(&h.id).unwrap_or(&0);
             if s > &0 {
                 Some((h.name.as_str(), *s))
             } else {

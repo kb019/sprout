@@ -4,10 +4,11 @@ pub mod modal;
 use ratatui::crossterm::event::KeyEvent;
 
 use crate::app::App;
+use crate::constants::BEST_STREAK_REFRESH_DELAY_TICKS;
 use crate::controller::Actions;
 use crate::event::{
-    AddHabitEvent, DailyProgressEvent, DeleteHabitEvent, EditHabitEvent, GetStreakEvent,
-    LogHabitEvent, MonthlyProgressEvent, WeeklyProgressEvent, YearlyProgressEvent,
+    AddHabitEvent, BestStreaksEvent, DailyProgressEvent, DeleteHabitEvent, EditHabitEvent,
+    GetStreakEvent, LogHabitEvent, MonthlyProgressEvent, WeeklyProgressEvent, YearlyProgressEvent,
 };
 use crate::state::States;
 use crate::widgets::notifier::Notifier;
@@ -51,6 +52,14 @@ pub fn handle_add_habit_event(
                 .set_is_adding_habit(false);
         }
     }
+}
+
+// Resets the countdown so rapid logs collapse into a single refresh.
+// Sets is_fetching immediately so the UI shows a loading state right away.
+// The actual fetch fires in the tick handler once the counter reaches zero.
+fn update_best_streaks_with_delay(app: &mut App, states: &mut States) {
+    app.best_streak_refresh_delay = BEST_STREAK_REFRESH_DELAY_TICKS;
+    states.best_streaks_state.start_fetching();
 }
 
 pub fn handle_log_habit_event(
@@ -110,6 +119,7 @@ pub fn handle_log_habit_event(
                     actions.fetch_yearly_progress(log.habit_id);
                 }
             }
+            update_best_streaks_with_delay(app, states);
         }
         LogHabitEvent::Failed(habit_id, message) => {
             notifier.notify_error(&format!("Failed to log habit: {}", message));
@@ -130,7 +140,7 @@ pub fn handle_get_streak_event(
             states.get_streak_state.start_fetching(habit_id);
         }
         GetStreakEvent::Fetched(habit_id, streak) => {
-            app.streaks.insert(habit_id, streak);
+            app.active_streaks.insert(habit_id, streak);
             states.get_streak_state.stop_fetching(habit_id);
             if let Some(habit) = app.habits.iter().find(|h| h.id == habit_id) {
                 notifier
@@ -248,6 +258,28 @@ pub fn handle_yearly_progress_event(
         YearlyProgressEvent::Failed(habit_id, message) => {
             states.yearly_progress_state.stop_fetching(habit_id);
             notifier.notify_error(&format!("Failed to fetch yearly progress: {}", message));
+        }
+    }
+}
+
+pub fn handle_best_streaks_event(
+    app: &mut App,
+    event: BestStreaksEvent,
+    states: &mut States,
+    notifier: &mut Notifier,
+) {
+    match event {
+        BestStreaksEvent::Fetching => {
+            states.best_streaks_state.start_fetching();
+        }
+        BestStreaksEvent::Fetched(best) => {
+            app.best_streaks = best;
+            states.best_streaks_state.stop_fetching();
+            notifier.notify_success("Best streaks loaded");
+        }
+        BestStreaksEvent::Failed(message) => {
+            states.best_streaks_state.stop_fetching();
+            notifier.notify_error(&format!("Failed to load best streaks: {}", message));
         }
     }
 }
