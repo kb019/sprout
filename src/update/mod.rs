@@ -4,12 +4,15 @@ pub mod modal;
 use ratatui::crossterm::event::KeyEvent;
 
 use crate::app::App;
-use crate::constants::{ACTIVE_DAYS_REFRESH_DELAY_TICKS, BEST_STREAK_REFRESH_DELAY_TICKS};
+use crate::constants::{
+    ACTIVE_DAYS_REFRESH_DELAY_TICKS, BEST_STREAK_REFRESH_DELAY_TICKS,
+    WEEKLY_AVERAGE_REFRESH_DELAY_TICKS,
+};
 use crate::controller::Actions;
 use crate::event::{
     ActiveDaysEvent, AddHabitEvent, BestStreaksEvent, DailyProgressEvent, DeleteHabitEvent,
-    EditHabitEvent, GetStreakEvent, LogHabitEvent, MonthlyProgressEvent, WeeklyProgressEvent,
-    YearlyProgressEvent,
+    EditHabitEvent, GetStreakEvent, LogHabitEvent, MonthlyProgressEvent, WeeklyAverageEvent,
+    WeeklyProgressEvent, YearlyProgressEvent,
 };
 use crate::state::States;
 use crate::widgets::notifier::Notifier;
@@ -66,6 +69,11 @@ fn update_best_streaks_with_delay(app: &mut App, states: &mut States) {
 fn update_active_days_with_delay(app: &mut App, states: &mut States) {
     app.active_days_refresh_delay = ACTIVE_DAYS_REFRESH_DELAY_TICKS;
     states.active_days_state.start_fetching();
+}
+
+fn update_weekly_average_with_delay(app: &mut App, states: &mut States) {
+    app.weekly_average_refresh_delay = WEEKLY_AVERAGE_REFRESH_DELAY_TICKS;
+    states.weekly_average_state.start_fetching();
 }
 
 pub fn handle_log_habit_event(
@@ -127,6 +135,7 @@ pub fn handle_log_habit_event(
             }
             update_best_streaks_with_delay(app, states);
             update_active_days_with_delay(app, states);
+            update_weekly_average_with_delay(app, states);
         }
         LogHabitEvent::Failed(habit_id, message) => {
             notifier.notify_error(&format!("Failed to log habit: {}", message));
@@ -359,6 +368,28 @@ pub fn handle_delete_habit_event(
                 .modal_state
                 .delete_modal_state_mut()
                 .set_is_deleting(false);
+        }
+    }
+}
+
+pub fn handle_weekly_average_event(
+    app: &mut App,
+    event: WeeklyAverageEvent,
+    states: &mut States,
+    notifier: &mut Notifier,
+) {
+    match event {
+        WeeklyAverageEvent::Fetching => {
+            states.weekly_average_state.start_fetching();
+        }
+        WeeklyAverageEvent::Fetched(days) => {
+            app.weekly_completion = days;
+            states.weekly_average_state.stop_fetching();
+            notifier.notify_success("Updated weekly average");
+        }
+        WeeklyAverageEvent::Failed(message) => {
+            states.weekly_average_state.stop_fetching();
+            notifier.notify_error(&format!("Failed to fetch weekly average: {}", message));
         }
     }
 }

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::Path;
 
 use anyhow::{Context, Result};
-use chrono::Local;
+use chrono::{Datelike, Local, NaiveDate};
 use rusqlite::{Connection, Error, params};
 
 use crate::model::open_db;
@@ -471,6 +471,44 @@ impl HabitDb {
              WHERE strftime('%Y', date) = strftime('%Y', 'now', 'localtime') GROUP BY habit_id",
         )
         .context("Failed to get yearly progress")
+    }
+
+    pub fn get_weekly_completion_by_day(&self) -> Result<[u32; 7]> {
+        let mut stmt = self
+            .conn
+            .prepare(
+                "SELECT hl.date, COUNT(*), \
+                 (SELECT COUNT(*) FROM habit WHERE date(created_at) <= hl.date) \
+                 FROM habit_log hl \
+                 WHERE strftime('%Y-%W', hl.date) = strftime('%Y-%W', 'now', 'localtime') \
+                 AND hl.completed = 1 \
+                 GROUP BY hl.date",
+            )
+            .context("Failed to prepare weekly completion query")?;
+
+        let rows = stmt
+            .query_map([], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, u32>(1)?,
+                    row.get::<_, u32>(2)?,
+                ))
+            })
+            .context("Failed to query weekly completion")?;
+
+        let mut result = [0u32; 7];
+        for row in rows {
+            let (date_str, completed, total) =
+                row.context("Failed to read weekly completion row")?;
+            if total == 0 {
+                continue;
+            }
+            if let Ok(date) = NaiveDate::parse_from_str(&date_str, "%Y-%m-%d") {
+                let weekday = date.weekday().num_days_from_monday() as usize;
+                result[weekday] = (completed * 100 / total).min(100);
+            }
+        }
+        Ok(result)
     }
 
     pub fn get_active_days_count(&self) -> Result<u32> {

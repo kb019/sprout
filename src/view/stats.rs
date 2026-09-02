@@ -1,4 +1,4 @@
-use chrono::Local;
+use chrono::{Datelike, Local};
 use ratatui::Frame;
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Flex, Layout, Rect};
@@ -23,7 +23,7 @@ pub fn render_stats_column(app: &mut App, frame: &mut Frame, stats_area: Rect, s
     let vertical_layout = Layout::vertical([Constraint::Length(6), Constraint::Fill(1)]).spacing(1);
     let [cards_area, data_area] = stats_area.layout(&vertical_layout);
     render_stat_cards(app, frame, cards_area, p, states);
-    render_stat_data(app, frame, data_area, p);
+    render_stat_data(app, frame, data_area, p, states);
     frame.render_widget(stats_block, stats_area);
 }
 
@@ -43,7 +43,7 @@ pub fn render_stat_cards(app: &App, frame: &mut Frame, area: Rect, p: Palette, s
         habits_tracked_area,
     ] = area.layout(&horizontal_layout);
     render_streak_card(app, frame, streak_card_area, p, states);
-    render_week_card(frame, week_card_area, p);
+    render_week_card(app, frame, week_card_area, p, states);
     render_active_days_card(app, frame, active_days_card_area, p, states);
     render_habits_tracked_card(app, frame, habits_tracked_area, p);
 }
@@ -75,20 +75,31 @@ pub fn render_streak_card(app: &App, frame: &mut Frame, area: Rect, p: Palette, 
     frame.render_widget(Paragraph::new(Text::from(lines)), inner);
 }
 
-pub fn render_week_card(frame: &mut Frame, area: Rect, p: Palette) {
+pub fn render_week_card(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &States) {
     let block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::new().fg(p.border))
         .padding(Padding::new(1, 1, 1, 1));
     let inner = block.inner(area);
     frame.render_widget(block, area);
+    let is_loading = states.weekly_average_state.is_fetching();
+    let days_elapsed = Local::now().weekday().num_days_from_monday() + 1;
+    let avg = app.weekly_completion[..days_elapsed as usize]
+        .iter()
+        .sum::<u32>()
+        / days_elapsed;
+    let initial_span = if is_loading {
+        Span::styled(format!("{} ", progress(app)), Style::default().fg(p.amber))
+    } else {
+        Span::raw("")
+    };
     let lines = vec![
+        TextLine::from(vec![
+            initial_span,
+            Span::styled("WEEKLY AVERAGE", Style::default().fg(p.fg_dim)),
+        ]),
         TextLine::from(vec![Span::styled(
-            "WEEKLY AVERAGE",
-            Style::default().fg(p.fg_dim),
-        )]),
-        TextLine::from(vec![Span::styled(
-            "57%",
+            format!("{}%", avg),
             Style::default().fg(p.accent).add_modifier(Modifier::BOLD),
         )]),
     ];
@@ -151,18 +162,29 @@ pub fn render_habits_tracked_card(app: &App, frame: &mut Frame, area: Rect, p: P
     frame.render_widget(Paragraph::new(Text::from(lines)), inner);
 }
 
-pub fn render_stat_data(app: &App, frame: &mut Frame, area: Rect, p: Palette) {
+pub fn render_stat_data(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &States) {
     let horizontal_layout =
         Layout::horizontal([Constraint::Percentage(60), Constraint::Percentage(40)]).spacing(0);
     let [bar_area, top_streaks_area] = area.layout(&horizontal_layout);
-    render_bar_chart(frame, bar_area, p);
+    render_bar_chart(app, frame, bar_area, p, states);
     render_top_streaks(app, frame, top_streaks_area, p);
 }
 
-pub fn render_bar_chart(frame: &mut Frame, area: Rect, p: Palette) {
+pub fn render_bar_chart(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &States) {
+    let title = if states.weekly_average_state.is_fetching() {
+        TextLine::from_iter([
+            Span::raw("  "),
+            Span::styled(format!("{} ", progress(app)), Style::new().fg(p.amber)),
+            Span::styled("this week · completion %", Style::new().fg(p.fg_dim)),
+        ])
+    } else {
+        TextLine::from(Span::styled(
+            "  this week · completion %",
+            Style::new().fg(p.fg_dim),
+        ))
+    };
     let bar_chart_block = Block::default()
-        .title("  last 7 days · completion")
-        .title_style(Style::new().fg(p.fg_dim))
+        .title(title)
         .border_style(Style::new().fg(p.border))
         .padding(Padding::new(2, 2, 1, 1));
 
@@ -181,15 +203,22 @@ pub fn render_bar_chart(frame: &mut Frame, area: Rect, p: Palette) {
     let today_bar_color = Style::new().fg(p.accent);
     let label_value_style = Style::new().fg(p.fg_dim);
 
-    let bars = vec![
-        Bar::with_label("Sun", 100).style(bar_color),
-        Bar::with_label("Mon", 70).style(bar_color),
-        Bar::with_label("Tue", 65).style(bar_color),
-        Bar::with_label("Wed", 65).style(bar_color),
-        Bar::with_label("Thu", 65).style(bar_color),
-        Bar::with_label("Fri", 65).style(bar_color),
-        Bar::with_label("Sat", 7).style(today_bar_color),
-    ];
+    const DAY_LABELS: [&str; 7] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    let today_idx = Local::now().weekday().num_days_from_monday() as usize;
+
+    let bars: Vec<Bar> = app
+        .weekly_completion
+        .iter()
+        .enumerate()
+        .map(|(i, &pct)| {
+            let style = if i == today_idx {
+                today_bar_color
+            } else {
+                bar_color
+            };
+            Bar::with_label(DAY_LABELS[i], pct as u64).style(style)
+        })
+        .collect();
 
     let n = bars.len() as u16;
     if n == 0 {

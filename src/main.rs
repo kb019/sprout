@@ -59,7 +59,7 @@ use crate::update::{
     handle, handle_active_days_event, handle_add_habit_event, handle_best_streaks_event,
     handle_daily_progress_event, handle_delete_habit_event, handle_edit_habit_event,
     handle_get_streak_event, handle_log_habit_event, handle_monthly_progress_event,
-    handle_weekly_progress_event, handle_yearly_progress_event,
+    handle_weekly_average_event, handle_weekly_progress_event, handle_yearly_progress_event,
 };
 use crate::widgets::notifier::Notifier;
 
@@ -161,6 +161,7 @@ fn main() -> Result<()> {
         initial_yearly,
         initial_best_streaks,
         initial_active_days,
+        initial_weekly_completion,
     ) = {
         let habit_db = HabitDb::new(&habit_db_path)?;
         let habits = habit_db.get_all_habits()?;
@@ -175,6 +176,7 @@ fn main() -> Result<()> {
         let yearly = habit_db.get_yearly_progress()?;
         let best_streaks = habit_db.get_best_streaks()?;
         let active_days = habit_db.get_active_days_count()?;
+        let weekly_completion = habit_db.get_weekly_completion_by_day()?;
         (
             habits,
             completed,
@@ -185,6 +187,7 @@ fn main() -> Result<()> {
             yearly,
             best_streaks,
             active_days,
+            weekly_completion,
         )
     };
 
@@ -198,6 +201,7 @@ fn main() -> Result<()> {
     app.yearly_progress = initial_yearly;
     app.best_streaks = initial_best_streaks;
     app.active_days = initial_active_days;
+    app.weekly_completion = initial_weekly_completion;
 
     let backend = CrosstermBackend::new(std::io::stdout());
     let terminal = Terminal::new(backend)?;
@@ -228,6 +232,12 @@ fn main() -> Result<()> {
                     app.active_days_refresh_delay -= 1;
                     if app.active_days_refresh_delay == 0 {
                         actions.fetch_active_days();
+                    }
+                }
+                if app.weekly_average_refresh_delay > 0 {
+                    app.weekly_average_refresh_delay -= 1;
+                    if app.weekly_average_refresh_delay == 0 {
+                        actions.fetch_weekly_average();
                     }
                 }
             }
@@ -264,6 +274,9 @@ fn main() -> Result<()> {
             }
             AppEvent::ActiveDays(event) => {
                 handle_active_days_event(&mut app, event, &mut states, &mut notifier);
+            }
+            AppEvent::WeeklyAverage(event) => {
+                handle_weekly_average_event(&mut app, event, &mut states, &mut notifier);
             }
         }
     }

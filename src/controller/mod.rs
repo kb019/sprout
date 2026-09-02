@@ -6,6 +6,7 @@ mod edit_habit;
 mod get_streak;
 mod log_habit;
 mod progress;
+mod weekly_average;
 
 use std::path::PathBuf;
 use std::sync::mpsc;
@@ -22,9 +23,11 @@ use log_habit::LogHabitAction;
 use progress::{
     DailyProgressAction, MonthlyProgressAction, WeeklyProgressAction, YearlyProgressAction,
 };
+use weekly_average::WeeklyAverageAction;
 
 pub struct Actions {
     active_days_action: ActiveDaysAction,
+    weekly_average_action: WeeklyAverageAction,
     add_habit_action: AddHabitAction,
     best_streaks_action: BestStreaksAction,
     edit_habit_action: EditHabitAction,
@@ -41,6 +44,7 @@ impl Actions {
     pub fn new(sender: mpsc::Sender<AppEvent>, db_path: PathBuf) -> Self {
         Self {
             active_days_action: ActiveDaysAction::new(sender.clone(), db_path.clone()),
+            weekly_average_action: WeeklyAverageAction::new(sender.clone(), db_path.clone()),
             add_habit_action: AddHabitAction::new(sender.clone(), db_path.clone()),
             best_streaks_action: BestStreaksAction::new(sender.clone(), db_path.clone()),
             edit_habit_action: EditHabitAction::new(sender.clone(), db_path.clone()),
@@ -97,5 +101,9 @@ impl Actions {
 
     pub fn fetch_active_days(&self) {
         self.active_days_action.fetch();
+    }
+
+    pub fn fetch_weekly_average(&self) {
+        self.weekly_average_action.fetch();
     }
 }

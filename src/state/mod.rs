@@ -11,6 +11,7 @@ use self::habit::log_habit::LogHabitState;
 use self::habit::progress::{
     DailyProgressState, MonthlyProgressState, WeeklyProgressState, YearlyProgressState,
 };
+use self::habit::weekly_average::WeeklyAverageState;
 use self::modal::ModalState;
 
 pub struct States {
@@ -24,6 +25,7 @@ pub struct States {
     pub yearly_progress_state: YearlyProgressState,
     pub best_streaks_state: BestStreaksState,
     pub active_days_state: ActiveDaysState,
+    pub weekly_average_state: WeeklyAverageState,
 }
 
 impl States {
@@ -39,6 +41,7 @@ impl States {
             yearly_progress_state: YearlyProgressState::new(),
             best_streaks_state: BestStreaksState::new(),
             active_days_state: ActiveDaysState::new(),
+            weekly_average_state: WeeklyAverageState::new(),
         }
     }
 }

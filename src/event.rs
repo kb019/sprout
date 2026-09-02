@@ -24,6 +24,9 @@ pub use get_streak::GetStreakEvent;
 pub mod active_days;
 pub use active_days::ActiveDaysEvent;
 
+pub mod weekly_average;
+pub use weekly_average::WeeklyAverageEvent;
+
 pub mod best_streaks;
 pub use best_streaks::BestStreaksEvent;
 
@@ -55,6 +58,7 @@ pub enum AppEvent {
     YearlyProgress(YearlyProgressEvent),
     BestStreaks(BestStreaksEvent),
     ActiveDays(ActiveDaysEvent),
+    WeeklyAverage(WeeklyAverageEvent),
 }
 
 /// Terminal event handler.
