@@ -46,6 +46,8 @@ pub struct App {
 
     pub is_goal_progress_in_focus: bool,
 
+    pub is_best_streaks_in_focus: bool,
+
     pub display_add_modal: bool,
 
     pub display_delete_modal: Option<i32>,
@@ -178,12 +180,18 @@ impl App {
         self.is_goal_progress_in_focus = true;
     }
 
+    pub fn focus_best_streaks(&mut self) {
+        self.remove_all_focus();
+        self.is_best_streaks_in_focus = true;
+    }
+
     pub fn remove_all_focus(&mut self) {
         self.is_dashboard_in_focus = false;
         self.is_heatmap_in_focus = false;
         self.is_settings_in_focus = false;
         self.is_menu_in_focus = false;
         self.is_goal_progress_in_focus = false;
+        self.is_best_streaks_in_focus = false;
     }
 
     /// Handles the tick event of the terminal.

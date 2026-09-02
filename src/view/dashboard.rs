@@ -10,7 +10,7 @@ use crate::symbols;
 use crate::utils::{focus_colors, progress, render_ellipsis_if_overflow};
 use crate::widgets::simple_list::SimpleList;
 use crate::widgets::tile_list::{TileItem, TileList, TileType};
-use chrono::Local;
+use chrono::{Datelike, Local};
 use ratatui::Frame;
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Layout, Rect};
@@ -40,17 +40,19 @@ pub fn render_dashboard(app: &mut App, frame: &mut Frame, app_area: Rect, states
     } else {
         TextLine::from(" best streaks ")
     };
+    let (bs_border_color, bs_title_color) = focus_colors(app.is_best_streaks_in_focus, p);
     let best_streaks_block = Block::default()
         .title(best_streaks_title)
-        .title_style(Style::new().fg(p.fg_dim))
+        .title_style(Style::new().fg(bs_title_color))
         .borders(Borders::ALL)
-        .border_style(Style::new().fg(p.border))
+        .border_style(Style::new().fg(bs_border_color))
         .padding(Padding::new(1, 1, 1, 1));
     let active_habits_inner_area = active_habits_block.inner(active_habits_area);
-    let _best_streaks_inner_area = best_streaks_block.inner(best_streak_area);
+    let best_streaks_inner_area = best_streaks_block.inner(best_streak_area);
     frame.render_widget(active_habits_block, active_habits_area);
     frame.render_widget(best_streaks_block, best_streak_area);
     render_habits_content(app, frame, active_habits_inner_area, states);
+    render_best_streaks(app, frame, best_streaks_inner_area, states);
     render_stats_column(app, frame, stats_column, states);
 }
 
@@ -580,4 +582,80 @@ fn render_top_streaks(app: &App, frame: &mut Frame, area: Rect, p: Palette) {
 
     let mut list_state = ListState::default();
     frame.render_stateful_widget(list, inner_area, &mut list_state);
+}
+
+fn render_best_streaks(app: &App, frame: &mut Frame, area: Rect, states: &mut States) {
+    let p = app.palette();
+
+    if app.best_streaks.is_empty() {
+        let empty =
+            Text::from(TextLine::from(" No best streaks yet").style(Style::new().fg(p.fg_dim)));
+        frame.render_widget(empty, area);
+        return;
+    }
+
+    let best_streaks = app.best_streaks.clone();
+    let heights: Vec<&str> = vec!["4"; best_streaks.len()];
+    let list = SimpleList::new(heights, move |index, item_area, buf, is_selected| {
+        if let Some(streak) = best_streaks.get(index) {
+            let border_color = if is_selected { p.fg } else { p.border };
+            let item_block = Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::new().fg(border_color))
+                .padding(Padding::new(1, 1, 0, 0));
+            let inner = item_block.inner(item_area);
+            Widget::render(item_block, item_area, buf);
+
+            let count_str = format!("🔥 {} days", streak.count);
+            let count_len = count_str.chars().count() as u16 + 1;
+            let [name_area, count_area] = inner.layout(&Layout::horizontal([
+                Constraint::Fill(1),
+                Constraint::Length(count_len),
+            ]));
+            let [name_line_area, date_line_area] = name_area.layout(&Layout::vertical([
+                Constraint::Length(1),
+                Constraint::Length(1),
+            ]));
+
+            let name_line = if index == 0 {
+                TextLine::from(vec![
+                    Span::styled(symbols::CUP, Style::default().fg(p.amber)),
+                    Span::raw(" "),
+                    Span::styled(streak.habit_name.as_str(), Style::default().fg(p.fg)),
+                ])
+            } else {
+                TextLine::from(Span::styled(
+                    streak.habit_name.as_str(),
+                    Style::default().fg(p.fg),
+                ))
+            };
+            render_line_with_ellipsis(&name_line, name_line_area, buf);
+
+            let start = &streak.start;
+            let end = &streak.end;
+            let date_str = format!(
+                "{} {} – {} {}, {}",
+                start.format("%b"),
+                start.day(),
+                end.format("%b"),
+                end.day(),
+                end.format("%Y"),
+            );
+            Widget::render(
+                TextLine::from(Span::styled(date_str, Style::default().fg(p.fg_dim))),
+                date_line_area,
+                buf,
+            );
+            Widget::render(
+                TextLine::from(Span::styled(count_str, Style::default().fg(p.amber)))
+                    .right_aligned(),
+                count_area,
+                buf,
+            );
+        }
+    });
+
+    let best_streaks_state = states.app_state.best_streaks_list_state_mut();
+    *best_streaks_state.offset_mut() = 0;
+    frame.render_stateful_widget(list, area, best_streaks_state);
 }

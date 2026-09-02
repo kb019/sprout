@@ -33,6 +33,8 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
             state.prev_menu(app.menu.len());
         } else if is_down_key(code) {
             state.next_menu(app.menu.len());
+        } else if matches!(code, KeyCode::Char('3')) {
+            app.focus_best_streaks();
         } else if is_right_key(code) {
             match state.menu_state().selected() {
                 Some(0) => app.focus_dashboard(),
@@ -40,6 +42,17 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
                 Some(3) => app.focus_settings(),
                 _ => {}
             }
+        }
+        return;
+    }
+
+    if app.is_best_streaks_in_focus {
+        if is_down_key(code) {
+            state.next_best_streak(app.best_streaks.len());
+        } else if is_up_key(code) {
+            state.prev_best_streak();
+        } else if is_left_key(code) {
+            app.focus_menu();
         }
         return;
     }
