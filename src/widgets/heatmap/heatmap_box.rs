@@ -52,8 +52,13 @@ impl<'a> HeatMap<'a> {
         let start_x = area.x;
         let start_y = area.y + 3;
 
+        let row_stride = if *self.row_count == 1 && *self.column_count == 1 {
+            1
+        } else {
+            *self.row_count + 1
+        };
         for heatmap_row in 0..6 {
-            let y = start_y + heatmap_row * (*self.row_count + 1);
+            let y = start_y + heatmap_row * row_stride;
 
             for weekday in 0..7 {
                 let x = start_x + weekday * (*self.column_count + 1);
@@ -62,12 +67,17 @@ impl<'a> HeatMap<'a> {
 
                 let color = p.heatmap[value as usize];
 
-                let cell_area = Rect::new(x, y, *self.column_count, *self.row_count);
-
-                if area.intersects(cell_area) {
-                    Block::default()
-                        .style(Style::default().bg(color))
-                        .render(cell_area, buf);
+                if *self.row_count == 1 && *self.column_count == 1 {
+                    if area.contains(Position::new(x, y)) {
+                        buf.set_string(x, y, "■", Style::default().fg(color));
+                    }
+                } else {
+                    let cell_area = Rect::new(x, y, *self.column_count, *self.row_count);
+                    if area.intersects(cell_area) {
+                        Block::default()
+                            .style(Style::default().bg(color))
+                            .render(cell_area, buf);
+                    }
                 }
             }
         }

@@ -32,13 +32,21 @@ impl HeatMapGen {
         Self { palette }
     }
 
+    pub fn cell_dimensions(&self, area: Rect) -> (u16, u16) {
+        self.get_suitable_row_column_count(area)
+    }
+
     fn check_if_area_sufficient(
         &self,
         column_count: u16,
         row_count: u16,
         area: Rect,
     ) -> HeatMapAreaInfo {
-        let height_required_for_cells = 6 * row_count + 5; //+5 for gap between cells
+        let height_required_for_cells = if row_count == 1 && column_count == 1 {
+            6 // no inter-row gaps in ■ mode
+        } else {
+            6 * row_count + 5
+        };
         let width_required_for_cells = column_count * 7 + 6; //+6 for gap between cells
 
         // 5 for top (week, month, border) + 1 for bottom border
@@ -71,11 +79,9 @@ impl HeatMapGen {
     // 2 × 1
     // 4 × 2
     // 6 × 3
-    // 8 × 4
-    // 10 × 5
 
     fn get_suitable_row_column_count(&self, area: Rect) -> (u16, u16) {
-        let column_row_count = &[(14, 7), (12, 6), (10, 5), (8, 4), (6, 3), (4, 2), (2, 1)];
+        let column_row_count = &[(6, 3), (4, 2), (2, 1), (1, 1)];
         let (column_count, row_count) = column_row_count
             .iter()
             .find(|(c, r)| {
@@ -83,7 +89,7 @@ impl HeatMapGen {
                     .total_heatmaps_that_can_fit
                     >= 12
             })
-            .unwrap_or(&(2, 1));
+            .unwrap_or(&(1, 1));
         (*column_count, *row_count)
     }
 
@@ -132,18 +138,23 @@ impl HeatMapGen {
 
     fn render_heatmap(&self, area: Rect, buf: &mut Buffer) {
         let (column_count, row_count) = self.get_suitable_row_column_count(area);
+
         let area_info_for_heatmap = self.check_if_area_sufficient(column_count, row_count, area);
         let months_to_display: Vec<String> =
             self.get_months_to_display(area_info_for_heatmap.total_heatmaps_that_can_fit);
-        let no_of_columns_per_row = area_info_for_heatmap
+        let initial_columns = area_info_for_heatmap
             .columns_that_can_fit
             .min(months_to_display.len() as u16);
-        let no_of_rows_required = if no_of_columns_per_row == 0 {
+        let no_of_rows_required = if initial_columns == 0 {
             0
         } else {
-            (months_to_display.len() as u16).div_ceil(no_of_columns_per_row)
+            (months_to_display.len() as u16).div_ceil(initial_columns)
         };
-        let no_of_columns_per_row = area_info_for_heatmap.columns_that_can_fit;
+        let no_of_columns_per_row = if no_of_rows_required <= 1 {
+            area_info_for_heatmap.columns_that_can_fit
+        } else {
+            (months_to_display.len() as u16).div_ceil(no_of_rows_required)
+        };
         let row_flex_layout = if no_of_rows_required > 1 {
             Flex::SpaceBetween
         } else {

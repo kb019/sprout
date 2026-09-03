@@ -28,9 +28,11 @@ pub fn render_heatmap_page(app: &App, frame: &mut Frame, area: Rect, states: &mu
         ]);
     let [habit_tiles_area, heatmap_area, legend_area] = block_inner_area.layout(&vertical_layout);
     frame.render_widget(heat_map_block, area);
-    render_heatmap(app, frame, heatmap_area);
+    let heatmap_gen = HeatMapGen::new(p);
+    let (col_count, row_count) = heatmap_gen.cell_dimensions(heatmap_area);
+    frame.render_widget(heatmap_gen, heatmap_area);
     render_habits(app, frame, habit_tiles_area, states);
-    render_legend(app, frame, legend_area);
+    render_legend(app, frame, legend_area, col_count, row_count);
 }
 
 pub fn render_habits(app: &App, frame: &mut Frame, area: Rect, states: &mut States) {
@@ -61,28 +63,26 @@ pub fn render_habits(app: &App, frame: &mut Frame, area: Rect, states: &mut Stat
     );
 }
 
-pub fn render_heatmap(app: &App, frame: &mut Frame, area: Rect) {
-    frame.render_widget(HeatMapGen::new(app.palette()), area);
-}
-
-pub fn render_legend(app: &App, frame: &mut Frame, area: Rect) {
+pub fn render_legend(app: &App, frame: &mut Frame, area: Rect, col_count: u16, row_count: u16) {
     let p = app.palette();
-    let legend_line = Line::from_iter([
+    let use_square: bool = row_count == 1 && col_count == 1;
+    let cell_str = " ".repeat(col_count as usize);
+
+    let mut spans = vec![
         Span::from("less").style(Style::new().fg(p.fg_dim)),
         Span::from(" "),
-        Span::from("  ").style(Style::new().bg(p.heatmap[0])),
-        Span::from(" "),
-        Span::from("  ").style(Style::new().bg(p.heatmap[1])),
-        Span::from(" "),
-        Span::from("  ").style(Style::new().bg(p.heatmap[2])),
-        Span::from(" "),
-        Span::from("  ").style(Style::new().bg(p.heatmap[3])),
-        Span::from(" "),
-        Span::from("  ").style(Style::new().bg(p.heatmap[4])),
-        Span::from(" "),
-        Span::from("more").style(Style::new().fg(p.fg_dim)),
-    ]);
-    frame.render_widget(legend_line, area);
+    ];
+    for color in p.heatmap {
+        if use_square {
+            spans.push(Span::from("■").style(Style::new().fg(color)));
+        } else {
+            spans.push(Span::from(cell_str.clone()).style(Style::new().bg(color)));
+        }
+        spans.push(Span::from(" "));
+    }
+    spans.push(Span::from("more").style(Style::new().fg(p.fg_dim)));
+
+    frame.render_widget(Line::from(spans), area);
 }
 
 pub fn render_habit_tiles(app: &App, frame: &mut Frame, area: Rect, tile_state: &mut ListState) {
