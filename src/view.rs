@@ -13,10 +13,15 @@ use ratatui::style::Style;
 use ratatui::text::{Line as TextLine, Span};
 
 pub fn render(app: &mut App, frame: &mut Frame, states: &mut States) {
-    let vertical = Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).spacing(1);
+    let vertical = Layout::vertical([
+        Constraint::Length(1),
+        Constraint::Fill(1),
+        Constraint::Length(2),
+    ])
+    .spacing(1);
     let horizontal =
         Layout::horizontal([Constraint::Percentage(20), Constraint::Percentage(80)]).spacing(1);
-    let [top, main] = frame.area().layout(&vertical);
+    let [top, main, _help_area] = frame.area().layout(&vertical);
     let [menu_column, app_column] = main.layout(&horizontal);
 
     menu::render_menu_column(app, frame, menu_column, states.app_state.menu_state_mut());
@@ -44,10 +49,21 @@ pub fn render(app: &mut App, frame: &mut Frame, states: &mut States) {
 }
 
 fn draw_app_name(app: &App, frame: &mut Frame, area: Rect) {
+    let horizontal = Layout::horizontal([Constraint::Length(7), Constraint::Fill(1)]).spacing(1);
+    let [app_name_area, app_folder_area] = area.layout(&horizontal);
     let p = app.palette();
     let title: TextLine<'_> = TextLine::from_iter([
         Span::from("sprout").style(Style::new().fg(p.accent).bold()),
         Span::from(" - habit tracker").style(Style::new().fg(p.fg_dim)),
     ]);
-    frame.render_widget(title.left_aligned(), area);
+    frame.render_widget(title.left_aligned(), app_name_area);
+
+    let exe_dir = std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(|d| d.to_path_buf()))
+        .unwrap_or_else(|| std::path::PathBuf::from("."));
+    let folder_line = TextLine::from(
+        Span::from(exe_dir.to_string_lossy().into_owned()).style(Style::new().fg(p.fg_dim)),
+    );
+    frame.render_widget(folder_line.right_aligned(), app_folder_area);
 }
