@@ -7,6 +7,7 @@ pub struct AppState {
     settings_tile_states: Vec<ListState>,
     dashboard_habits_state: ListState,
     best_streaks_list_state: ListState,
+    streak_leaderboard_state: ListState,
     goal_progress_tile_state: ListState,
     goal_progress_row_state: Vec<ListState>,
 }
@@ -36,6 +37,7 @@ impl AppState {
             settings_tile_states,
             dashboard_habits_state: ListState::default(),
             best_streaks_list_state: ListState::default(),
+            streak_leaderboard_state: ListState::default(),
             goal_progress_tile_state,
             goal_progress_row_state,
         }
@@ -209,6 +211,31 @@ impl AppState {
             .map(|i| i.saturating_sub(1))
             .unwrap_or(0);
         self.best_streaks_list_state.select(Some(prev));
+    }
+
+    pub fn streak_leaderboard_state_mut(&mut self) -> &mut ListState {
+        &mut self.streak_leaderboard_state
+    }
+
+    pub fn next_streak_leaderboard(&mut self, len: usize) {
+        if len == 0 {
+            return;
+        }
+        let next = self
+            .streak_leaderboard_state
+            .selected()
+            .map(|i| (i + 1).min(len - 1))
+            .unwrap_or(0);
+        self.streak_leaderboard_state.select(Some(next));
+    }
+
+    pub fn prev_streak_leaderboard(&mut self) {
+        let prev = self
+            .streak_leaderboard_state
+            .selected()
+            .map(|i| i.saturating_sub(1))
+            .unwrap_or(0);
+        self.streak_leaderboard_state.select(Some(prev));
     }
 
     pub fn goal_progress_tile_state(&self) -> &ListState {
