@@ -1,13 +1,15 @@
 use ratatui::widgets::ListState;
+use std::collections::HashMap;
 
 pub struct AppState {
     menu_state: ListState,
-    heatmap_tile_state: ListState,
+    heatmap_tile_states: HashMap<i32, ListState>,
     settings_state: ListState,
     settings_tile_states: Vec<ListState>,
     dashboard_habits_state: ListState,
     best_streaks_list_state: ListState,
     streak_leaderboard_state: ListState,
+    year_list_state: ListState,
     goal_progress_tile_state: ListState,
     goal_progress_row_state: Vec<ListState>,
 }
@@ -16,8 +18,6 @@ impl AppState {
     pub fn new() -> Self {
         let mut menu_state = ListState::default();
         menu_state.select(Some(0));
-        let mut heatmap_tile_state = ListState::default();
-        heatmap_tile_state.select(Some(0));
         let mut settings_state = ListState::default();
         settings_state.select(None);
         let mut settings_tile_states: Vec<ListState> =
@@ -30,14 +30,17 @@ impl AppState {
         // 0=daily, 1=weekly, 2=monthly, 3=yearly
         let goal_progress_row_state: Vec<ListState> =
             (0..4).map(|_| ListState::default()).collect();
+        let mut year_list_state = ListState::default();
+        year_list_state.select(Some(0));
         Self {
             menu_state,
-            heatmap_tile_state,
+            heatmap_tile_states: HashMap::new(),
             settings_state,
             settings_tile_states,
             dashboard_habits_state: ListState::default(),
             best_streaks_list_state: ListState::default(),
             streak_leaderboard_state: ListState::default(),
+            year_list_state,
             goal_progress_tile_state,
             goal_progress_row_state,
         }
@@ -51,12 +54,20 @@ impl AppState {
         &mut self.menu_state
     }
 
-    pub fn heatmap_tile_state(&self) -> &ListState {
-        &self.heatmap_tile_state
+    /// Insert a state for each year that doesn't already have one.
+    /// Existing selections are never touched.
+    pub fn update_heatmap_tile_states(&mut self, year_habits: &[(i32, Vec<i32>)]) {
+        for (year, _) in year_habits {
+            self.heatmap_tile_states.entry(*year).or_insert_with(|| {
+                let mut s = ListState::default();
+                s.select(Some(0));
+                s
+            });
+        }
     }
 
-    pub fn heatmap_tile_state_mut(&mut self) -> &mut ListState {
-        &mut self.heatmap_tile_state
+    pub fn heatmap_tile_state_for_year_mut(&mut self, year: i32) -> Option<&mut ListState> {
+        self.heatmap_tile_states.get_mut(&year)
     }
 
     pub fn settings_state(&self) -> &ListState {
@@ -116,25 +127,21 @@ impl AppState {
         self.menu_state.select(Some(prev));
     }
 
-    pub fn next_heatmap_tile(&mut self, len: usize) {
+    pub fn next_heatmap_tile(&mut self, year: i32, len: usize) {
         if len == 0 {
             return;
         }
-        let next = self
-            .heatmap_tile_state
-            .selected()
-            .map(|i| (i + 1).min(len - 1))
-            .unwrap_or(0);
-        self.heatmap_tile_state.select(Some(next));
+        if let Some(state) = self.heatmap_tile_states.get_mut(&year) {
+            let next = state.selected().map(|i| (i + 1).min(len - 1)).unwrap_or(0);
+            state.select(Some(next));
+        }
     }
 
-    pub fn prev_heatmap_tile(&mut self, _len: usize) {
-        let prev = self
-            .heatmap_tile_state
-            .selected()
-            .map(|i| i.saturating_sub(1))
-            .unwrap_or(0);
-        self.heatmap_tile_state.select(Some(prev));
+    pub fn prev_heatmap_tile(&mut self, year: i32) {
+        if let Some(state) = self.heatmap_tile_states.get_mut(&year) {
+            let prev = state.selected().map(|i| i.saturating_sub(1)).unwrap_or(0);
+            state.select(Some(prev));
+        }
     }
 
     pub fn next_settings(&mut self, len: usize) {
@@ -215,6 +222,35 @@ impl AppState {
 
     pub fn streak_leaderboard_state_mut(&mut self) -> &mut ListState {
         &mut self.streak_leaderboard_state
+    }
+
+    pub fn year_list_state(&self) -> &ListState {
+        &self.year_list_state
+    }
+
+    pub fn year_list_state_mut(&mut self) -> &mut ListState {
+        &mut self.year_list_state
+    }
+
+    pub fn next_year(&mut self, len: usize) {
+        if len == 0 {
+            return;
+        }
+        let next = self
+            .year_list_state
+            .selected()
+            .map(|i| (i + 1).min(len - 1))
+            .unwrap_or(0);
+        self.year_list_state.select(Some(next));
+    }
+
+    pub fn prev_year(&mut self) {
+        let prev = self
+            .year_list_state
+            .selected()
+            .map(|i| i.saturating_sub(1))
+            .unwrap_or(0);
+        self.year_list_state.select(Some(prev));
     }
 
     pub fn next_streak_leaderboard(&mut self, len: usize) {

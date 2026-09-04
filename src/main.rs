@@ -38,12 +38,13 @@ pub mod model;
 
 pub mod controller;
 
+pub mod samples;
+
 use std::io::{Write, stderr, stdout};
-use std::path::{Path, PathBuf};
 use std::thread;
 use std::time::Duration;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use app::App;
 use clap::{Parser, Subcommand, builder::styling};
 use constants::TICK_RATE_MS;
@@ -58,8 +59,9 @@ use crate::state::States;
 use crate::update::{
     handle, handle_active_days_event, handle_add_habit_event, handle_best_streaks_event,
     handle_daily_progress_event, handle_delete_habit_event, handle_edit_habit_event,
-    handle_get_streak_event, handle_log_habit_event, handle_monthly_progress_event,
-    handle_weekly_average_event, handle_weekly_progress_event, handle_yearly_progress_event,
+    handle_get_streak_event, handle_heatmap_year_habits_event, handle_log_habit_event,
+    handle_monthly_progress_event, handle_weekly_average_event, handle_weekly_progress_event,
+    handle_yearly_progress_event,
 };
 use crate::widgets::notifier::Notifier;
 
@@ -124,6 +126,9 @@ enum Commands {
 
     #[command(about = "List all tracked habits with their unit and daily goal")]
     List {},
+
+    #[command(about = "Populate the database with 4 sample habits and 90 days of history")]
+    Sample {},
 }
 
 ///referred from https://github.com/ClementTsang/bottom/blob/main/src/lib.rs#L93
@@ -142,13 +147,29 @@ fn check_if_terminal() {
 }
 
 fn main() -> Result<()> {
-    let _args = Cli::parse();
+    let args = Cli::parse();
+
+    let exe_dir = std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(|d| d.to_path_buf()))
+        .unwrap_or_else(|| std::path::PathBuf::from("."));
+    let habit_db_path = exe_dir.join("habit.db");
+    let settings_db_path = exe_dir.join("settings.db");
+
+    let is_sample = matches!(args.command, Some(Commands::Sample {}));
+
     check_if_terminal();
+    let _settings_db = SettingsDb::new(&settings_db_path)?;
 
-    let habit_db_path = PathBuf::from("habit.db");
-    let settings_db_path = Path::new("settings.db");
-
-    let _settings_db = SettingsDb::new(settings_db_path)?;
+    // Sample mode writes to a temp file so all controller connections share the same DB
+    // without touching habit.db. Cleaned up on exit and on panic (tui.rs hook).
+    let actions_db_path = if is_sample {
+        let p = std::env::temp_dir().join("sprout_sample.db");
+        let _ = std::fs::remove_file(&p);
+        p
+    } else {
+        habit_db_path.clone()
+    };
 
     // Load existing habits and today's completion state once at startup.
     let (
@@ -162,8 +183,14 @@ fn main() -> Result<()> {
         initial_best_streaks,
         initial_active_days,
         initial_weekly_completion,
+        initial_heatmap_year_habits,
     ) = {
-        let habit_db = HabitDb::new(&habit_db_path)?;
+        let habit_db = HabitDb::new(&actions_db_path)?;
+        if is_sample {
+            habit_db
+                .execute_batch(samples::SEED_SQL)
+                .context("Failed to seed sample data")?;
+        }
         let habits = habit_db.get_all_habits()?;
         let completed = habit_db.get_completed_habit_ids_today()?;
         let mut streaks = std::collections::HashMap::new();
@@ -177,6 +204,7 @@ fn main() -> Result<()> {
         let best_streaks = habit_db.get_best_streaks()?;
         let active_days = habit_db.get_active_days_count()?;
         let weekly_completion = habit_db.get_weekly_completion_by_day()?;
+        let heatmap_year_habits = habit_db.get_heatmap_year_habits()?;
         (
             habits,
             completed,
@@ -188,6 +216,7 @@ fn main() -> Result<()> {
             best_streaks,
             active_days,
             weekly_completion,
+            heatmap_year_habits,
         )
     };
 
@@ -202,6 +231,7 @@ fn main() -> Result<()> {
     app.best_streaks = initial_best_streaks;
     app.active_days = initial_active_days;
     app.weekly_completion = initial_weekly_completion;
+    app.heatmap_year_habits = initial_heatmap_year_habits;
 
     let backend = CrosstermBackend::new(std::io::stdout());
     let terminal = Terminal::new(backend)?;
@@ -209,8 +239,11 @@ fn main() -> Result<()> {
     let mut tui = Tui::new(terminal, events);
     tui.enter()?;
 
-    let actions = Actions::new(tui.events.sender.clone(), habit_db_path);
+    let actions = Actions::new(tui.events.sender.clone(), actions_db_path.clone());
     let mut states = States::new();
+    states
+        .app_state
+        .update_heatmap_tile_states(&app.heatmap_year_habits);
     let mut notifier = Notifier::new();
 
     while !app.should_quit {
@@ -240,16 +273,22 @@ fn main() -> Result<()> {
                         actions.fetch_weekly_average();
                     }
                 }
+                if app.heatmap_year_habits_refresh_delay > 0 {
+                    app.heatmap_year_habits_refresh_delay -= 1;
+                    if app.heatmap_year_habits_refresh_delay == 0 {
+                        actions.fetch_heatmap_year_habits();
+                    }
+                }
             }
             AppEvent::Mouse(_) | AppEvent::Resize(_, _) => {}
             AppEvent::AddHabit(event) => {
-                handle_add_habit_event(&mut app, event, &mut states, &mut notifier);
+                handle_add_habit_event(&mut app, event, &mut states, &mut notifier, &actions);
             }
             AppEvent::LogHabit(event) => {
                 handle_log_habit_event(&mut app, event, &mut states, &mut notifier, &actions);
             }
             AppEvent::DeleteHabit(event) => {
-                handle_delete_habit_event(&mut app, event, &mut states, &mut notifier);
+                handle_delete_habit_event(&mut app, event, &mut states, &mut notifier, &actions);
             }
             AppEvent::GetStreak(event) => {
                 handle_get_streak_event(&mut app, event, &mut states, &mut notifier);
@@ -278,9 +317,15 @@ fn main() -> Result<()> {
             AppEvent::WeeklyAverage(event) => {
                 handle_weekly_average_event(&mut app, event, &mut states, &mut notifier);
             }
+            AppEvent::HeatmapYearHabits(event) => {
+                handle_heatmap_year_habits_event(&mut app, event, &mut states, &mut notifier);
+            }
         }
     }
 
     tui.exit()?;
+    if is_sample {
+        let _ = std::fs::remove_file(&actions_db_path);
+    }
     Ok(())
 }

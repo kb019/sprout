@@ -1,5 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
+use ratatui::widgets::ListState;
+
 use crate::constants::{CURSOR_BLINK_TICKS, PROGRESS_LOAD_TICKS};
 use crate::model::habit::{BestStreak, Habit};
 use crate::palette::Palette;
@@ -22,6 +24,9 @@ pub struct App {
     pub best_streaks: Vec<BestStreak>,
 
     pub active_days: u32,
+
+    /// Years that have habit log data (descending) with the habit IDs active in each year.
+    pub heatmap_year_habits: Vec<(i32, Vec<i32>)>,
 
     pub weekly_completion: [u32; 7],
 
@@ -63,6 +68,7 @@ pub struct App {
     pub best_streak_refresh_delay: u32,
     pub active_days_refresh_delay: u32,
     pub weekly_average_refresh_delay: u32,
+    pub heatmap_year_habits_refresh_delay: u32,
 
     // 0 = All, 1 = Errors only, 2 = Off
     pub notification_level: usize,
@@ -168,37 +174,55 @@ impl App {
         self.is_menu_in_focus = true;
     }
     /// Sets the focus to the dashboard.
-    pub fn focus_dashboard(&mut self) {
+    pub fn focus_dashboard(&mut self, list_state: &mut ListState) {
         self.remove_all_focus();
         self.is_dashboard_in_focus = true;
+        if list_state.selected().is_none() {
+            list_state.select(Some(0));
+        }
     }
 
     /// Sets the focus to the heatmap.
-    pub fn focus_heatmap(&mut self) {
+    pub fn focus_heatmap(&mut self, list_state: &mut ListState) {
         self.remove_all_focus();
         self.is_heatmap_in_focus = true;
+        if list_state.selected().is_none() {
+            list_state.select(Some(0));
+        }
     }
 
     /// Sets the focus to the settings.
-    pub fn focus_settings(&mut self) {
+    pub fn focus_settings(&mut self, list_state: &mut ListState) {
         self.remove_all_focus();
         self.is_settings_in_focus = true;
+        if list_state.selected().is_none() {
+            list_state.select(Some(0));
+        }
     }
 
     /// Sets the focus to the goal progress.
-    pub fn focus_goal_progress(&mut self) {
+    pub fn focus_goal_progress(&mut self, list_state: &mut ListState) {
         self.remove_all_focus();
         self.is_goal_progress_in_focus = true;
+        if list_state.selected().is_none() {
+            list_state.select(Some(0));
+        }
     }
 
-    pub fn focus_best_streaks(&mut self) {
+    pub fn focus_best_streaks(&mut self, list_state: &mut ListState) {
         self.remove_all_focus();
         self.is_best_streaks_in_focus = true;
+        if list_state.selected().is_none() {
+            list_state.select(Some(0));
+        }
     }
 
-    pub fn focus_streak_leaderboard(&mut self) {
+    pub fn focus_streak_leaderboard(&mut self, list_state: &mut ListState) {
         self.remove_all_focus();
         self.is_streak_leaderboard_in_focus = true;
+        if list_state.selected().is_none() {
+            list_state.select(Some(0));
+        }
     }
 
     pub fn remove_all_focus(&mut self) {

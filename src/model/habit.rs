@@ -71,6 +71,12 @@ impl HabitDb {
         Ok(habit_db)
     }
 
+    pub fn execute_batch(&self, sql: &str) -> Result<()> {
+        self.conn
+            .execute_batch(sql)
+            .context("Failed to execute batch SQL")
+    }
+
     pub fn create_habit(&mut self, habit: &NewHabit) -> Result<Habit> {
         let tx = self.conn.transaction().with_context(|| {
             format!(
@@ -521,6 +527,35 @@ impl HabitDb {
                 |row| row.get::<_, u32>(0),
             )
             .context("Failed to get active days count")
+    }
+
+    /// Returns years with log data (descending) paired with the habit IDs active in each year.
+    pub fn get_heatmap_year_habits(&self) -> Result<Vec<(i32, Vec<i32>)>> {
+        let mut stmt = self
+            .conn
+            .prepare(
+                "SELECT yr, habit_id FROM (\
+                   SELECT CAST(strftime('%Y', date) AS INTEGER) AS yr, habit_id \
+                   FROM habit_log GROUP BY yr, habit_id \
+                   UNION \
+                   SELECT CAST(strftime('%Y', 'now', 'localtime') AS INTEGER) AS yr, id AS habit_id \
+                   FROM habit\
+                 ) ORDER BY yr DESC, habit_id ASC",
+            )
+            .context("Failed to prepare heatmap year-habits query")?;
+
+        let mut map: std::collections::HashMap<i32, Vec<i32>> = std::collections::HashMap::new();
+        let rows = stmt
+            .query_map([], |row| Ok((row.get::<_, i32>(0)?, row.get::<_, i32>(1)?)))
+            .context("Failed to query heatmap year-habits")?;
+        for row in rows {
+            let (year, habit_id) = row.context("Failed to read heatmap year-habits row")?;
+            map.entry(year).or_default().push(habit_id);
+        }
+
+        let mut result: Vec<(i32, Vec<i32>)> = map.into_iter().collect();
+        result.sort_by_key(|b| std::cmp::Reverse(b.0));
+        Ok(result)
     }
 
     fn create_habit_table(&self) -> Result<()> {

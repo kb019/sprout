@@ -6,13 +6,13 @@ use ratatui::crossterm::event::KeyEvent;
 use crate::app::App;
 use crate::constants::{
     ACTIVE_DAYS_REFRESH_DELAY_TICKS, BEST_STREAK_REFRESH_DELAY_TICKS,
-    WEEKLY_AVERAGE_REFRESH_DELAY_TICKS,
+    HEATMAP_YEAR_HABITS_REFRESH_DELAY_TICKS, WEEKLY_AVERAGE_REFRESH_DELAY_TICKS,
 };
 use crate::controller::Actions;
 use crate::event::{
     ActiveDaysEvent, AddHabitEvent, BestStreaksEvent, DailyProgressEvent, DeleteHabitEvent,
-    EditHabitEvent, GetStreakEvent, LogHabitEvent, MonthlyProgressEvent, WeeklyAverageEvent,
-    WeeklyProgressEvent, YearlyProgressEvent,
+    EditHabitEvent, GetStreakEvent, HeatmapYearHabitsEvent, LogHabitEvent, MonthlyProgressEvent,
+    WeeklyAverageEvent, WeeklyProgressEvent, YearlyProgressEvent,
 };
 use crate::state::States;
 use crate::widgets::notifier::Notifier;
@@ -30,6 +30,7 @@ pub fn handle_add_habit_event(
     event: AddHabitEvent,
     states: &mut States,
     notifier: &mut Notifier,
+    _actions: &Actions,
 ) {
     match event {
         AddHabitEvent::Adding => {
@@ -47,6 +48,7 @@ pub fn handle_add_habit_event(
                 .add_modal_state_mut()
                 .set_is_adding_habit(false);
             states.modal_state.reset();
+            update_heatmap_year_habits_with_delay(app, states);
         }
         AddHabitEvent::Failed(message) => {
             notifier.notify_error(&format!("Failed to add habit: {}", message));
@@ -74,6 +76,11 @@ fn update_active_days_with_delay(app: &mut App, states: &mut States) {
 fn update_weekly_average_with_delay(app: &mut App, states: &mut States) {
     app.weekly_average_refresh_delay = WEEKLY_AVERAGE_REFRESH_DELAY_TICKS;
     states.weekly_average_state.start_fetching();
+}
+
+fn update_heatmap_year_habits_with_delay(app: &mut App, states: &mut States) {
+    app.heatmap_year_habits_refresh_delay = HEATMAP_YEAR_HABITS_REFRESH_DELAY_TICKS;
+    states.heatmap_year_habits_state.start_fetching();
 }
 
 pub fn handle_log_habit_event(
@@ -340,6 +347,7 @@ pub fn handle_delete_habit_event(
     event: DeleteHabitEvent,
     states: &mut States,
     notifier: &mut Notifier,
+    _actions: &Actions,
 ) {
     match event {
         DeleteHabitEvent::Deleting(_) => {
@@ -361,6 +369,7 @@ pub fn handle_delete_habit_event(
                 .delete_modal_state_mut()
                 .set_is_deleting(false);
             states.modal_state.reset();
+            update_heatmap_year_habits_with_delay(app, states);
         }
         DeleteHabitEvent::Failed(_, message) => {
             notifier.notify_error(&format!("Failed to delete habit: {}", message));
@@ -390,6 +399,31 @@ pub fn handle_weekly_average_event(
         WeeklyAverageEvent::Failed(message) => {
             states.weekly_average_state.stop_fetching();
             notifier.notify_error(&format!("Failed to fetch weekly average: {}", message));
+        }
+    }
+}
+
+pub fn handle_heatmap_year_habits_event(
+    app: &mut App,
+    event: HeatmapYearHabitsEvent,
+    states: &mut States,
+    notifier: &mut Notifier,
+) {
+    match event {
+        HeatmapYearHabitsEvent::Fetching => {
+            states.heatmap_year_habits_state.start_fetching();
+        }
+        HeatmapYearHabitsEvent::Fetched(year_habits) => {
+            app.heatmap_year_habits = year_habits;
+            states
+                .app_state
+                .update_heatmap_tile_states(&app.heatmap_year_habits);
+            states.heatmap_year_habits_state.stop_fetching();
+            notifier.notify_success("Heatmap data refreshed");
+        }
+        HeatmapYearHabitsEvent::Failed(message) => {
+            states.heatmap_year_habits_state.stop_fetching();
+            notifier.notify_error(&format!("Failed to refresh heatmap data: {}", message));
         }
     }
 }

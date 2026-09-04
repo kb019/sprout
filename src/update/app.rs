@@ -33,15 +33,40 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
             state.prev_menu(app.menu.len());
         } else if is_down_key(code) {
             state.next_menu(app.menu.len());
-        } else if matches!(code, KeyCode::Char('3')) {
-            app.focus_best_streaks();
-        } else if matches!(code, KeyCode::Char('4')) && state.menu_state().selected() == Some(2) {
-            app.focus_streak_leaderboard();
-        } else if is_right_key(code) {
+        } else if matches!(code, KeyCode::Tab) {
             match state.menu_state().selected() {
-                Some(0) => app.focus_dashboard(),
-                Some(1) => app.focus_heatmap(),
-                Some(3) => app.focus_settings(),
+                Some(0) => app.focus_dashboard(state.dashboard_habits_state_mut()),
+                Some(1) => {
+                    let year_idx = state.year_list_state().selected().unwrap_or(0);
+                    let year = app
+                        .heatmap_year_habits
+                        .get(year_idx)
+                        .map(|(y, _)| *y)
+                        .unwrap_or(0);
+                    if let Some(tile_state) = state.heatmap_tile_state_for_year_mut(year) {
+                        app.focus_heatmap(tile_state);
+                    }
+                }
+                Some(2) => app.focus_streak_leaderboard(state.streak_leaderboard_state_mut()),
+                Some(3) => app.focus_settings(state.settings_state_mut()),
+                _ => {}
+            }
+        } else if matches!(code, KeyCode::BackTab) {
+            match state.menu_state().selected() {
+                Some(0) => app.focus_best_streaks(state.best_streaks_list_state_mut()),
+                Some(1) => {
+                    let year_idx = state.year_list_state().selected().unwrap_or(0);
+                    let year = app
+                        .heatmap_year_habits
+                        .get(year_idx)
+                        .map(|(y, _)| *y)
+                        .unwrap_or(0);
+                    if let Some(tile_state) = state.heatmap_tile_state_for_year_mut(year) {
+                        app.focus_heatmap(tile_state);
+                    }
+                }
+                Some(2) => app.focus_streak_leaderboard(state.streak_leaderboard_state_mut()),
+                Some(3) => app.focus_settings(state.settings_state_mut()),
                 _ => {}
             }
         }
@@ -53,8 +78,7 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
             state.next_streak_leaderboard(app.habits.len());
         } else if is_up_key(code) {
             state.prev_streak_leaderboard();
-        } else if is_left_key(code) {
-            state.streak_leaderboard_state_mut().select(None);
+        } else if matches!(code, KeyCode::Tab | KeyCode::BackTab) {
             app.focus_menu();
         }
         return;
@@ -65,35 +89,48 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
             state.next_best_streak(app.best_streaks.len());
         } else if is_up_key(code) {
             state.prev_best_streak();
-        } else if is_left_key(code) {
+        } else if matches!(code, KeyCode::BackTab) {
+            app.focus_goal_progress(state.goal_progress_tile_state_mut());
+        } else if matches!(code, KeyCode::Tab) {
             app.focus_menu();
         }
         return;
     }
 
     if app.is_heatmap_in_focus {
+        if states.heatmap_year_habits_state.is_fetching() {
+            return;
+        }
+        let year_idx = state.year_list_state().selected().unwrap_or(0);
+        let (year, habit_count) = app
+            .heatmap_year_habits
+            .get(year_idx)
+            .map(|(y, ids)| (*y, ids.len()))
+            .unwrap_or((0, 0));
         if is_right_key(code) {
-            state.next_heatmap_tile(app.habits.len());
+            state.next_heatmap_tile(year, habit_count);
         } else if is_left_key(code) {
-            if state.heatmap_tile_state().selected().unwrap_or(0) == 0 {
-                app.focus_menu();
-            } else {
-                state.prev_heatmap_tile(app.habits.len());
-            }
+            state.prev_heatmap_tile(year);
+        } else if is_down_key(code) {
+            state.next_year(app.heatmap_year_habits.len());
+        } else if is_up_key(code) {
+            state.prev_year();
+        } else if matches!(code, KeyCode::Tab | KeyCode::BackTab) {
+            app.focus_menu();
         }
         return;
     }
 
     if app.is_dashboard_in_focus {
-        if is_left_key(code) {
-            app.focus_menu();
-        } else if is_up_key(code) {
+        if is_up_key(code) {
             state.prev_dashboard_habit(app.habits.len());
         } else if is_down_key(code) {
             state.next_dashboard_habit(app.habits.len());
-        } else if is_right_key(code) {
-            app.focus_goal_progress();
-        } else if matches!(code, KeyCode::Char('+')) {
+        } else if matches!(code, KeyCode::Tab) {
+            app.focus_goal_progress(state.goal_progress_tile_state_mut());
+        } else if matches!(code, KeyCode::BackTab) {
+            app.focus_menu();
+        } else if matches!(code, KeyCode::Char('a' | 'A')) {
             app.show_add_modal();
         } else if matches!(code, KeyCode::Char('e' | 'E')) {
             let current_habit_index = state.dashboard_habits_state().selected();
@@ -124,7 +161,7 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
                     app.show_log_progress_modal(habit.id);
                 }
             }
-        } else if matches!(code, KeyCode::Char('x' | 'X')) {
+        } else if matches!(code, KeyCode::Char('d' | 'D')) {
             let current_habit_index = state.dashboard_habits_state().selected();
             if let Some(habit_index) = current_habit_index
                 && habit_index < app.habits.len()
@@ -169,10 +206,7 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
                 3 => 3,
                 _ => 1,
             };
-            if len > 0 && state.settings_tile_selected(row) == Some(len - 1) {
-                state.clear_settings();
-                app.focus_menu();
-            } else if len > 0 {
+            if len > 0 {
                 state.next_settings_tile(row, len);
                 if row == 0 {
                     app.active_theme = state.active_theme();
@@ -184,6 +218,8 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
             }
         } else if matches!(code, KeyCode::Char('m' | 'M')) {
             state.clear_settings();
+        } else if matches!(code, KeyCode::Tab | KeyCode::BackTab) {
+            app.focus_menu();
         }
         return;
     }
@@ -198,17 +234,17 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
             _ => 0,
         };
         if is_right_key(code) {
-            state.next_goal_progress(len);
+            state.next_goal_progress(4);
         } else if is_left_key(code) {
-            if tab == 0 {
-                app.focus_dashboard();
-            } else {
-                state.prev_goal_progress();
-            }
+            state.prev_goal_progress();
         } else if is_down_key(code) {
             state.next_goal_progress_row(tab, len);
         } else if is_up_key(code) {
             state.prev_goal_progress_row(tab);
+        } else if matches!(code, KeyCode::Tab) {
+            app.focus_best_streaks(state.best_streaks_list_state_mut());
+        } else if matches!(code, KeyCode::BackTab) {
+            app.focus_dashboard(state.dashboard_habits_state_mut());
         }
         return;
     }

@@ -163,10 +163,6 @@ pub fn render_habit_item(
         Span::raw("🔥 "),
         Span::styled(streak_count, Style::default().fg(p.amber)),
         Span::raw(" "),
-        Span::styled(symbols::EDIT_ICON, Style::default().fg(p.fg_dim)),
-        Span::raw("  "),
-        Span::styled(symbols::DELETE_ICON, Style::default().fg(p.fg_dim)),
-        Span::raw(" "),
     ])
     .right_aligned();
     Widget::render(&status_span, status_area, buf);

@@ -42,6 +42,7 @@ impl Tui {
         // This way, you won't have your terminal messed up if an unexpected error happens.
         let panic_hook = panic::take_hook();
         panic::set_hook(Box::new(move |panic| {
+            let _ = std::fs::remove_file(std::env::temp_dir().join("sprout_sample.db"));
             Self::reset().expect("failed to reset the terminal");
             panic_hook(panic);
         }));

@@ -25,3 +25,6 @@ pub const ACTIVE_DAYS_REFRESH_DELAY_TICKS: u32 = 20;
 
 /// Ticks to wait after the last log before refreshing weekly average (20 × 100ms = 2s).
 pub const WEEKLY_AVERAGE_REFRESH_DELAY_TICKS: u32 = 20;
+
+/// Ticks to wait after add/delete before refreshing heatmap year-habit data (20 × 100ms = 2s).
+pub const HEATMAP_YEAR_HABITS_REFRESH_DELAY_TICKS: u32 = 20;

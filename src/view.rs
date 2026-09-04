@@ -27,6 +27,7 @@ pub fn render(app: &mut App, frame: &mut Frame, states: &mut States) {
     let [menu_column, app_column] = main.layout(&horizontal);
 
     let selected_menu = states.app_state.menu_state().selected();
+    let selected_settings_row = states.app_state.settings_state().selected();
 
     menu::render_menu_column(app, frame, menu_column, states.app_state.menu_state_mut());
 
@@ -50,7 +51,7 @@ pub fn render(app: &mut App, frame: &mut Frame, states: &mut States) {
     }
 
     draw_app_name(app, frame, top);
-    draw_help_bar(app, frame, help_area, selected_menu);
+    draw_help_bar(app, frame, help_area, selected_menu, selected_settings_row);
 }
 
 fn draw_app_name(app: &App, frame: &mut Frame, area: Rect) {
@@ -62,23 +63,48 @@ fn draw_app_name(app: &App, frame: &mut Frame, area: Rect) {
     frame.render_widget(title.left_aligned(), area);
 }
 
-fn draw_help_bar(app: &App, frame: &mut Frame, area: Rect, selected_menu: Option<usize>) {
+fn draw_help_bar(
+    app: &App,
+    frame: &mut Frame,
+    area: Rect,
+    selected_menu: Option<usize>,
+    selected_settings_row: Option<usize>,
+) {
     let p = app.palette();
 
-    const UNIVERSAL: &[(&str, &str)] =
-        &[("↑↓", "navigate"), ("tab", "switch panel"), ("?", "help")];
+    const UNIVERSAL: &[(&str, &str)] = &[
+        ("tab", "switch"),
+        ("shift+tab", "prev pane"),
+        ("q/esc", "quit"),
+    ];
 
-    let screen: &[(&str, &str)] = match selected_menu {
-        Some(0) => &[
-            ("enter", "toggle"),
-            ("+", "add"),
+    let screen: &[(&str, &str)] = if app.is_menu_in_focus {
+        &[("↑↓/jk", "navigate menu")]
+    } else if app.is_streak_leaderboard_in_focus {
+        &[("↑↓/jk", "navigate leaderboard")]
+    } else if app.is_dashboard_in_focus {
+        &[
+            ("↑↓/jk", "navigate list"),
+            ("a", "add"),
+            ("d", "delete"),
             ("e", "edit"),
-            ("x", "delete"),
-        ],
-        Some(1) => &[("◂ ▸", "navigate habits")],
-        Some(2) => &[("4", "streak leaderboard")],
-        Some(3) => &[("enter", "toggle/activate"), ("◂ ▸", "change option")],
-        _ => &[],
+        ]
+    } else if app.is_goal_progress_in_focus {
+        &[("↑↓/jk", "navigate"), ("◂ ▸/hl", "select tab")]
+    } else if app.is_best_streaks_in_focus {
+        &[("↑↓/jk", "navigate list")]
+    } else {
+        match selected_menu {
+            Some(1) => &[("↑↓/jk", "select year"), ("◂ ▸/hl", "select habit")],
+            Some(3) => {
+                if selected_settings_row == Some(4) {
+                    &[("↑↓/jk", "navigate settings"), ("enter", "reset")]
+                } else {
+                    &[("↑↓/jk", "navigate settings"), ("◂ ▸/hl", "change option")]
+                }
+            }
+            _ => &[],
+        }
     };
 
     let block = Block::default()

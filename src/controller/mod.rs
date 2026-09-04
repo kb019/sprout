@@ -4,6 +4,7 @@ mod best_streaks;
 mod delete_habit;
 mod edit_habit;
 mod get_streak;
+mod heatmap_year_habits;
 mod log_habit;
 mod progress;
 mod weekly_average;
@@ -19,6 +20,7 @@ use best_streaks::BestStreaksAction;
 use delete_habit::DeleteHabitAction;
 use edit_habit::EditHabitAction;
 use get_streak::GetStreakAction;
+use heatmap_year_habits::HeatmapYearHabitsAction;
 use log_habit::LogHabitAction;
 use progress::{
     DailyProgressAction, MonthlyProgressAction, WeeklyProgressAction, YearlyProgressAction,
@@ -27,6 +29,7 @@ use weekly_average::WeeklyAverageAction;
 
 pub struct Actions {
     active_days_action: ActiveDaysAction,
+    heatmap_year_habits_action: HeatmapYearHabitsAction,
     weekly_average_action: WeeklyAverageAction,
     add_habit_action: AddHabitAction,
     best_streaks_action: BestStreaksAction,
@@ -44,6 +47,10 @@ impl Actions {
     pub fn new(sender: mpsc::Sender<AppEvent>, db_path: PathBuf) -> Self {
         Self {
             active_days_action: ActiveDaysAction::new(sender.clone(), db_path.clone()),
+            heatmap_year_habits_action: HeatmapYearHabitsAction::new(
+                sender.clone(),
+                db_path.clone(),
+            ),
             weekly_average_action: WeeklyAverageAction::new(sender.clone(), db_path.clone()),
             add_habit_action: AddHabitAction::new(sender.clone(), db_path.clone()),
             best_streaks_action: BestStreaksAction::new(sender.clone(), db_path.clone()),
@@ -105,5 +112,9 @@ impl Actions {
 
     pub fn fetch_weekly_average(&self) {
         self.weekly_average_action.fetch();
+    }
+
+    pub fn fetch_heatmap_year_habits(&self) {
+        self.heatmap_year_habits_action.fetch();
     }
 }
