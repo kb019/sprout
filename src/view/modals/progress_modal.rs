@@ -9,7 +9,6 @@ use ratatui::{
 use crate::{
     app::App,
     state::{States, modal::ModalState},
-    symbols,
     utils::progress,
     widgets::{
         input::Input,
@@ -51,20 +50,13 @@ pub fn render_progress_modal(app: &mut App, frame: &mut Frame, area: Rect, state
 #[allow(clippy::needless_pass_by_ref_mut)]
 fn render_title(app: &mut App, frame: &mut Frame, area: Rect, habit_name: &str) {
     let p = app.palette();
-    let horizontal_layout = Layout::horizontal([Constraint::Fill(1), Constraint::Length(2)]);
-    let [title_content_area, close_button_area] = area.layout(&horizontal_layout);
-
     let title = format!(" Log - {} ", habit_name);
     let title_text = Text::from(Line::from(title)).style(Style::new().fg(p.accent));
-    let cross_mark =
-        Line::from(vec![Span::from(symbols::CROSS_MARK)]).style(Style::new().fg(p.fg_dim));
     let border_bottom = Block::default()
         .borders(Borders::BOTTOM)
         .border_type(BorderType::Plain)
         .border_style(Style::new().fg(p.fg_dim));
-
-    frame.render_widget(title_text, title_content_area);
-    frame.render_widget(cross_mark, close_button_area);
+    frame.render_widget(title_text, area);
     frame.render_widget(border_bottom, area);
 }
 
@@ -120,24 +112,19 @@ fn render_footer(app: &mut App, frame: &mut Frame, area: Rect, states: &mut Stat
     };
 
     let progress_modal_state = states.modal_state.progress_modal_state_mut();
-    let selected = progress_modal_state.selected_button();
-    let tile_items: Vec<TileItem> = vec![log_text, Text::from("Cancel")]
+    let tile_items: Vec<TileItem> = vec![log_text]
         .into_iter()
         .enumerate()
         .map(|(i, text)| {
-            if i == selected {
-                let text = if i == 0 && is_logging {
-                    text.add_modifier(Modifier::BOLD).bg(p.selection).centered()
-                } else {
-                    text.fg(p.accent)
-                        .add_modifier(Modifier::BOLD)
-                        .bg(p.selection)
-                        .centered()
-                };
-                TileItem::new(text)
+            let text = if i == 0 && is_logging {
+                text.add_modifier(Modifier::BOLD).bg(p.selection).centered()
             } else {
-                TileItem::new(text.centered())
-            }
+                text.fg(p.accent)
+                    .add_modifier(Modifier::BOLD)
+                    .bg(p.selection)
+                    .centered()
+            };
+            TileItem::new(text)
         })
         .collect();
 

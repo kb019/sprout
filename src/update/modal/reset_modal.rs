@@ -34,26 +34,11 @@ pub fn handle_reset_modal(
         _ => {}
     }
 
-    if matches!(code, KeyCode::Left) {
-        states.modal_state.reset_modal_state_mut().next_button();
-        return;
-    }
-    if matches!(code, KeyCode::Right) {
-        states.modal_state.reset_modal_state_mut().prev_button();
-        return;
-    }
-
     if code == KeyCode::Enter {
-        let selected = states.modal_state.reset_modal_state_mut().selected_button();
-        if selected == 1 {
-            app.hide_reset_modal();
-            states.modal_state.reset();
-        } else {
-            states
-                .modal_state
-                .reset_modal_state_mut()
-                .set_is_resetting(true);
-            actions.reset_all();
-        }
+        states
+            .modal_state
+            .reset_modal_state_mut()
+            .set_is_resetting(true);
+        actions.reset_all();
     }
 }

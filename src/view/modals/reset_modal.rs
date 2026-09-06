@@ -1,7 +1,7 @@
 use ratatui::{
     Frame,
     layout::{Constraint, Layout, Rect},
-    style::{Color, Modifier, Style, Stylize},
+    style::{Modifier, Style, Stylize},
     text::{Line, Span, Text},
     widgets::{Block, BorderType, Borders, Paragraph},
 };
@@ -9,7 +9,6 @@ use ratatui::{
 use crate::{
     app::App,
     state::States,
-    symbols,
     utils::progress,
     widgets::tile_list::{TileDirection, TileItem, TileList, TileType},
 };
@@ -34,19 +33,12 @@ pub fn render_reset_modal(app: &mut App, frame: &mut Frame, area: Rect, states: 
 #[allow(clippy::needless_pass_by_ref_mut)]
 fn render_title(app: &mut App, frame: &mut Frame, area: Rect) {
     let p = app.palette();
-    let horizontal_layout = Layout::horizontal([Constraint::Fill(1), Constraint::Length(2)]);
-    let [title_content_area, close_button_area] = area.layout(&horizontal_layout);
-
     let title_text = Text::from(Line::from(" Reset all data ")).style(Style::new().fg(p.accent));
-    let cross_mark =
-        Line::from(vec![Span::from(symbols::CROSS_MARK)]).style(Style::new().fg(p.fg_dim));
     let border_bottom = Block::default()
         .borders(Borders::BOTTOM)
         .border_type(BorderType::Plain)
         .border_style(Style::new().fg(p.fg_dim));
-
-    frame.render_widget(title_text, title_content_area);
-    frame.render_widget(cross_mark, close_button_area);
+    frame.render_widget(title_text, area);
     frame.render_widget(border_bottom, area);
 }
 
@@ -98,24 +90,19 @@ fn render_footer(app: &mut App, frame: &mut Frame, area: Rect, states: &mut Stat
     };
 
     let reset_modal_state = states.modal_state.reset_modal_state_mut();
-    let selected = reset_modal_state.selected_button();
-    let tile_items: Vec<TileItem> = vec![confirm_text, Text::from("Cancel")]
+    let tile_items: Vec<TileItem> = vec![confirm_text]
         .into_iter()
         .enumerate()
         .map(|(i, text)| {
-            if i == selected {
-                let text = if i == 0 && is_resetting {
-                    text.add_modifier(Modifier::BOLD).centered()
-                } else {
-                    text.fg(if i == 0 { Color::Red } else { p.fg_dim })
-                        .add_modifier(Modifier::BOLD)
-                        .bg(if i == 1 { p.selection } else { p.background })
-                        .centered()
-                };
-                TileItem::new(text)
+            let text = if i == 0 && is_resetting {
+                text.add_modifier(Modifier::BOLD).centered()
             } else {
-                TileItem::new(text.centered())
-            }
+                text.fg(p.danger)
+                    .add_modifier(Modifier::BOLD)
+                    .bg(p.selection)
+                    .centered()
+            };
+            TileItem::new(text)
         })
         .collect();
 

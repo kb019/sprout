@@ -38,48 +38,33 @@ pub fn handle_edit_modal(
         _ => {}
     }
 
-    if matches!(code, KeyCode::Left) {
-        states.modal_state.edit_modal_state_mut().next_button();
-        return;
-    }
-    if matches!(code, KeyCode::Right) {
-        states.modal_state.edit_modal_state_mut().prev_button();
-        return;
-    }
-
     if code == KeyCode::Enter {
-        let selected_button = states.modal_state.edit_modal_state_mut().selected_button();
-        if selected_button == 1 {
-            app.hide_all_modals();
-            states.modal_state.reset();
-        } else {
-            let name_is_empty = states
+        let name_is_empty = states
+            .modal_state
+            .edit_modal_state_mut()
+            .habit_name_input_state_mut()
+            .get_value()
+            .trim()
+            .is_empty();
+        let goal_field_is_empty = states
+            .modal_state
+            .edit_modal_state_mut()
+            .any_active_goal_field_empty();
+        if name_is_empty {
+            notifier.notify_error("Habit name should not be empty");
+        } else if goal_field_is_empty {
+            notifier.notify_error("Goal value should not be empty");
+        } else if let Some(update) = build_habit_update(app, states) {
+            let created_at = app
+                .display_edit_modal
+                .and_then(|id| app.habits.iter().find(|h| h.id == id))
+                .map(|h| h.created_at.clone())
+                .unwrap_or_default();
+            states
                 .modal_state
                 .edit_modal_state_mut()
-                .habit_name_input_state_mut()
-                .get_value()
-                .trim()
-                .is_empty();
-            let goal_field_is_empty = states
-                .modal_state
-                .edit_modal_state_mut()
-                .any_active_goal_field_empty();
-            if name_is_empty {
-                notifier.notify_error("Habit name should not be empty");
-            } else if goal_field_is_empty {
-                notifier.notify_error("Goal value should not be empty");
-            } else if let Some(update) = build_habit_update(app, states) {
-                let created_at = app
-                    .display_edit_modal
-                    .and_then(|id| app.habits.iter().find(|h| h.id == id))
-                    .map(|h| h.created_at.clone())
-                    .unwrap_or_default();
-                states
-                    .modal_state
-                    .edit_modal_state_mut()
-                    .set_is_editing(true);
-                actions.edit_habit(update, created_at);
-            }
+                .set_is_editing(true);
+            actions.edit_habit(update, created_at);
         }
         return;
     }
@@ -87,12 +72,44 @@ pub fn handle_edit_modal(
     let edit_modal_state = states.modal_state.edit_modal_state_mut();
 
     match code {
-        KeyCode::Tab => {
+        KeyCode::Tab | KeyCode::Down => {
             edit_modal_state.focus_next_field();
             return;
         }
-        KeyCode::BackTab => {
+        KeyCode::BackTab | KeyCode::Up => {
             edit_modal_state.focus_prev_field();
+            return;
+        }
+        KeyCode::Left => {
+            let field = edit_modal_state.get_current_actual_field();
+            let input = match field {
+                0 => edit_modal_state.habit_name_input_state_mut(),
+                1 => edit_modal_state.daily_goal_input_state_mut(),
+                2 => edit_modal_state.weekly_goal_input_state_mut(),
+                3 => edit_modal_state.monthly_goal_input_state_mut(),
+                _ => edit_modal_state.yearly_goal_input_state_mut(),
+            };
+            let delay = input.get_cursor_visibility_delay();
+            if delay < CURSOR_DELAY_THRESHOLD {
+                input.set_cursor_visibility_delay(delay + CURSOR_TYPING_DELAY);
+            }
+            input.move_cursor_left();
+            return;
+        }
+        KeyCode::Right => {
+            let field = edit_modal_state.get_current_actual_field();
+            let input = match field {
+                0 => edit_modal_state.habit_name_input_state_mut(),
+                1 => edit_modal_state.daily_goal_input_state_mut(),
+                2 => edit_modal_state.weekly_goal_input_state_mut(),
+                3 => edit_modal_state.monthly_goal_input_state_mut(),
+                _ => edit_modal_state.yearly_goal_input_state_mut(),
+            };
+            let delay = input.get_cursor_visibility_delay();
+            if delay < CURSOR_DELAY_THRESHOLD {
+                input.set_cursor_visibility_delay(delay + CURSOR_TYPING_DELAY);
+            }
+            input.move_cursor_right();
             return;
         }
         _ => {}

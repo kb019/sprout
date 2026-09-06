@@ -38,47 +38,51 @@ pub fn handle_progress_modal(
         _ => {}
     }
 
-    // Left/Right navigate the button row (right-to-left layout: Log on right, Cancel on left).
     if matches!(code, KeyCode::Left) {
-        states.modal_state.progress_modal_state_mut().next_button();
+        let input = states
+            .modal_state
+            .progress_modal_state_mut()
+            .progress_input_state_mut();
+        let delay = input.get_cursor_visibility_delay();
+        if delay < CURSOR_DELAY_THRESHOLD {
+            input.set_cursor_visibility_delay(delay + CURSOR_TYPING_DELAY);
+        }
+        input.move_cursor_left();
         return;
     }
     if matches!(code, KeyCode::Right) {
-        states.modal_state.progress_modal_state_mut().prev_button();
+        let input = states
+            .modal_state
+            .progress_modal_state_mut()
+            .progress_input_state_mut();
+        let delay = input.get_cursor_visibility_delay();
+        if delay < CURSOR_DELAY_THRESHOLD {
+            input.set_cursor_visibility_delay(delay + CURSOR_TYPING_DELAY);
+        }
+        input.move_cursor_right();
         return;
     }
 
     if code == KeyCode::Enter {
-        let selected = states
+        let progress_value = states
             .modal_state
             .progress_modal_state_mut()
-            .selected_button();
-        if selected == 1 {
-            // Cancel
-            app.hide_log_progress_modal();
-            states.modal_state.reset();
+            .progress_input_state_mut()
+            .get_value()
+            .parse::<i32>()
+            .unwrap_or(0);
+        let daily_goal = app
+            .habits
+            .iter()
+            .find(|h| h.id == habit_id)
+            .map(|h| h.daily_goal)
+            .unwrap_or(0);
+        let completed = if daily_goal > 0 {
+            if progress_value >= daily_goal { 1 } else { 0 }
         } else {
-            // Log
-            let progress_value = states
-                .modal_state
-                .progress_modal_state_mut()
-                .progress_input_state_mut()
-                .get_value()
-                .parse::<i32>()
-                .unwrap_or(0);
-            let daily_goal = app
-                .habits
-                .iter()
-                .find(|h| h.id == habit_id)
-                .map(|h| h.daily_goal)
-                .unwrap_or(0);
-            let completed = if daily_goal > 0 {
-                if progress_value >= daily_goal { 1 } else { 0 }
-            } else {
-                if progress_value > 0 { 1 } else { 0 }
-            };
-            actions.log_habit(habit_id, completed, progress_value);
-        }
+            if progress_value > 0 { 1 } else { 0 }
+        };
+        actions.log_habit(habit_id, completed, progress_value);
         return;
     }
 

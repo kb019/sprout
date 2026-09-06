@@ -38,38 +38,18 @@ pub fn handle_add_modal(
         _ => {}
     }
 
-    // Left/Right always navigate the button TileList (Add / Cancel).
-    // Reversed because the TileList renders right-to-left (Add is on the right, Cancel on the left).
-    if matches!(code, KeyCode::Left) {
-        states.modal_state.add_modal_state_mut().next_button();
-        return;
-    }
-    if matches!(code, KeyCode::Right) {
-        states.modal_state.add_modal_state_mut().prev_button();
-        return;
-    }
-
-    // Enter triggers the currently selected button.
     if code == KeyCode::Enter {
-        let selected_button = states.modal_state.add_modal_state_mut().selected_button();
-        if selected_button == 1 {
-            // Cancel
-            app.hide_all_modals();
-            states.modal_state.reset();
-        } else {
-            // Add
-            let name_is_empty = states
-                .modal_state
-                .add_modal_state_mut()
-                .habit_name_input_state_mut()
-                .get_value()
-                .trim()
-                .is_empty();
-            if name_is_empty {
-                notifier.notify_error("Habit name should not be empty");
-            } else if let Some(new_habit) = build_new_habit(states) {
-                actions.add_habit(new_habit);
-            }
+        let name_is_empty = states
+            .modal_state
+            .add_modal_state_mut()
+            .habit_name_input_state_mut()
+            .get_value()
+            .trim()
+            .is_empty();
+        if name_is_empty {
+            notifier.notify_error("Habit name should not be empty");
+        } else if let Some(new_habit) = build_new_habit(states) {
+            actions.add_habit(new_habit);
         }
         return;
     }
@@ -82,12 +62,44 @@ pub fn handle_add_modal(
             add_modal_state.reset();
             return;
         }
-        KeyCode::Tab => {
+        KeyCode::Tab | KeyCode::Down => {
             add_modal_state.focus_next_field();
             return;
         }
-        KeyCode::BackTab => {
+        KeyCode::BackTab | KeyCode::Up => {
             add_modal_state.focus_prev_field();
+            return;
+        }
+        KeyCode::Left => {
+            let field = add_modal_state.get_current_field_focus();
+            let input = match field {
+                0 => add_modal_state.habit_name_input_state_mut(),
+                1 => add_modal_state.daily_goal_input_state_mut(),
+                2 => add_modal_state.weekly_goal_input_state_mut(),
+                3 => add_modal_state.monthly_goal_input_state_mut(),
+                _ => add_modal_state.yearly_goal_input_state_mut(),
+            };
+            let delay = input.get_cursor_visibility_delay();
+            if delay < CURSOR_DELAY_THRESHOLD {
+                input.set_cursor_visibility_delay(delay + CURSOR_TYPING_DELAY);
+            }
+            input.move_cursor_left();
+            return;
+        }
+        KeyCode::Right => {
+            let field = add_modal_state.get_current_field_focus();
+            let input = match field {
+                0 => add_modal_state.habit_name_input_state_mut(),
+                1 => add_modal_state.daily_goal_input_state_mut(),
+                2 => add_modal_state.weekly_goal_input_state_mut(),
+                3 => add_modal_state.monthly_goal_input_state_mut(),
+                _ => add_modal_state.yearly_goal_input_state_mut(),
+            };
+            let delay = input.get_cursor_visibility_delay();
+            if delay < CURSOR_DELAY_THRESHOLD {
+                input.set_cursor_visibility_delay(delay + CURSOR_TYPING_DELAY);
+            }
+            input.move_cursor_right();
             return;
         }
         _ => {}
