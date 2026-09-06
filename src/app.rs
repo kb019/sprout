@@ -126,6 +126,7 @@ impl App {
         app.themes = vec!["Sprout", "Amber", "Mono"];
         app.goal_progress_options = vec!["Daily", "Weekly", "Monthly", "Yearly"];
         app.cursor_blink_enabled = true;
+        app.notification_level = 1;
         app
     }
 

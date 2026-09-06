@@ -4,9 +4,13 @@
 </p>
 
 <p align="center">
-  <a href="https://ratatui.rs/"><img src="https://ratatui.rs/built-with-ratatui/badge.svg" alt="Built With Ratatui"></a>
+  <a href="https://ratatui.rs/">
+    <img
+      src="https://img.shields.io/badge/Built%20With-Ratatui-2EA44F?style=flat"
+      alt="Built With Ratatui"
+    >
+  </a>
 </p>
-
 
 
 

@@ -25,6 +25,7 @@ impl AppState {
         for s in &mut settings_tile_states {
             s.select(Some(0));
         }
+        settings_tile_states[3].select(Some(1));
         let mut goal_progress_tile_state = ListState::default();
         goal_progress_tile_state.select(Some(0));
         // 0=daily, 1=weekly, 2=monthly, 3=yearly

@@ -153,13 +153,12 @@ fn main() -> Result<()> {
         .ok()
         .and_then(|p| p.parent().map(|d| d.to_path_buf()))
         .unwrap_or_else(|| std::path::PathBuf::from("."));
-    let habit_db_path = exe_dir.join("habit.db");
-    let settings_db_path = exe_dir.join("settings.db");
+    let db_path = exe_dir.join("habit.db");
 
     let is_sample = matches!(args.command, Some(Commands::Sample {}));
 
     check_if_terminal();
-    let _settings_db = SettingsDb::new(&settings_db_path)?;
+    let _settings_db = SettingsDb::new(&db_path)?;
 
     // Sample mode writes to a temp file so all controller connections share the same DB
     // without touching habit.db. Cleaned up on exit and on panic (tui.rs hook).
@@ -168,7 +167,7 @@ fn main() -> Result<()> {
         let _ = std::fs::remove_file(&p);
         p
     } else {
-        habit_db_path.clone()
+        db_path.clone()
     };
 
     // Load existing habits and today's completion state once at startup.
