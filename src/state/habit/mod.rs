@@ -5,4 +5,5 @@ pub mod heatmap_data_state;
 pub mod heatmap_year_habits;
 pub mod log_habit;
 pub mod progress;
+pub mod save_settings;
 pub mod weekly_average;

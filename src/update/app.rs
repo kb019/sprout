@@ -1,6 +1,7 @@
 use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::app::App;
+use crate::constants::SETTINGS_SAVE_DELAY_TICKS;
 use crate::controller::Actions;
 use crate::state::States;
 use crate::state::app::AppState;
@@ -233,6 +234,10 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
                 } else if row == 3 {
                     app.notification_level = state.settings_tile_selected(3).unwrap_or(0);
                 }
+                if row < 4 {
+                    app.settings_save_delay = SETTINGS_SAVE_DELAY_TICKS;
+                    states.settings_save_state.start_saving();
+                }
             }
         } else if is_left_key(code) {
             let row = state.settings_state().selected().unwrap_or(0);
@@ -251,6 +256,10 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
                     app.cursor_blink_enabled = state.settings_tile_selected(2) == Some(0);
                 } else if row == 3 {
                     app.notification_level = state.settings_tile_selected(3).unwrap_or(0);
+                }
+                if row < 4 {
+                    app.settings_save_delay = SETTINGS_SAVE_DELAY_TICKS;
+                    states.settings_save_state.start_saving();
                 }
             }
         } else if matches!(code, KeyCode::Enter) {

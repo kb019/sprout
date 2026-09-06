@@ -6,7 +6,7 @@
 <p align="center">
   <a href="https://ratatui.rs/">
     <img
-      src="https://img.shields.io/badge/Built%20With-Ratatui-2EA44F?style=flat"
+      src="https://img.shields.io/badge/Built%20With-Ratatui-6E56CF?style=flat"
       alt="Built With Ratatui"
     >
   </a>

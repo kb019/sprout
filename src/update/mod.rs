@@ -12,7 +12,8 @@ use crate::controller::Actions;
 use crate::event::{
     ActiveDaysEvent, AddHabitEvent, BestStreaksEvent, DailyProgressEvent, DeleteHabitEvent,
     EditHabitEvent, GetStreakEvent, HeatmapDataEvent, HeatmapYearHabitsEvent, LogHabitEvent,
-    MonthlyProgressEvent, ResetEvent, WeeklyAverageEvent, WeeklyProgressEvent, YearlyProgressEvent,
+    MonthlyProgressEvent, ResetEvent, SettingsSaveEvent, WeeklyAverageEvent, WeeklyProgressEvent,
+    YearlyProgressEvent,
 };
 use crate::state::States;
 use crate::widgets::notifier::Notifier;
@@ -538,6 +539,26 @@ pub fn handle_reset_event(
                 .reset_modal_state_mut()
                 .set_is_resetting(false);
             notifier.notify_error(&format!("Failed to reset data: {}", message));
+        }
+    }
+}
+
+pub fn handle_settings_save_event(
+    event: SettingsSaveEvent,
+    states: &mut States,
+    notifier: &mut Notifier,
+) {
+    match event {
+        SettingsSaveEvent::Saving => {
+            states.settings_save_state.start_saving();
+        }
+        SettingsSaveEvent::Saved => {
+            states.settings_save_state.stop_saving();
+            notifier.notify_success("Settings synced");
+        }
+        SettingsSaveEvent::Failed(message) => {
+            states.settings_save_state.stop_saving();
+            notifier.notify_error(&format!("Failed to sync settings: {}", message));
         }
     }
 }

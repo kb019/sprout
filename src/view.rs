@@ -37,6 +37,7 @@ pub fn render(app: &mut App, frame: &mut Frame, states: &mut States) {
             1 => heatmap_ui::render_heatmap_page(app, frame, app_column, states),
             2 => stats::render_stats_column(app, frame, app_column, states),
             3 => {
+                let is_saving = states.settings_save_state.is_saving();
                 let (settings_state, settings_tile_states) = states.app_state.settings_states_mut();
                 settings::render_settings_page(
                     app,
@@ -44,6 +45,7 @@ pub fn render(app: &mut App, frame: &mut Frame, states: &mut States) {
                     app_column,
                     settings_state,
                     settings_tile_states,
+                    is_saving,
                 );
             }
             _ => {}

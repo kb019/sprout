@@ -61,7 +61,8 @@ use crate::update::{
     handle_daily_progress_event, handle_delete_habit_event, handle_edit_habit_event,
     handle_get_streak_event, handle_heatmap_data_event, handle_heatmap_year_habits_event,
     handle_log_habit_event, handle_monthly_progress_event, handle_reset_event,
-    handle_weekly_average_event, handle_weekly_progress_event, handle_yearly_progress_event,
+    handle_settings_save_event, handle_weekly_average_event, handle_weekly_progress_event,
+    handle_yearly_progress_event,
 };
 use crate::widgets::notifier::Notifier;
 
@@ -158,7 +159,10 @@ fn main() -> Result<()> {
     let is_sample = matches!(args.command, Some(Commands::Sample {}));
 
     check_if_terminal();
-    let _settings_db = SettingsDb::new(&db_path)?;
+    let loaded_settings = {
+        let settings_db = SettingsDb::new(&db_path)?;
+        settings_db.load_settings().unwrap_or_default()
+    };
 
     // Sample mode writes to a temp file so all controller connections share the same DB
     // without touching habit.db. Cleaned up on exit and on panic (tui.rs hook).
@@ -243,6 +247,42 @@ fn main() -> Result<()> {
     states
         .app_state
         .update_heatmap_tile_states(&app.heatmap_year_habits);
+
+    let (_, tile_states) = states.app_state.settings_states_mut();
+    if let Some(v) = loaded_settings
+        .get("theme")
+        .and_then(|s| s.parse::<usize>().ok())
+    {
+        app.active_theme = v;
+        if let Some(s) = tile_states.get_mut(0) {
+            s.select(Some(v));
+        }
+    }
+    if let Some(v) = loaded_settings
+        .get("default_view")
+        .and_then(|s| s.parse::<usize>().ok())
+        && let Some(s) = tile_states.get_mut(1)
+    {
+        s.select(Some(v));
+    }
+    if let Some(v) = loaded_settings
+        .get("cursor_blink")
+        .and_then(|s| s.parse::<usize>().ok())
+    {
+        app.cursor_blink_enabled = v == 0;
+        if let Some(s) = tile_states.get_mut(2) {
+            s.select(Some(v));
+        }
+    }
+    if let Some(v) = loaded_settings
+        .get("notification_level")
+        .and_then(|s| s.parse::<usize>().ok())
+    {
+        app.notification_level = v;
+        if let Some(s) = tile_states.get_mut(3) {
+            s.select(Some(v));
+        }
+    }
     let mut notifier = Notifier::new();
 
     if let Some((year, ids)) = app.heatmap_year_habits.first()
@@ -282,6 +322,17 @@ fn main() -> Result<()> {
                     app.heatmap_year_habits_refresh_delay -= 1;
                     if app.heatmap_year_habits_refresh_delay == 0 {
                         actions.fetch_heatmap_year_habits();
+                    }
+                }
+                if app.settings_save_delay > 0 {
+                    app.settings_save_delay -= 1;
+                    if app.settings_save_delay == 0 {
+                        actions.save_settings(
+                            states.app_state.active_theme(),
+                            states.app_state.settings_tile_selected(1).unwrap_or(0),
+                            states.app_state.settings_tile_selected(2).unwrap_or(0),
+                            states.app_state.settings_tile_selected(3).unwrap_or(0),
+                        );
                     }
                 }
             }
@@ -330,6 +381,9 @@ fn main() -> Result<()> {
             }
             AppEvent::Reset(event) => {
                 handle_reset_event(&mut app, event, &mut states, &mut notifier);
+            }
+            AppEvent::SaveSettings(event) => {
+                handle_settings_save_event(event, &mut states, &mut notifier);
             }
         }
     }

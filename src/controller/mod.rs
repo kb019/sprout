@@ -9,6 +9,7 @@ mod heatmap_year_habits;
 mod log_habit;
 mod progress;
 mod reset;
+mod save_settings;
 mod weekly_average;
 
 use std::path::PathBuf;
@@ -29,6 +30,7 @@ use progress::{
     DailyProgressAction, MonthlyProgressAction, WeeklyProgressAction, YearlyProgressAction,
 };
 use reset::ResetAction;
+use save_settings::SaveSettingsAction;
 use weekly_average::WeeklyAverageAction;
 
 pub struct Actions {
@@ -47,6 +49,7 @@ pub struct Actions {
     monthly_progress_action: MonthlyProgressAction,
     yearly_progress_action: YearlyProgressAction,
     reset_action: ResetAction,
+    save_settings_action: SaveSettingsAction,
 }
 
 impl Actions {
@@ -69,7 +72,8 @@ impl Actions {
             weekly_progress_action: WeeklyProgressAction::new(sender.clone(), db_path.clone()),
             monthly_progress_action: MonthlyProgressAction::new(sender.clone(), db_path.clone()),
             yearly_progress_action: YearlyProgressAction::new(sender.clone(), db_path.clone()),
-            reset_action: ResetAction::new(sender, db_path),
+            reset_action: ResetAction::new(sender.clone(), db_path.clone()),
+            save_settings_action: SaveSettingsAction::new(sender, db_path),
         }
     }
 
@@ -132,5 +136,16 @@ impl Actions {
 
     pub fn reset_all(&self) {
         self.reset_action.reset_all();
+    }
+
+    pub fn save_settings(
+        &self,
+        theme: usize,
+        default_view: usize,
+        cursor_blink: usize,
+        notification_level: usize,
+    ) {
+        self.save_settings_action
+            .save(theme, default_view, cursor_blink, notification_level);
     }
 }

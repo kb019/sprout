@@ -39,6 +39,9 @@ pub use best_streaks::BestStreaksEvent;
 pub mod reset;
 pub use reset::ResetEvent;
 
+pub mod save_settings;
+pub use save_settings::SettingsSaveEvent;
+
 pub mod progress;
 pub use progress::{
     DailyProgressEvent, MonthlyProgressEvent, WeeklyProgressEvent, YearlyProgressEvent,
@@ -71,6 +74,7 @@ pub enum AppEvent {
     HeatmapYearHabits(HeatmapYearHabitsEvent),
     HeatmapData(HeatmapDataEvent),
     Reset(ResetEvent),
+    SaveSettings(SettingsSaveEvent),
 }
 
 /// Terminal event handler.

@@ -28,3 +28,6 @@ pub const WEEKLY_AVERAGE_REFRESH_DELAY_TICKS: u32 = 20;
 
 /// Ticks to wait after add/delete before refreshing heatmap year-habit data (20 × 100ms = 2s).
 pub const HEATMAP_YEAR_HABITS_REFRESH_DELAY_TICKS: u32 = 20;
+
+/// Ticks to wait after the last settings change before persisting (30 × 100ms = 3s).
+pub const SETTINGS_SAVE_DELAY_TICKS: u32 = 20;

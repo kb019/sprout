@@ -74,6 +74,7 @@ pub struct App {
     pub active_days_refresh_delay: u32,
     pub weekly_average_refresh_delay: u32,
     pub heatmap_year_habits_refresh_delay: u32,
+    pub settings_save_delay: u32,
 
     // 0 = All, 1 = Errors only, 2 = Off
     pub notification_level: usize,

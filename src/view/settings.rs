@@ -10,7 +10,7 @@ use ratatui::{
 use crate::{
     app::App,
     palette::Palette,
-    utils::{focus_colors, render_ellipsis_if_overflow},
+    utils::{focus_colors, progress, render_ellipsis_if_overflow},
     widgets::{
         simple_list::SimpleList,
         tile_list::{TileBorderType, TileDirection, TileItem, TileList, TileType},
@@ -23,12 +23,20 @@ pub fn render_settings_page(
     area: Rect,
     settings_state: &mut ListState,
     settings_tile_states: &mut [ListState],
+    is_saving: bool,
 ) {
     let p = app.palette();
     let (border_color, text_color) = focus_colors(app.is_settings_in_focus, p);
+    let title = if is_saving {
+        Line::from(vec![
+            Span::from(format!(" {} ", progress(app))).style(Style::new().fg(p.amber)),
+            Span::from("settings ").style(Style::new().fg(text_color)),
+        ])
+    } else {
+        Line::from(Span::from(" settings ").style(Style::new().fg(text_color)))
+    };
     let settings_block = Block::default()
-        .title(" settings ")
-        .title_style(Style::new().fg(text_color))
+        .title(title)
         .borders(Borders::ALL)
         .border_style(Style::new().fg(border_color))
         .padding(Padding::new(1, 1, 1, 1));

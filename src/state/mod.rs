@@ -13,6 +13,7 @@ use self::habit::log_habit::LogHabitState;
 use self::habit::progress::{
     DailyProgressState, MonthlyProgressState, WeeklyProgressState, YearlyProgressState,
 };
+use self::habit::save_settings::SettingsSaveState;
 use self::habit::weekly_average::WeeklyAverageState;
 use self::modal::ModalState;
 
@@ -30,6 +31,7 @@ pub struct States {
     pub weekly_average_state: WeeklyAverageState,
     pub heatmap_year_habits_state: HeatmapYearHabitsState,
     pub heatmap_data_state: HeatmapDataState,
+    pub settings_save_state: SettingsSaveState,
 }
 
 impl States {
@@ -48,6 +50,7 @@ impl States {
             weekly_average_state: WeeklyAverageState::new(),
             heatmap_year_habits_state: HeatmapYearHabitsState::new(),
             heatmap_data_state: HeatmapDataState::new(),
+            settings_save_state: SettingsSaveState::new(),
         }
     }
 }
