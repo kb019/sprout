@@ -38,80 +38,104 @@ pub fn render_edit_modal(app: &mut App, frame: &mut Frame, area: Rect, states: &
         .map(|h| h.name.clone())
         .unwrap_or_default();
 
+    let is_binary_habit = app
+        .display_edit_modal
+        .and_then(|id| app.habits.iter().find(|h| h.id == id))
+        .map(|h| {
+            h.daily_goal == 0 && h.weekly_goal == 0 && h.monthly_goal == 0 && h.yearly_goal == 0
+        })
+        .unwrap_or(false);
+
     render_title(app, frame, title_area, &habit_name);
-    render_edit_content(app, frame, edit_content_inner_area, &mut states.modal_state);
+    render_edit_content(
+        app,
+        frame,
+        edit_content_inner_area,
+        &mut states.modal_state,
+        is_binary_habit,
+    );
     render_footer(app, frame, footer_area, states);
 }
 
 #[allow(clippy::needless_pass_by_ref_mut)]
-fn render_edit_content(app: &mut App, frame: &mut Frame, area: Rect, modal_state: &mut ModalState) {
+fn render_edit_content(
+    app: &mut App,
+    frame: &mut Frame,
+    area: Rect,
+    modal_state: &mut ModalState,
+    is_binary_habit: bool,
+) {
     let edit_modal_state = modal_state.edit_modal_state_mut();
     let p = app.palette();
     let focused = edit_modal_state.get_current_field_focus();
     let show_cursor = !app.cursor_blink_enabled || app.tick_count == 0;
-    let list = SimpleList::new(
-        vec!["3", "3", "3", "3", "3"],
-        move |index, item_rect, buf, _| {
-            let input = match index {
-                0 => {
-                    let habit_input_state = edit_modal_state.habit_name_input_state_mut();
-                    let delay = habit_input_state.get_cursor_visibility_delay();
-                    habit_input_state.set_cursor_visibility_delay(delay.saturating_sub(1));
-                    Input::new(
-                        "Enter habit name".to_string(),
-                        p,
-                        habit_input_state,
-                        show_cursor,
-                    )
-                }
-                1 => {
-                    let daily_goal_input_state = edit_modal_state.daily_goal_input_state_mut();
-                    let delay = daily_goal_input_state.get_cursor_visibility_delay();
-                    daily_goal_input_state.set_cursor_visibility_delay(delay.saturating_sub(1));
-                    Input::new(
-                        "Enter daily goal (Optional)".to_string(),
-                        p,
-                        daily_goal_input_state,
-                        show_cursor,
-                    )
-                }
-                2 => {
-                    let weekly_goal_input_state = edit_modal_state.weekly_goal_input_state_mut();
-                    let delay = weekly_goal_input_state.get_cursor_visibility_delay();
-                    weekly_goal_input_state.set_cursor_visibility_delay(delay.saturating_sub(1));
-                    Input::new(
-                        "Enter weekly goal (Optional)".to_string(),
-                        p,
-                        weekly_goal_input_state,
-                        show_cursor,
-                    )
-                }
-                3 => {
-                    let monthly_goal_input_state = edit_modal_state.monthly_goal_input_state_mut();
-                    let delay = monthly_goal_input_state.get_cursor_visibility_delay();
-                    monthly_goal_input_state.set_cursor_visibility_delay(delay.saturating_sub(1));
-                    Input::new(
-                        "Enter monthly goal (Optional)".to_string(),
-                        p,
-                        monthly_goal_input_state,
-                        show_cursor,
-                    )
-                }
-                _ => {
-                    let yearly_goal_input_state = edit_modal_state.yearly_goal_input_state_mut();
-                    let delay = yearly_goal_input_state.get_cursor_visibility_delay();
-                    yearly_goal_input_state.set_cursor_visibility_delay(delay.saturating_sub(1));
-                    Input::new(
-                        "Enter yearly goal (Optional)".to_string(),
-                        p,
-                        yearly_goal_input_state,
-                        show_cursor,
-                    )
-                }
-            };
-            Widget::render(&input, item_rect, buf);
-        },
-    );
+
+    let items: Vec<&str> = if is_binary_habit {
+        vec!["3"]
+    } else {
+        vec!["3", "3", "3", "3", "3"]
+    };
+
+    let list = SimpleList::new(items, move |index, item_rect, buf, _| {
+        let input = match index {
+            0 => {
+                let habit_input_state = edit_modal_state.habit_name_input_state_mut();
+                let delay = habit_input_state.get_cursor_visibility_delay();
+                habit_input_state.set_cursor_visibility_delay(delay.saturating_sub(1));
+                Input::new(
+                    "Enter habit name".to_string(),
+                    p,
+                    habit_input_state,
+                    show_cursor,
+                )
+            }
+            1 => {
+                let daily_goal_input_state = edit_modal_state.daily_goal_input_state_mut();
+                let delay = daily_goal_input_state.get_cursor_visibility_delay();
+                daily_goal_input_state.set_cursor_visibility_delay(delay.saturating_sub(1));
+                Input::new(
+                    "Enter daily goal (Optional)".to_string(),
+                    p,
+                    daily_goal_input_state,
+                    show_cursor,
+                )
+            }
+            2 => {
+                let weekly_goal_input_state = edit_modal_state.weekly_goal_input_state_mut();
+                let delay = weekly_goal_input_state.get_cursor_visibility_delay();
+                weekly_goal_input_state.set_cursor_visibility_delay(delay.saturating_sub(1));
+                Input::new(
+                    "Enter weekly goal (Optional)".to_string(),
+                    p,
+                    weekly_goal_input_state,
+                    show_cursor,
+                )
+            }
+            3 => {
+                let monthly_goal_input_state = edit_modal_state.monthly_goal_input_state_mut();
+                let delay = monthly_goal_input_state.get_cursor_visibility_delay();
+                monthly_goal_input_state.set_cursor_visibility_delay(delay.saturating_sub(1));
+                Input::new(
+                    "Enter monthly goal (Optional)".to_string(),
+                    p,
+                    monthly_goal_input_state,
+                    show_cursor,
+                )
+            }
+            _ => {
+                let yearly_goal_input_state = edit_modal_state.yearly_goal_input_state_mut();
+                let delay = yearly_goal_input_state.get_cursor_visibility_delay();
+                yearly_goal_input_state.set_cursor_visibility_delay(delay.saturating_sub(1));
+                Input::new(
+                    "Enter yearly goal (Optional)".to_string(),
+                    p,
+                    yearly_goal_input_state,
+                    show_cursor,
+                )
+            }
+        };
+        Widget::render(&input, item_rect, buf);
+    });
 
     let mut list_state = ListState::default().with_selected(Some(focused));
     frame.render_stateful_widget(list, area, &mut list_state);

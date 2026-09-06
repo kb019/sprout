@@ -67,15 +67,24 @@ pub fn handle_edit_modal(
         return;
     }
 
+    let is_binary_habit = app
+        .display_edit_modal
+        .and_then(|id| app.habits.iter().find(|h| h.id == id))
+        .map(|h| {
+            h.daily_goal == 0 && h.weekly_goal == 0 && h.monthly_goal == 0 && h.yearly_goal == 0
+        })
+        .unwrap_or(false);
+    let field_count = if is_binary_habit { 1 } else { 5 };
+
     let edit_modal_state = states.modal_state.edit_modal_state_mut();
 
     match code {
         KeyCode::Tab => {
-            edit_modal_state.focus_next_field();
+            edit_modal_state.focus_next_field(field_count);
             return;
         }
         KeyCode::BackTab => {
-            edit_modal_state.focus_prev_field();
+            edit_modal_state.focus_prev_field(field_count);
             return;
         }
         _ => {}

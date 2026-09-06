@@ -81,14 +81,15 @@ impl EditModalState {
         self.current_field_focus
     }
 
-    pub fn focus_next_field(&mut self) {
-        self.current_field_focus = (self.current_field_focus + 1) % 5;
+    pub fn focus_next_field(&mut self, field_count: usize) {
+        self.current_field_focus = (self.current_field_focus + 1) % field_count.max(1);
         self.focus_input_field();
     }
 
-    pub fn focus_prev_field(&mut self) {
+    pub fn focus_prev_field(&mut self, field_count: usize) {
+        let max = field_count.max(1);
         if self.current_field_focus == 0 {
-            self.current_field_focus = 4;
+            self.current_field_focus = max - 1;
         } else {
             self.current_field_focus -= 1;
         }
