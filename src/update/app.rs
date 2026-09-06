@@ -253,6 +253,11 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
                     app.notification_level = state.settings_tile_selected(3).unwrap_or(0);
                 }
             }
+        } else if matches!(code, KeyCode::Enter) {
+            let row = state.settings_state().selected().unwrap_or(0);
+            if row == 4 {
+                app.show_reset_modal();
+            }
         } else if matches!(code, KeyCode::Char('m' | 'M')) {
             state.clear_settings();
         } else if matches!(code, KeyCode::Tab | KeyCode::BackTab) {

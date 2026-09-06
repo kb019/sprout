@@ -8,6 +8,7 @@ mod heatmap_data;
 mod heatmap_year_habits;
 mod log_habit;
 mod progress;
+mod reset;
 mod weekly_average;
 
 use std::path::PathBuf;
@@ -27,6 +28,7 @@ use log_habit::LogHabitAction;
 use progress::{
     DailyProgressAction, MonthlyProgressAction, WeeklyProgressAction, YearlyProgressAction,
 };
+use reset::ResetAction;
 use weekly_average::WeeklyAverageAction;
 
 pub struct Actions {
@@ -44,6 +46,7 @@ pub struct Actions {
     weekly_progress_action: WeeklyProgressAction,
     monthly_progress_action: MonthlyProgressAction,
     yearly_progress_action: YearlyProgressAction,
+    reset_action: ResetAction,
 }
 
 impl Actions {
@@ -65,7 +68,8 @@ impl Actions {
             daily_progress_action: DailyProgressAction::new(sender.clone(), db_path.clone()),
             weekly_progress_action: WeeklyProgressAction::new(sender.clone(), db_path.clone()),
             monthly_progress_action: MonthlyProgressAction::new(sender.clone(), db_path.clone()),
-            yearly_progress_action: YearlyProgressAction::new(sender, db_path),
+            yearly_progress_action: YearlyProgressAction::new(sender.clone(), db_path.clone()),
+            reset_action: ResetAction::new(sender, db_path),
         }
     }
 
@@ -124,5 +128,9 @@ impl Actions {
 
     pub fn fetch_heatmap_data(&self, habit_id: i32, year: i32) {
         self.heatmap_data_action.fetch(habit_id, year);
+    }
+
+    pub fn reset_all(&self) {
+        self.reset_action.reset_all();
     }
 }

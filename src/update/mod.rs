@@ -12,7 +12,7 @@ use crate::controller::Actions;
 use crate::event::{
     ActiveDaysEvent, AddHabitEvent, BestStreaksEvent, DailyProgressEvent, DeleteHabitEvent,
     EditHabitEvent, GetStreakEvent, HeatmapDataEvent, HeatmapYearHabitsEvent, LogHabitEvent,
-    MonthlyProgressEvent, WeeklyAverageEvent, WeeklyProgressEvent, YearlyProgressEvent,
+    MonthlyProgressEvent, ResetEvent, WeeklyAverageEvent, WeeklyProgressEvent, YearlyProgressEvent,
 };
 use crate::state::States;
 use crate::widgets::notifier::Notifier;
@@ -498,6 +498,46 @@ pub fn handle_active_days_event(
         ActiveDaysEvent::Failed(message) => {
             states.active_days_state.stop_fetching();
             notifier.notify_error(&format!("Failed to fetch active days: {}", message));
+        }
+    }
+}
+
+pub fn handle_reset_event(
+    app: &mut App,
+    event: ResetEvent,
+    states: &mut States,
+    notifier: &mut Notifier,
+) {
+    match event {
+        ResetEvent::Resetting => {
+            states
+                .modal_state
+                .reset_modal_state_mut()
+                .set_is_resetting(true);
+        }
+        ResetEvent::Reset => {
+            app.habits.clear();
+            app.completed_habits.clear();
+            app.active_streaks.clear();
+            app.daily_progress.clear();
+            app.weekly_progress.clear();
+            app.monthly_progress.clear();
+            app.yearly_progress.clear();
+            app.best_streaks.clear();
+            app.heatmap_data.clear();
+            app.heatmap_year_habits.clear();
+            app.active_days = 0;
+            app.weekly_completion = [0; 7];
+            app.hide_reset_modal();
+            states.modal_state.reset();
+            notifier.notify_success("All data has been reset");
+        }
+        ResetEvent::Failed(message) => {
+            states
+                .modal_state
+                .reset_modal_state_mut()
+                .set_is_resetting(false);
+            notifier.notify_error(&format!("Failed to reset data: {}", message));
         }
     }
 }

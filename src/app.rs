@@ -68,6 +68,8 @@ pub struct App {
 
     pub display_edit_modal: Option<i32>,
 
+    pub display_reset_modal: bool,
+
     pub best_streak_refresh_delay: u32,
     pub active_days_refresh_delay: u32,
     pub weekly_average_refresh_delay: u32,
@@ -135,6 +137,7 @@ impl App {
         self.display_add_modal
             || self.display_delete_modal.is_some()
             || self.display_edit_modal.is_some()
+            || self.display_reset_modal
             || self.progress_modal_for_habit_id.is_some()
     }
 
@@ -157,6 +160,15 @@ impl App {
     pub fn hide_delete_modal(&mut self) {
         self.display_delete_modal = None;
     }
+
+    pub fn show_reset_modal(&mut self) {
+        self.display_reset_modal = true;
+    }
+
+    pub fn hide_reset_modal(&mut self) {
+        self.display_reset_modal = false;
+    }
+
     pub fn show_add_modal(&mut self) {
         self.display_add_modal = true;
     }
@@ -170,6 +182,7 @@ impl App {
         self.display_delete_modal = None;
         self.progress_modal_for_habit_id = None;
         self.display_edit_modal = None;
+        self.display_reset_modal = false;
     }
 
     pub fn focus_menu(&mut self) {
