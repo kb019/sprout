@@ -29,6 +29,6 @@ pub fn handle_modal(
     } else if app.display_delete_modal.is_some() {
         delete_modal::handle_delete_modal(app, key_event, states, actions);
     } else if app.display_edit_modal.is_some() {
-        edit_modal::handle_edit_modal(app, key_event, states, actions);
+        edit_modal::handle_edit_modal(app, key_event, states, actions, notifier);
     }
 }

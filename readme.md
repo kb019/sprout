@@ -1,5 +1,7 @@
 
-  <img alt="Sprout habit tracker" src="assets/sprout_logo.png">
+<p align="center">
+  <img src="assets/sprout_logo_plant.png" width="40%" alt="Description of image">
+</p>
 
 
 

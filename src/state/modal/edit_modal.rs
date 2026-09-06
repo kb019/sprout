@@ -108,6 +108,19 @@ impl EditModalState {
         &self.active_fields
     }
 
+    pub fn any_active_goal_field_empty(&self) -> bool {
+        self.active_fields
+            .iter()
+            .filter(|&&f| f > 0)
+            .any(|&f| match f {
+                1 => self.daily_goal_input_state.get_value().trim().is_empty(),
+                2 => self.weekly_goal_input_state.get_value().trim().is_empty(),
+                3 => self.monthly_goal_input_state.get_value().trim().is_empty(),
+                4 => self.yearly_goal_input_state.get_value().trim().is_empty(),
+                _ => false,
+            })
+    }
+
     pub fn focus_next_field(&mut self) {
         let max = self.active_fields.len().max(1);
         self.current_field_focus = (self.current_field_focus + 1) % max;
