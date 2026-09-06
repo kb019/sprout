@@ -67,30 +67,21 @@ pub fn handle_edit_modal(
         return;
     }
 
-    let is_binary_habit = app
-        .display_edit_modal
-        .and_then(|id| app.habits.iter().find(|h| h.id == id))
-        .map(|h| {
-            h.daily_goal == 0 && h.weekly_goal == 0 && h.monthly_goal == 0 && h.yearly_goal == 0
-        })
-        .unwrap_or(false);
-    let field_count = if is_binary_habit { 1 } else { 5 };
-
     let edit_modal_state = states.modal_state.edit_modal_state_mut();
 
     match code {
         KeyCode::Tab => {
-            edit_modal_state.focus_next_field(field_count);
+            edit_modal_state.focus_next_field();
             return;
         }
         KeyCode::BackTab => {
-            edit_modal_state.focus_prev_field(field_count);
+            edit_modal_state.focus_prev_field();
             return;
         }
         _ => {}
     }
 
-    if edit_modal_state.get_current_field_focus() == 0 {
+    if edit_modal_state.get_current_actual_field() == 0 {
         let habit_name_input_state = edit_modal_state.habit_name_input_state_mut();
         let cursor_delay = habit_name_input_state.get_cursor_visibility_delay();
         if cursor_delay < CURSOR_DELAY_THRESHOLD {
@@ -104,7 +95,7 @@ pub fn handle_edit_modal(
         return;
     }
 
-    if edit_modal_state.get_current_field_focus() == 1 {
+    if edit_modal_state.get_current_actual_field() == 1 {
         let daily_goal_input_state = edit_modal_state.daily_goal_input_state_mut();
         let cursor_delay = daily_goal_input_state.get_cursor_visibility_delay();
         if cursor_delay < CURSOR_DELAY_THRESHOLD {
@@ -118,7 +109,7 @@ pub fn handle_edit_modal(
         return;
     }
 
-    if edit_modal_state.get_current_field_focus() == 2 {
+    if edit_modal_state.get_current_actual_field() == 2 {
         let weekly_goal_input_state = edit_modal_state.weekly_goal_input_state_mut();
         let cursor_delay = weekly_goal_input_state.get_cursor_visibility_delay();
         if cursor_delay < CURSOR_DELAY_THRESHOLD {
@@ -132,7 +123,7 @@ pub fn handle_edit_modal(
         return;
     }
 
-    if edit_modal_state.get_current_field_focus() == 3 {
+    if edit_modal_state.get_current_actual_field() == 3 {
         let monthly_goal_input_state = edit_modal_state.monthly_goal_input_state_mut();
         let cursor_delay = monthly_goal_input_state.get_cursor_visibility_delay();
         if cursor_delay < CURSOR_DELAY_THRESHOLD {
@@ -147,7 +138,7 @@ pub fn handle_edit_modal(
         return;
     }
 
-    if edit_modal_state.get_current_field_focus() == 4 {
+    if edit_modal_state.get_current_actual_field() == 4 {
         let yearly_goal_input_state = edit_modal_state.yearly_goal_input_state_mut();
         let cursor_delay = yearly_goal_input_state.get_cursor_visibility_delay();
         if cursor_delay < CURSOR_DELAY_THRESHOLD {

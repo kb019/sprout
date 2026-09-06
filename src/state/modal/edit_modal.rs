@@ -5,6 +5,7 @@ use crate::state::input::{InputState, InputType};
 
 pub struct EditModalState {
     current_field_focus: usize,
+    active_fields: Vec<usize>,
     pub habit_name_input_state: InputState,
     pub daily_goal_input_state: InputState,
     pub weekly_goal_input_state: InputState,
@@ -18,6 +19,7 @@ impl EditModalState {
     pub fn new() -> Self {
         let mut state = Self {
             current_field_focus: 0,
+            active_fields: vec![0, 1, 2, 3, 4],
             habit_name_input_state: InputState::new(),
             daily_goal_input_state: InputState::new(),
             weekly_goal_input_state: InputState::new(),
@@ -66,6 +68,20 @@ impl EditModalState {
             self.yearly_goal_input_state
                 .set_value(habit.yearly_goal.to_string());
         }
+        let mut fields = vec![0usize];
+        if habit.daily_goal > 0 {
+            fields.push(1);
+        }
+        if habit.weekly_goal > 0 {
+            fields.push(2);
+        }
+        if habit.monthly_goal > 0 {
+            fields.push(3);
+        }
+        if habit.yearly_goal > 0 {
+            fields.push(4);
+        }
+        self.active_fields = fields;
         self.focus_input_field();
     }
 
@@ -81,13 +97,25 @@ impl EditModalState {
         self.current_field_focus
     }
 
-    pub fn focus_next_field(&mut self, field_count: usize) {
-        self.current_field_focus = (self.current_field_focus + 1) % field_count.max(1);
+    pub fn get_current_actual_field(&self) -> usize {
+        self.active_fields
+            .get(self.current_field_focus)
+            .copied()
+            .unwrap_or(0)
+    }
+
+    pub fn active_fields(&self) -> &[usize] {
+        &self.active_fields
+    }
+
+    pub fn focus_next_field(&mut self) {
+        let max = self.active_fields.len().max(1);
+        self.current_field_focus = (self.current_field_focus + 1) % max;
         self.focus_input_field();
     }
 
-    pub fn focus_prev_field(&mut self, field_count: usize) {
-        let max = field_count.max(1);
+    pub fn focus_prev_field(&mut self) {
+        let max = self.active_fields.len().max(1);
         if self.current_field_focus == 0 {
             self.current_field_focus = max - 1;
         } else {
@@ -98,7 +126,12 @@ impl EditModalState {
 
     fn focus_input_field(&mut self) {
         self.unfocus_all_inputs();
-        match self.current_field_focus {
+        let actual = self
+            .active_fields
+            .get(self.current_field_focus)
+            .copied()
+            .unwrap_or(0);
+        match actual {
             0 => self.habit_name_input_state.set_focus(true),
             1 => self.daily_goal_input_state.set_focus(true),
             2 => self.weekly_goal_input_state.set_focus(true),

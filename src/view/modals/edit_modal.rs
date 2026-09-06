@@ -38,46 +38,24 @@ pub fn render_edit_modal(app: &mut App, frame: &mut Frame, area: Rect, states: &
         .map(|h| h.name.clone())
         .unwrap_or_default();
 
-    let is_binary_habit = app
-        .display_edit_modal
-        .and_then(|id| app.habits.iter().find(|h| h.id == id))
-        .map(|h| {
-            h.daily_goal == 0 && h.weekly_goal == 0 && h.monthly_goal == 0 && h.yearly_goal == 0
-        })
-        .unwrap_or(false);
-
     render_title(app, frame, title_area, &habit_name);
-    render_edit_content(
-        app,
-        frame,
-        edit_content_inner_area,
-        &mut states.modal_state,
-        is_binary_habit,
-    );
+    render_edit_content(app, frame, edit_content_inner_area, &mut states.modal_state);
     render_footer(app, frame, footer_area, states);
 }
 
 #[allow(clippy::needless_pass_by_ref_mut)]
-fn render_edit_content(
-    app: &mut App,
-    frame: &mut Frame,
-    area: Rect,
-    modal_state: &mut ModalState,
-    is_binary_habit: bool,
-) {
+fn render_edit_content(app: &mut App, frame: &mut Frame, area: Rect, modal_state: &mut ModalState) {
     let edit_modal_state = modal_state.edit_modal_state_mut();
     let p = app.palette();
     let focused = edit_modal_state.get_current_field_focus();
     let show_cursor = !app.cursor_blink_enabled || app.tick_count == 0;
 
-    let items: Vec<&str> = if is_binary_habit {
-        vec!["3"]
-    } else {
-        vec!["3", "3", "3", "3", "3"]
-    };
+    let active_fields: Vec<usize> = edit_modal_state.active_fields().to_vec();
+    let items = vec!["3"; active_fields.len()];
 
     let list = SimpleList::new(items, move |index, item_rect, buf, _| {
-        let input = match index {
+        let actual_field = active_fields[index];
+        let input = match actual_field {
             0 => {
                 let habit_input_state = edit_modal_state.habit_name_input_state_mut();
                 let delay = habit_input_state.get_cursor_visibility_delay();
