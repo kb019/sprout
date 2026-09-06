@@ -101,20 +101,6 @@ pub fn render_habits(app: &App, frame: &mut Frame, area: Rect, states: &mut Stat
         .direction(Direction::Horizontal)
         .constraints([Constraint::Min(15), Constraint::Max(15)])
         .spacing(2);
-    let is_loading = states.active_days_state.is_fetching();
-    let active_line = if is_loading {
-        Line::from_iter([
-            Span::from(format!("{} ", progress(app))).style(Style::new().fg(p.amber)),
-            Span::from(" active days").style(Style::new().fg(p.fg_dim)),
-        ])
-    } else {
-        Line::from_iter([
-            Span::from(app.active_days.to_string()).style(Style::new().fg(p.accent)),
-            Span::from(" active days").style(Style::new().fg(p.fg_dim)),
-        ])
-    };
-    let [habit_tiles_area, active_days_area] = area.layout(&vertical_layout);
-    frame.render_widget(active_line, active_days_area);
     let year_habit_ids = selected_year_habit_ids(app, states);
     let year_idx = states.app_state.year_list_state().selected().unwrap_or(0);
     let year = app
@@ -122,6 +108,32 @@ pub fn render_habits(app: &App, frame: &mut Frame, area: Rect, states: &mut Stat
         .get(year_idx)
         .map(|(y, _)| *y)
         .unwrap_or(0);
+    let tile_idx = states
+        .app_state
+        .heatmap_tile_state_for_year(year)
+        .and_then(|ts| ts.selected())
+        .unwrap_or(0);
+    let selected_habit_id = year_habit_ids.get(tile_idx).copied();
+    let is_loading = selected_habit_id
+        .map(|id| states.heatmap_data_state.is_fetching(id, year))
+        .unwrap_or(false);
+    let active_days_count = selected_habit_id
+        .and_then(|id| app.heatmap_data.get(&(id, year)))
+        .map(|data| data.values().filter(|&&v| v > 0).count())
+        .unwrap_or(0);
+    let active_line = if is_loading {
+        Line::from_iter([
+            Span::from(format!("{} ", progress(app))).style(Style::new().fg(p.amber)),
+            Span::from(" active days").style(Style::new().fg(p.fg_dim)),
+        ])
+    } else {
+        Line::from_iter([
+            Span::from(active_days_count.to_string()).style(Style::new().fg(p.accent)),
+            Span::from(" active days").style(Style::new().fg(p.fg_dim)),
+        ])
+    };
+    let [habit_tiles_area, active_days_area] = area.layout(&vertical_layout);
+    frame.render_widget(active_line, active_days_area);
     let loading_habit_ids: HashSet<i32> = year_habit_ids
         .iter()
         .copied()
