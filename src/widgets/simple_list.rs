@@ -18,6 +18,7 @@ where
     constraint_lengths: Vec<&'a str>,
     render_line: bool,
     show_highlight_symbol: bool,
+    is_parent_in_focus: bool,
     item_draw_callback: F,
 }
 
@@ -34,6 +35,7 @@ where
             item_draw_callback: callback,
             render_line: false,
             show_highlight_symbol: true,
+            is_parent_in_focus: false,
         }
     }
 
@@ -64,6 +66,11 @@ where
 
     pub fn highlight_symbol_color(mut self, color: Color) -> Self {
         self.symbol_color = color;
+        self
+    }
+
+    pub fn parent_in_focus(mut self, focused: bool) -> Self {
+        self.is_parent_in_focus = focused;
         self
     }
 }
@@ -130,18 +137,24 @@ where
                 )
                 .intersection(area);
                 if area.intersects(item_rect) {
-                    if self.background_color != Color::default() {
+                    if self.is_parent_in_focus && self.background_color != Color::default() {
                         buf.set_style(item_rect, Style::default().bg(self.background_color));
                     }
-                    let callback_rect = shrink_left(item_rect, symbol_width);
+                    let callback_rect = if self.is_parent_in_focus {
+                        shrink_left(item_rect, symbol_width)
+                    } else {
+                        item_rect
+                    };
                     (self.item_draw_callback)(index, callback_rect, buf, true);
-                    draw_symbol(
-                        buf,
-                        item_rect,
-                        self.background_color,
-                        self.symbol_color,
-                        self.show_highlight_symbol,
-                    );
+                    if self.is_parent_in_focus {
+                        draw_symbol(
+                            buf,
+                            item_rect,
+                            self.background_color,
+                            self.symbol_color,
+                            self.show_highlight_symbol,
+                        );
+                    }
                 }
             }
             return;
@@ -155,20 +168,21 @@ where
 
             let is_selected = state.selected().is_some_and(|s| s == i);
 
-            let callback_rect = if is_selected && self.show_highlight_symbol {
-                shrink_left(item_rect, symbol_width)
-            } else {
-                item_rect
-            };
+            let callback_rect =
+                if is_selected && self.is_parent_in_focus && self.show_highlight_symbol {
+                    shrink_left(item_rect, symbol_width)
+                } else {
+                    item_rect
+                };
 
             (self.item_draw_callback)(i, callback_rect, buf, is_selected);
             current_y += item_height;
 
-            if is_selected && self.background_color != Color::default() {
+            if is_selected && self.is_parent_in_focus && self.background_color != Color::default() {
                 buf.set_style(item_rect, Style::default().bg(self.background_color));
             }
 
-            if is_selected {
+            if is_selected && self.is_parent_in_focus {
                 draw_symbol(
                     buf,
                     item_rect,

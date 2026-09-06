@@ -51,6 +51,7 @@ pub fn render_settings(
     settings_tile_states: &mut [ListState],
 ) {
     let p = app.palette();
+    let is_settings_in_focus = app.is_settings_in_focus;
     let simple_list = SimpleList::new(
         vec!["2", "2", "2", "2", "3"],
         |index, item_area, buf, is_selected| match index {
@@ -95,6 +96,7 @@ pub fn render_settings(
     .render_line()
     .highlight_background_color(p.row_highlight)
     .highlight_symbol_color(p.accent)
+    .parent_in_focus(is_settings_in_focus)
     .line_color(p.border);
     *settings_state.offset_mut() = 0;
     frame.render_stateful_widget(simple_list, area, settings_state);

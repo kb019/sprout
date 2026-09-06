@@ -322,6 +322,7 @@ pub fn render_top_streaks(
     })
     .highlight_background_color(p.row_highlight)
     .highlight_symbol_color(p.accent)
+    .parent_in_focus(app.is_streak_leaderboard_in_focus)
     .render_line()
     .line_color(p.border);
 

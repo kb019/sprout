@@ -102,7 +102,8 @@ pub fn render_habits_list(app: &mut App, frame: &mut Frame, area: Rect, states: 
         }
     })
     .highlight_background_color(p.row_highlight)
-    .highlight_symbol_color(p.accent);
+    .highlight_symbol_color(p.accent)
+    .parent_in_focus(app.is_dashboard_in_focus);
     let habits_state = states.app_state.dashboard_habits_state_mut();
     *habits_state.offset_mut() = 0;
     frame.render_stateful_widget(simple_list, area, habits_state);
@@ -359,6 +360,7 @@ fn render_goal_progress_list(app: &App, frame: &mut Frame, area: Rect, states: &
     let weekly_ps = &states.weekly_progress_state;
     let monthly_ps = &states.monthly_progress_state;
     let yearly_ps = &states.yearly_progress_state;
+    let is_goal_progress_in_focus = app.is_goal_progress_in_focus;
 
     let heights: Vec<&str> = vec!["2"; eligible.len()];
     let simple_list = SimpleList::new(heights, |index, item_area, buf, is_selected| {
@@ -381,6 +383,7 @@ fn render_goal_progress_list(app: &App, frame: &mut Frame, area: Rect, states: &
     })
     .highlight_background_color(p.row_highlight)
     .highlight_symbol_color(p.accent)
+    .parent_in_focus(is_goal_progress_in_focus)
     .render_line()
     .line_color(p.border);
 
