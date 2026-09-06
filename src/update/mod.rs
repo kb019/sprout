@@ -19,9 +19,15 @@ use crate::widgets::notifier::Notifier;
 use chrono::Datelike;
 use std::collections::HashMap;
 
-pub fn handle(app: &mut App, key_event: KeyEvent, states: &mut States, actions: &Actions) {
+pub fn handle(
+    app: &mut App,
+    key_event: KeyEvent,
+    states: &mut States,
+    actions: &Actions,
+    notifier: &mut Notifier,
+) {
     if app.is_modal_in_focus() {
-        modal::handle_modal(app, key_event, states, actions);
+        modal::handle_modal(app, key_event, states, actions, notifier);
     } else {
         app::handle_app(app, key_event, states, actions);
     }

@@ -7,6 +7,7 @@ use crate::{
     model::habit::NewHabit,
     state::States,
     utils::{get_character_from_keycode, is_backspace_code, is_char_code, is_numeric_keycode},
+    widgets::notifier::Notifier,
 };
 
 #[allow(clippy::needless_pass_by_ref_mut)]
@@ -16,6 +17,7 @@ pub fn handle_add_modal(
     key_event: KeyEvent,
     states: &mut States,
     actions: &Actions,
+    notifier: &mut Notifier,
 ) {
     let is_adding_habit = states.modal_state.add_modal_state_mut().is_adding_habit();
     if !app.display_add_modal || is_adding_habit {
@@ -56,7 +58,16 @@ pub fn handle_add_modal(
             states.modal_state.reset();
         } else {
             // Add
-            if let Some(new_habit) = build_new_habit(states) {
+            let name_is_empty = states
+                .modal_state
+                .add_modal_state_mut()
+                .habit_name_input_state_mut()
+                .get_value()
+                .trim()
+                .is_empty();
+            if name_is_empty {
+                notifier.notify_error("Habit name should not be empty");
+            } else if let Some(new_habit) = build_new_habit(states) {
                 actions.add_habit(new_habit);
             }
         }
@@ -106,6 +117,8 @@ pub fn handle_add_modal(
             daily_goal_input_state.push_char(get_character_from_keycode(code).unwrap());
         } else if is_backspace_code(code) {
             daily_goal_input_state.backspace();
+        } else if is_char_code(code) {
+            notifier.notify_error("Enter only digits");
         }
         return;
     }
@@ -120,6 +133,8 @@ pub fn handle_add_modal(
             weekly_goal_input_state.push_char(get_character_from_keycode(code).unwrap());
         } else if is_backspace_code(code) {
             weekly_goal_input_state.backspace();
+        } else if is_char_code(code) {
+            notifier.notify_error("Enter only digits");
         }
         return;
     }
@@ -135,6 +150,8 @@ pub fn handle_add_modal(
             monthly_goal_input_state.push_char(get_character_from_keycode(code).unwrap());
         } else if is_backspace_code(code) {
             monthly_goal_input_state.backspace();
+        } else if is_char_code(code) {
+            notifier.notify_error("Enter only digits");
         }
         return;
     }
@@ -149,6 +166,8 @@ pub fn handle_add_modal(
             yearly_goal_input_state.push_char(get_character_from_keycode(code).unwrap());
         } else if is_backspace_code(code) {
             yearly_goal_input_state.backspace();
+        } else if is_char_code(code) {
+            notifier.notify_error("Enter only digits");
         }
         return;
     }

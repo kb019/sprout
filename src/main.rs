@@ -256,7 +256,7 @@ fn main() -> Result<()> {
         tui.draw(&mut app, &mut states, &mut notifier)?;
         match tui.events.next()? {
             AppEvent::Key(key_event) => {
-                handle(&mut app, key_event, &mut states, &actions);
+                handle(&mut app, key_event, &mut states, &actions, &mut notifier);
             }
             AppEvent::Tick => {
                 app.tick();
