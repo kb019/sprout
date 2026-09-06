@@ -5,14 +5,19 @@ use ratatui::{
     widgets::{ListState, StatefulWidget},
 };
 
+const HIGHLIGHT_SYMBOL: &str = "▶  ";
+const HIGHLIGHT_SYMBOL_WIDTH: u16 = 3;
+
 pub struct SimpleList<'a, F>
 where
     F: FnMut(usize, Rect, &mut Buffer, bool),
 {
     background_color: Color,
     line_color: Color,
+    symbol_color: Color,
     constraint_lengths: Vec<&'a str>,
     render_line: bool,
+    show_highlight_symbol: bool,
     item_draw_callback: F,
 }
 
@@ -24,9 +29,11 @@ where
         Self {
             background_color: Color::default(),
             line_color: Color::default(),
+            symbol_color: Color::default(),
             constraint_lengths,
             item_draw_callback: callback,
             render_line: false,
+            show_highlight_symbol: true,
         }
     }
 
@@ -47,6 +54,16 @@ where
 
     pub fn line_color(mut self, color: Color) -> Self {
         self.line_color = color;
+        self
+    }
+
+    pub fn disable_highlight_symbol(mut self) -> Self {
+        self.show_highlight_symbol = false;
+        self
+    }
+
+    pub fn highlight_symbol_color(mut self, color: Color) -> Self {
+        self.symbol_color = color;
         self
     }
 }
@@ -71,6 +88,11 @@ where
     #[allow(clippy::needless_range_loop)]
     fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
         let spacing: u16 = if self.render_line { 1 } else { 0 };
+        let symbol_width = if self.show_highlight_symbol {
+            HIGHLIGHT_SYMBOL_WIDTH
+        } else {
+            0
+        };
 
         let heights: Vec<u16> = self
             .constraint_lengths
@@ -111,7 +133,15 @@ where
                     if self.background_color != Color::default() {
                         buf.set_style(item_rect, Style::default().bg(self.background_color));
                     }
-                    (self.item_draw_callback)(index, item_rect, buf, true);
+                    let callback_rect = shrink_left(item_rect, symbol_width);
+                    (self.item_draw_callback)(index, callback_rect, buf, true);
+                    draw_symbol(
+                        buf,
+                        item_rect,
+                        self.background_color,
+                        self.symbol_color,
+                        self.show_highlight_symbol,
+                    );
                 }
             }
             return;
@@ -125,11 +155,27 @@ where
 
             let is_selected = state.selected().is_some_and(|s| s == i);
 
-            (self.item_draw_callback)(i, item_rect, buf, is_selected);
+            let callback_rect = if is_selected && self.show_highlight_symbol {
+                shrink_left(item_rect, symbol_width)
+            } else {
+                item_rect
+            };
+
+            (self.item_draw_callback)(i, callback_rect, buf, is_selected);
             current_y += item_height;
 
             if is_selected && self.background_color != Color::default() {
                 buf.set_style(item_rect, Style::default().bg(self.background_color));
+            }
+
+            if is_selected {
+                draw_symbol(
+                    buf,
+                    item_rect,
+                    self.background_color,
+                    self.symbol_color,
+                    self.show_highlight_symbol,
+                );
             }
 
             // Divider between items — not after the last visible one
@@ -146,6 +192,28 @@ where
             }
         }
     }
+}
+
+fn shrink_left(rect: Rect, amount: u16) -> Rect {
+    Rect {
+        x: rect.x.saturating_add(amount),
+        width: rect.width.saturating_sub(amount),
+        ..rect
+    }
+}
+
+fn draw_symbol(buf: &mut Buffer, item_rect: Rect, bg: Color, fg: Color, enabled: bool) {
+    if !enabled || item_rect.width < HIGHLIGHT_SYMBOL_WIDTH {
+        return;
+    }
+    let mut style = Style::default();
+    if bg != Color::default() {
+        style = style.bg(bg);
+    }
+    if fg != Color::default() {
+        style = style.fg(fg);
+    }
+    buf.set_string(item_rect.left(), item_rect.top(), HIGHLIGHT_SYMBOL, style);
 }
 
 fn get_item_bounds(

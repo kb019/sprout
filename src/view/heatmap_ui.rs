@@ -196,6 +196,7 @@ fn render_year_list(app: &App, frame: &mut Frame, area: Rect, p: Palette, states
         }
     })
     .highlight_background_color(p.row_highlight)
+    .disable_highlight_symbol()
     .render_line()
     .line_color(p.border);
 

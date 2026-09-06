@@ -101,7 +101,8 @@ pub fn render_habits_list(app: &mut App, frame: &mut Frame, area: Rect, states: 
             );
         }
     })
-    .highlight_background_color(p.row_highlight);
+    .highlight_background_color(p.row_highlight)
+    .highlight_symbol_color(p.accent);
     let habits_state = states.app_state.dashboard_habits_state_mut();
     *habits_state.offset_mut() = 0;
     frame.render_stateful_widget(simple_list, area, habits_state);
@@ -379,6 +380,7 @@ fn render_goal_progress_list(app: &App, frame: &mut Frame, area: Rect, states: &
         }
     })
     .highlight_background_color(p.row_highlight)
+    .highlight_symbol_color(p.accent)
     .render_line()
     .line_color(p.border);
 
@@ -573,6 +575,7 @@ fn render_top_streaks(app: &App, frame: &mut Frame, area: Rect, p: Palette) {
             );
         }
     })
+    .highlight_symbol_color(p.accent)
     .render_line()
     .line_color(p.border);
 
@@ -649,7 +652,8 @@ fn render_best_streaks(app: &App, frame: &mut Frame, area: Rect, states: &mut St
                 buf,
             );
         }
-    });
+    })
+    .disable_highlight_symbol();
 
     let best_streaks_state = states.app_state.best_streaks_list_state_mut();
     *best_streaks_state.offset_mut() = 0;

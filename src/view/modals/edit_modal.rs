@@ -113,7 +113,8 @@ fn render_edit_content(app: &mut App, frame: &mut Frame, area: Rect, modal_state
             }
         };
         Widget::render(&input, item_rect, buf);
-    });
+    })
+    .highlight_symbol_color(p.accent);
 
     let mut list_state = ListState::default().with_selected(Some(focused));
     frame.render_stateful_widget(list, area, &mut list_state);

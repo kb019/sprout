@@ -321,6 +321,7 @@ pub fn render_top_streaks(
         }
     })
     .highlight_background_color(p.row_highlight)
+    .highlight_symbol_color(p.accent)
     .render_line()
     .line_color(p.border);
 
