@@ -8,7 +8,7 @@
 --   Last 7 days (7–1 days ago): explicit entries with real progress
 --
 -- Reading is the increasing habit: 50 % → 67 % → 80 % completion across years.
--- Exercise / Journaling are done/not-done (progress = 0 or 1).
+-- Exercise / Journaling are done/not-done (progress = 0, completed flag only).
 -- Meditation / Coding carry minute-based progress values.
 
 CREATE TABLE IF NOT EXISTS habit (
@@ -59,7 +59,7 @@ INSERT OR IGNORE INTO habit_log (habit_id, date, completed, progress)
 SELECT 2,
        date('now', 'localtime', '-' || n || ' days'),
        CASE WHEN n % 5 IN (0, 1, 2) THEN 0 ELSE 1 END,
-       CASE WHEN n % 5 IN (0, 1, 2) THEN 0 ELSE 1 END
+       0
 FROM cnt;
 
 -- Meditation: ~40 %, 15–24 min
@@ -91,7 +91,7 @@ INSERT OR IGNORE INTO habit_log (habit_id, date, completed, progress)
 SELECT 2,
        date('now', 'localtime', '-' || n || ' days'),
        CASE WHEN n % 9 IN (0, 1, 2, 3) THEN 0 ELSE 1 END,
-       CASE WHEN n % 9 IN (0, 1, 2, 3) THEN 0 ELSE 1 END
+       0
 FROM cnt;
 
 -- Meditation: ~60 %, 15–24 min
@@ -132,7 +132,7 @@ INSERT OR IGNORE INTO habit_log (habit_id, date, completed, progress)
 SELECT 2,
        date('now', 'localtime', '-' || n || ' days'),
        CASE WHEN n % 3 = 0 THEN 0 ELSE 1 END,
-       CASE WHEN n % 3 = 0 THEN 0 ELSE 1 END
+       0
 FROM cnt;
 
 -- Meditation: ~75 %, 15–24 min
@@ -159,7 +159,7 @@ INSERT OR IGNORE INTO habit_log (habit_id, date, completed, progress)
 SELECT 5,
        date('now', 'localtime', '-' || n || ' days'),
        CASE WHEN n % 5 IN (0, 1) THEN 0 ELSE 1 END,
-       CASE WHEN n % 5 IN (0, 1) THEN 0 ELSE 1 END
+       0
 FROM cnt;
 
 -- ============================================================
@@ -168,10 +168,10 @@ FROM cnt;
 INSERT OR IGNORE INTO habit_log (habit_id, date, completed, progress) VALUES
   -- 7 days ago
   (1, date('now', 'localtime', '-7 days'), 1, 30),
-  (2, date('now', 'localtime', '-7 days'), 1,  1),
+  (2, date('now', 'localtime', '-7 days'), 1,  0),
   (3, date('now', 'localtime', '-7 days'), 1, 17),
   (4, date('now', 'localtime', '-7 days'), 1, 63),
-  (5, date('now', 'localtime', '-7 days'), 1,  1),
+  (5, date('now', 'localtime', '-7 days'), 1,  0),
   -- 6 days ago
   (1, date('now', 'localtime', '-6 days'), 1, 35),
   (2, date('now', 'localtime', '-6 days'), 0,  0),
@@ -180,19 +180,19 @@ INSERT OR IGNORE INTO habit_log (habit_id, date, completed, progress) VALUES
   (5, date('now', 'localtime', '-6 days'), 0,  0),
   -- 5 days ago
   (1, date('now', 'localtime', '-5 days'), 1, 32),
-  (2, date('now', 'localtime', '-5 days'), 1,  1),
+  (2, date('now', 'localtime', '-5 days'), 1,  0),
   (3, date('now', 'localtime', '-5 days'), 1, 16),
   (4, date('now', 'localtime', '-5 days'), 1, 67),
-  (5, date('now', 'localtime', '-5 days'), 1,  1),
+  (5, date('now', 'localtime', '-5 days'), 1,  0),
   -- 4 days ago
   (1, date('now', 'localtime', '-4 days'), 0,  0),
-  (2, date('now', 'localtime', '-4 days'), 1,  1),
+  (2, date('now', 'localtime', '-4 days'), 1,  0),
   (3, date('now', 'localtime', '-4 days'), 1, 20),
   (4, date('now', 'localtime', '-4 days'), 0,  0),
-  (5, date('now', 'localtime', '-4 days'), 1,  1),
+  (5, date('now', 'localtime', '-4 days'), 1,  0),
   -- 3 days ago
   (1, date('now', 'localtime', '-3 days'), 1, 38),
-  (2, date('now', 'localtime', '-3 days'), 1,  1),
+  (2, date('now', 'localtime', '-3 days'), 1,  0),
   (3, date('now', 'localtime', '-3 days'), 0,  0),
   (4, date('now', 'localtime', '-3 days'), 1, 80),
   (5, date('now', 'localtime', '-3 days'), 0,  0),
@@ -201,10 +201,10 @@ INSERT OR IGNORE INTO habit_log (habit_id, date, completed, progress) VALUES
   (2, date('now', 'localtime', '-2 days'), 0,  0),
   (3, date('now', 'localtime', '-2 days'), 1, 15),
   (4, date('now', 'localtime', '-2 days'), 1, 65),
-  (5, date('now', 'localtime', '-2 days'), 1,  1),
+  (5, date('now', 'localtime', '-2 days'), 1,  0),
   -- yesterday
   (1, date('now', 'localtime', '-1 days'), 1, 34),
-  (2, date('now', 'localtime', '-1 days'), 1,  1),
+  (2, date('now', 'localtime', '-1 days'), 1,  0),
   (3, date('now', 'localtime', '-1 days'), 1, 18),
   (4, date('now', 'localtime', '-1 days'), 1, 72),
-  (5, date('now', 'localtime', '-1 days'), 1,  1);
+  (5, date('now', 'localtime', '-1 days'), 1,  0);

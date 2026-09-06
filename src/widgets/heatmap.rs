@@ -6,10 +6,13 @@ use ratatui::{
     layout::{Constraint, Flex, Layout, Rect},
     widgets::Widget,
 };
+use std::collections::HashMap;
 
 mod heatmap_box;
 pub struct HeatMapGen {
     palette: Palette,
+    year: i32,
+    data: Option<HashMap<String, u8>>,
 }
 
 struct HeatMapAreaInfo {
@@ -29,7 +32,21 @@ impl Default for HeatMapGen {
 
 impl HeatMapGen {
     pub fn new(palette: Palette) -> Self {
-        Self { palette }
+        Self {
+            palette,
+            year: Local::now().year(),
+            data: None,
+        }
+    }
+
+    pub fn for_year(mut self, year: i32) -> Self {
+        self.year = year;
+        self
+    }
+
+    pub fn with_data(mut self, data: Option<HashMap<String, u8>>) -> Self {
+        self.data = data;
+        self
     }
 
     pub fn cell_dimensions(&self, area: Rect) -> (u16, u16) {
@@ -75,6 +92,7 @@ impl HeatMapGen {
             heatmap_width,
         }
     }
+
     //Columns × Rows	Looks
     // 2 × 1
     // 4 × 2
@@ -93,54 +111,43 @@ impl HeatMapGen {
         (*column_count, *row_count)
     }
 
-    /// Get the months to display in the heat map by trying to always fit current month
-    fn get_months_to_display(&self, no_of_heat_maps: u16) -> Vec<String> {
-        let months_to_display = [
-            "Jan".to_string(),
-            "Feb".to_string(),
-            "Mar".to_string(),
-            "Apr".to_string(),
-            "May".to_string(),
-            "Jun".to_string(),
-            "Jul".to_string(),
-            "Aug".to_string(),
-            "Sep".to_string(),
-            "Oct".to_string(),
-            "Nov".to_string(),
-            "Dec".to_string(),
+    /// Returns (month_name, month_number 1-12) for each month slot to display.
+    fn get_months_to_display(&self, no_of_heat_maps: u16) -> Vec<(&'static str, u32)> {
+        const MONTHS: [(&str, u32); 12] = [
+            ("Jan", 1),
+            ("Feb", 2),
+            ("Mar", 3),
+            ("Apr", 4),
+            ("May", 5),
+            ("Jun", 6),
+            ("Jul", 7),
+            ("Aug", 8),
+            ("Sep", 9),
+            ("Oct", 10),
+            ("Nov", 11),
+            ("Dec", 12),
         ];
 
         if no_of_heat_maps == 0 {
             return vec![];
         }
 
-        // Reserve one slot for the current month.
         let remaining_slots = no_of_heat_maps.saturating_sub(1) as usize;
-
         let current_month_index = Local::now().month() as usize - 1;
-
-        // PRIORITIZE MONTHS TO THE LEFT.
-        let months_to_the_left = current_month_index;
-
-        let left_count = months_to_the_left.min(remaining_slots);
-
+        let left_count = current_month_index.min(remaining_slots);
         let remaining_after_left = remaining_slots.saturating_sub(left_count);
-
-        // Then use whatever space is left for months to the right.
-        let months_to_the_right = 11 - current_month_index;
-        let right_count = months_to_the_right.min(remaining_after_left);
-
+        let right_count = (11 - current_month_index).min(remaining_after_left);
         let index_to_the_left = current_month_index - left_count;
         let index_to_the_right = current_month_index + right_count;
 
-        months_to_display[index_to_the_left..=index_to_the_right].to_vec()
+        MONTHS[index_to_the_left..=index_to_the_right].to_vec()
     }
 
     fn render_heatmap(&self, area: Rect, buf: &mut Buffer) {
         let (column_count, row_count) = self.get_suitable_row_column_count(area);
 
         let area_info_for_heatmap = self.check_if_area_sufficient(column_count, row_count, area);
-        let months_to_display: Vec<String> =
+        let months_to_display =
             self.get_months_to_display(area_info_for_heatmap.total_heatmaps_that_can_fit);
         let initial_columns = area_info_for_heatmap
             .columns_that_can_fit
@@ -195,8 +202,16 @@ impl HeatMapGen {
                 // Calculate the flat index for a 2D grid mapped to a 1D vector
                 let flat_index = r_idx * (no_of_columns_per_row as usize) + c_idx;
 
-                if let Some(month) = months_to_display.get(flat_index) {
-                    let heatmap = HeatMap::new(month, &row_count, &column_count, self.palette);
+                if let Some(&(month, month_num)) = months_to_display.get(flat_index) {
+                    let heatmap = HeatMap::new(
+                        month,
+                        month_num,
+                        self.year,
+                        &row_count,
+                        &column_count,
+                        self.palette,
+                        self.data.as_ref(),
+                    );
                     heatmap.render(*column, buf);
                 }
             }

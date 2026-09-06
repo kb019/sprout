@@ -7,6 +7,7 @@ use self::app::AppState;
 use self::habit::active_days::ActiveDaysState;
 use self::habit::best_streaks::BestStreaksState;
 use self::habit::get_streak::GetStreakState;
+use self::habit::heatmap_data_state::HeatmapDataState;
 use self::habit::heatmap_year_habits::HeatmapYearHabitsState;
 use self::habit::log_habit::LogHabitState;
 use self::habit::progress::{
@@ -28,6 +29,7 @@ pub struct States {
     pub active_days_state: ActiveDaysState,
     pub weekly_average_state: WeeklyAverageState,
     pub heatmap_year_habits_state: HeatmapYearHabitsState,
+    pub heatmap_data_state: HeatmapDataState,
 }
 
 impl States {
@@ -45,6 +47,7 @@ impl States {
             active_days_state: ActiveDaysState::new(),
             weekly_average_state: WeeklyAverageState::new(),
             heatmap_year_habits_state: HeatmapYearHabitsState::new(),
+            heatmap_data_state: HeatmapDataState::new(),
         }
     }
 }

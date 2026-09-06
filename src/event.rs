@@ -30,6 +30,9 @@ pub use weekly_average::WeeklyAverageEvent;
 pub mod heatmap_year_habits;
 pub use heatmap_year_habits::HeatmapYearHabitsEvent;
 
+pub mod heatmap_data;
+pub use heatmap_data::HeatmapDataEvent;
+
 pub mod best_streaks;
 pub use best_streaks::BestStreaksEvent;
 
@@ -63,6 +66,7 @@ pub enum AppEvent {
     ActiveDays(ActiveDaysEvent),
     WeeklyAverage(WeeklyAverageEvent),
     HeatmapYearHabits(HeatmapYearHabitsEvent),
+    HeatmapData(HeatmapDataEvent),
 }
 
 /// Terminal event handler.

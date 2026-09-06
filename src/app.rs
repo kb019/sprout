@@ -28,6 +28,9 @@ pub struct App {
     /// Years that have habit log data (descending) with the habit IDs active in each year.
     pub heatmap_year_habits: Vec<(i32, Vec<i32>)>,
 
+    /// Cached heatmap cell data keyed by (habit_id, year) → date → intensity 0-4.
+    pub heatmap_data: HashMap<(i32, i32), HashMap<String, u8>>,
+
     pub weekly_completion: [u32; 7],
 
     pub completed_habits: HashSet<i32>,

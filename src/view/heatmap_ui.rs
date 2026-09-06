@@ -1,3 +1,7 @@
+use std::collections::HashSet;
+
+use chrono::Datelike;
+
 use crate::app::App;
 use crate::palette::Palette;
 use crate::state::States;
@@ -14,7 +18,8 @@ use ratatui::widgets::{Block, Borders, ListState, Padding, Widget};
 pub fn render_heatmap_page(app: &App, frame: &mut Frame, area: Rect, states: &mut States) {
     let p = app.palette();
     let (border_color, text_color) = focus_colors(app.is_heatmap_in_focus, p);
-    let title = if states.heatmap_year_habits_state.is_fetching() {
+    let is_loading = states.heatmap_year_habits_state.is_fetching();
+    let title = if is_loading {
         Line::from(vec![
             Span::from(format!(" {} ", progress(app))).style(Style::new().fg(p.amber)),
             Span::from("activity heatmap ").style(Style::new().fg(text_color)),
@@ -39,12 +44,46 @@ pub fn render_heatmap_page(app: &App, frame: &mut Frame, area: Rect, states: &mu
     let horizontal = Layout::horizontal([Constraint::Fill(1), Constraint::Length(6)]).spacing(1);
     let [heatmap_box_area, year_area] = heatmap_area.layout(&horizontal);
     frame.render_widget(heat_map_block, area);
-    let heatmap_gen = HeatMapGen::new(p);
+
+    let year_idx = states.app_state.year_list_state().selected().unwrap_or(0);
+    let year = app
+        .heatmap_year_habits
+        .get(year_idx)
+        .map(|(y, _)| *y)
+        .unwrap_or_else(|| chrono::Local::now().year());
+    let tile_idx = states
+        .app_state
+        .heatmap_tile_state_for_year(year)
+        .and_then(|ts| ts.selected())
+        .unwrap_or(0);
+    let habit_id = app
+        .heatmap_year_habits
+        .get(year_idx)
+        .and_then(|(_, ids)| ids.get(tile_idx))
+        .copied();
+    let habit_data = habit_id.and_then(|id| app.heatmap_data.get(&(id, year)).cloned());
+
+    let heatmap_gen = HeatMapGen::new(p).for_year(year).with_data(habit_data);
     let (col_count, row_count) = heatmap_gen.cell_dimensions(heatmap_box_area);
     frame.render_widget(heatmap_gen, heatmap_box_area);
     render_year_list(app, frame, year_area, p, states);
     render_habits(app, frame, habit_tiles_area, states);
-    render_legend(app, frame, legend_area, col_count, row_count);
+    let is_boolean_habit = habit_id
+        .map(|id| {
+            !app.heatmap_data
+                .get(&(id, year))
+                .map(|data| data.values().any(|&v| v > 0 && v < 4))
+                .unwrap_or(false)
+        })
+        .unwrap_or(false);
+    render_legend(
+        app,
+        frame,
+        legend_area,
+        col_count,
+        row_count,
+        is_boolean_habit,
+    );
 }
 
 /// Returns the habit IDs visible for the currently selected year, or all if nothing selected.
@@ -83,21 +122,52 @@ pub fn render_habits(app: &App, frame: &mut Frame, area: Rect, states: &mut Stat
         .get(year_idx)
         .map(|(y, _)| *y)
         .unwrap_or(0);
+    let loading_habit_ids: HashSet<i32> = year_habit_ids
+        .iter()
+        .copied()
+        .filter(|&id| states.heatmap_data_state.is_fetching(id, year))
+        .collect();
     if let Some(tile_state) = states.app_state.heatmap_tile_state_for_year_mut(year) {
-        render_habit_tiles(app, frame, habit_tiles_area, tile_state, &year_habit_ids);
+        render_habit_tiles(
+            app,
+            frame,
+            habit_tiles_area,
+            tile_state,
+            &year_habit_ids,
+            &loading_habit_ids,
+        );
     }
 }
 
-pub fn render_legend(app: &App, frame: &mut Frame, area: Rect, col_count: u16, row_count: u16) {
+pub fn render_legend(
+    app: &App,
+    frame: &mut Frame,
+    area: Rect,
+    col_count: u16,
+    row_count: u16,
+    is_boolean: bool,
+) {
     let p = app.palette();
     let use_square: bool = row_count == 1 && col_count == 1;
     let cell_str = " ".repeat(col_count as usize);
 
+    let (label_left, label_right) = if is_boolean {
+        ("not done", "done")
+    } else {
+        ("less", "more")
+    };
+
+    let legend_colors: Vec<ratatui::style::Color> = if is_boolean {
+        vec![p.heatmap[0], p.heatmap[4]]
+    } else {
+        p.heatmap.to_vec()
+    };
+
     let mut spans = vec![
-        Span::from("less").style(Style::new().fg(p.fg_dim)),
+        Span::from(label_left).style(Style::new().fg(p.fg_dim)),
         Span::from(" "),
     ];
-    for color in p.heatmap {
+    for color in legend_colors {
         if use_square {
             spans.push(Span::from("■").style(Style::new().fg(color)));
         } else {
@@ -105,7 +175,7 @@ pub fn render_legend(app: &App, frame: &mut Frame, area: Rect, col_count: u16, r
         }
         spans.push(Span::from(" "));
     }
-    spans.push(Span::from("more").style(Style::new().fg(p.fg_dim)));
+    spans.push(Span::from(label_right).style(Style::new().fg(p.fg_dim)));
 
     frame.render_widget(Line::from(spans), area);
 }
@@ -139,6 +209,7 @@ pub fn render_habit_tiles(
     area: Rect,
     tile_state: &mut ListState,
     year_habit_ids: &[i32],
+    loading_habit_ids: &HashSet<i32>,
 ) {
     let p = app.palette();
     let habits_for_year: Vec<_> = app
@@ -151,11 +222,15 @@ pub fn render_habit_tiles(
         .enumerate()
         .map(|(i, habit_item)| {
             let bold_modifier = selection_modifier(tile_state, i);
-            TileItem::new(
-                Text::from(habit_item.name.clone())
-                    .add_modifier(bold_modifier)
-                    .left_aligned(),
-            )
+            let line = if loading_habit_ids.contains(&habit_item.id) {
+                Line::from(vec![
+                    Span::from(format!("{} ", progress(app))).style(Style::new().fg(p.amber)),
+                    Span::from(habit_item.name.clone()).add_modifier(bold_modifier),
+                ])
+            } else {
+                Line::from(Span::from(habit_item.name.clone()).add_modifier(bold_modifier))
+            };
+            TileItem::new(Text::from(line).left_aligned())
         })
         .collect();
 

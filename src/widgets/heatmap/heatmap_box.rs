@@ -1,4 +1,5 @@
 use crate::palette::Palette;
+use chrono::{Datelike, NaiveDate};
 use ratatui::{
     buffer::Buffer,
     layout::{Position, Rect},
@@ -6,28 +7,38 @@ use ratatui::{
     text::{Line, Span},
     widgets::{Block, Borders, Padding, Widget},
 };
+use std::collections::HashMap;
 
 const WEEKDAYS: [&str; 7] = ["ᴍ", "ᴛ", "ᴡ", "ᴛ", "ꜰ", "ꜱ", "ꜱ"];
 
 pub struct HeatMap<'a> {
     month: &'a str,
+    month_num: u32,
+    year: i32,
     row_count: &'a u16,
     column_count: &'a u16,
     palette: Palette,
+    data: Option<&'a HashMap<String, u8>>,
 }
 
 impl<'a> HeatMap<'a> {
     pub(super) fn new(
         month: &'a str,
+        month_num: u32,
+        year: i32,
         row_count: &'a u16,
         column_count: &'a u16,
         palette: Palette,
+        data: Option<&'a HashMap<String, u8>>,
     ) -> Self {
         Self {
             month,
+            month_num,
+            year,
             row_count,
             column_count,
             palette,
+            data,
         }
     }
 
@@ -35,7 +46,7 @@ impl<'a> HeatMap<'a> {
         let p = &self.palette;
         let month_line = Line::from_iter(vec![
             Span::from(self.month.to_string()),
-            Span::from(" 2026"),
+            Span::from(format!(" {}", self.year)),
         ])
         .style(Style::new().fg(p.fg_dim));
 
@@ -57,15 +68,42 @@ impl<'a> HeatMap<'a> {
         } else {
             *self.row_count + 1
         };
-        for heatmap_row in 0..6 {
-            let y = start_y + heatmap_row * row_stride;
 
-            for weekday in 0..7 {
-                let x = start_x + weekday * (*self.column_count + 1);
+        let first = NaiveDate::from_ymd_opt(self.year, self.month_num, 1);
+        let first_weekday = first
+            .map(|d| d.weekday().num_days_from_monday() as i64)
+            .unwrap_or(0);
+        let days_in_month = first
+            .and_then(|d| {
+                let next = if self.month_num == 12 {
+                    NaiveDate::from_ymd_opt(self.year + 1, 1, 1)
+                } else {
+                    NaiveDate::from_ymd_opt(self.year, self.month_num + 1, 1)
+                };
+                next.map(|n| (n - d).num_days())
+            })
+            .unwrap_or(30);
 
-                let value = (x.wrapping_mul(31) + y.wrapping_mul(17)) % 5;
+        for heatmap_row in 0..6i64 {
+            let y = start_y + heatmap_row as u16 * row_stride;
 
-                let color = p.heatmap[value as usize];
+            for weekday in 0..7i64 {
+                let x = start_x + weekday as u16 * (*self.column_count + 1);
+
+                let day = heatmap_row * 7 + weekday - first_weekday + 1;
+
+                let value = if day >= 1 && day <= days_in_month {
+                    if let Some(data) = self.data {
+                        let key = format!("{}-{:02}-{:02}", self.year, self.month_num, day as u32);
+                        *data.get(&key).unwrap_or(&0) as usize
+                    } else {
+                        0
+                    }
+                } else {
+                    0
+                };
+
+                let color = p.heatmap[value];
 
                 if *self.row_count == 1 && *self.column_count == 1 {
                     if area.contains(Position::new(x, y)) {

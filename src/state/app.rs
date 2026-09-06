@@ -66,6 +66,10 @@ impl AppState {
         }
     }
 
+    pub fn heatmap_tile_state_for_year(&self, year: i32) -> Option<&ListState> {
+        self.heatmap_tile_states.get(&year)
+    }
+
     pub fn heatmap_tile_state_for_year_mut(&mut self, year: i32) -> Option<&mut ListState> {
         self.heatmap_tile_states.get_mut(&year)
     }

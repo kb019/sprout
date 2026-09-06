@@ -11,11 +11,13 @@ use crate::constants::{
 use crate::controller::Actions;
 use crate::event::{
     ActiveDaysEvent, AddHabitEvent, BestStreaksEvent, DailyProgressEvent, DeleteHabitEvent,
-    EditHabitEvent, GetStreakEvent, HeatmapYearHabitsEvent, LogHabitEvent, MonthlyProgressEvent,
-    WeeklyAverageEvent, WeeklyProgressEvent, YearlyProgressEvent,
+    EditHabitEvent, GetStreakEvent, HeatmapDataEvent, HeatmapYearHabitsEvent, LogHabitEvent,
+    MonthlyProgressEvent, WeeklyAverageEvent, WeeklyProgressEvent, YearlyProgressEvent,
 };
 use crate::state::States;
 use crate::widgets::notifier::Notifier;
+use chrono::Datelike;
+use std::collections::HashMap;
 
 pub fn handle(app: &mut App, key_event: KeyEvent, states: &mut States, actions: &Actions) {
     if app.is_modal_in_focus() {
@@ -143,6 +145,9 @@ pub fn handle_log_habit_event(
             update_best_streaks_with_delay(app, states);
             update_active_days_with_delay(app, states);
             update_weekly_average_with_delay(app, states);
+            let current_year = chrono::Local::now().year();
+            app.heatmap_data.remove(&(log.habit_id, current_year));
+            actions.fetch_heatmap_data(log.habit_id, current_year);
         }
         LogHabitEvent::Failed(habit_id, message) => {
             notifier.notify_error(&format!("Failed to log habit: {}", message));
@@ -424,6 +429,47 @@ pub fn handle_heatmap_year_habits_event(
         HeatmapYearHabitsEvent::Failed(message) => {
             states.heatmap_year_habits_state.stop_fetching();
             notifier.notify_error(&format!("Failed to refresh heatmap data: {}", message));
+        }
+    }
+}
+
+pub fn handle_heatmap_data_event(
+    app: &mut App,
+    event: HeatmapDataEvent,
+    states: &mut States,
+    notifier: &mut Notifier,
+) {
+    match event {
+        HeatmapDataEvent::Fetching(habit_id, year) => {
+            states.heatmap_data_state.start_fetching(habit_id, year);
+        }
+        HeatmapDataEvent::Fetched(habit_id, year, rows) => {
+            let max_p = rows.iter().map(|(_, _, p)| *p).max().unwrap_or(0);
+            let min_p = rows.iter().map(|(_, _, p)| *p).min().unwrap_or(0);
+            let intensity_map: HashMap<String, u8> = rows
+                .into_iter()
+                .map(|(date, completed, progress)| {
+                    let intensity = if max_p == 0 || max_p == min_p {
+                        if completed { 4 } else { 0 }
+                    } else {
+                        ((progress - min_p) as f32 / (max_p - min_p) as f32 * 4.0).min(4.0) as u8
+                    };
+                    (date, intensity)
+                })
+                .collect();
+            app.heatmap_data.insert((habit_id, year), intensity_map);
+            states.heatmap_data_state.stop_fetching(habit_id, year);
+            let habit_name = app
+                .habits
+                .iter()
+                .find(|h| h.id == habit_id)
+                .map(|h| h.name.as_str())
+                .unwrap_or("unknown");
+            notifier.notify_success(&format!("Updated heatmap for {}-{}", habit_name, year));
+        }
+        HeatmapDataEvent::Failed(habit_id, year, message) => {
+            states.heatmap_data_state.stop_fetching(habit_id, year);
+            notifier.notify_error(&format!("Failed to load heatmap data: {}", message));
         }
     }
 }

@@ -558,6 +558,31 @@ impl HabitDb {
         Ok(result)
     }
 
+    pub fn get_heatmap_data(&self, habit_id: i32, year: i32) -> Result<Vec<(String, bool, i32)>> {
+        let mut stmt = self
+            .conn
+            .prepare(
+                "SELECT date, completed, progress FROM habit_log \
+                 WHERE habit_id = ?1 AND CAST(strftime('%Y', date) AS INTEGER) = ?2 \
+                 ORDER BY date ASC",
+            )
+            .context("Failed to prepare get_heatmap_data statement")?;
+
+        let rows = stmt
+            .query_map(params![habit_id, year], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, i32>(1)? != 0,
+                    row.get::<_, i32>(2)?,
+                ))
+            })
+            .context("Failed to query heatmap data")?
+            .collect::<std::result::Result<Vec<_>, _>>()
+            .context("Failed to collect heatmap data rows")?;
+
+        Ok(rows)
+    }
+
     fn create_habit_table(&self) -> Result<()> {
         self.conn
             .execute(

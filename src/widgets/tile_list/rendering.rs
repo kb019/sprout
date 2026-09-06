@@ -92,6 +92,9 @@ impl StatefulWidget for &TileList<'_> {
 
             match self.tile_type {
                 TileType::Bordered => {
+                    if is_selected {
+                        buf.set_style(row_area, self.highlight_style);
+                    }
                     let border_type = match self.tile_border_type {
                         TileBorderType::Rounded => BorderType::Rounded,
                         TileBorderType::Sharp => BorderType::Plain,
@@ -101,16 +104,15 @@ impl StatefulWidget for &TileList<'_> {
                         .border_style(border_style)
                         .border_type(border_type);
                     let inner = block.inner(row_area);
-                    render_content(item, inner, buf);
                     block.render(row_area, buf);
+                    render_content(item, inner, buf);
                 }
                 TileType::Unbordered => {
                     render_content(item, row_area, buf);
+                    if is_selected {
+                        buf.set_style(row_area, self.highlight_style);
+                    }
                 }
-            }
-
-            if is_selected {
-                buf.set_style(row_area, self.highlight_style);
             }
         }
 
@@ -126,6 +128,7 @@ impl StatefulWidget for &TileList<'_> {
                 );
                 match self.tile_type {
                     TileType::Bordered => {
+                        buf.set_style(tile_area, self.highlight_style);
                         let border_type = match self.tile_border_type {
                             TileBorderType::Rounded => BorderType::Rounded,
                             TileBorderType::Sharp => BorderType::Plain,
@@ -135,14 +138,14 @@ impl StatefulWidget for &TileList<'_> {
                             .border_style(self.highlight_style)
                             .border_type(border_type);
                         let inner = block.inner(tile_area);
-                        render_content(item, inner, buf);
                         block.render(tile_area, buf);
+                        render_content(item, inner, buf);
                     }
                     TileType::Unbordered => {
                         render_content(item, tile_area, buf);
+                        buf.set_style(tile_area, self.highlight_style);
                     }
                 }
-                buf.set_style(tile_area, self.highlight_style);
             }
         }
     }

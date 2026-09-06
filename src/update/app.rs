@@ -3,6 +3,8 @@ use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use crate::app::App;
 use crate::controller::Actions;
 use crate::state::States;
+use crate::state::app::AppState;
+use crate::state::habit::heatmap_data_state::HeatmapDataState;
 use crate::utils::{is_down_key, is_left_key, is_right_key, is_up_key};
 
 #[allow(clippy::needless_return)]
@@ -46,6 +48,15 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
                     if let Some(tile_state) = state.heatmap_tile_state_for_year_mut(year) {
                         app.focus_heatmap(tile_state);
                     }
+                    fetch_heatmap_data_if_needed(
+                        app,
+                        state,
+                        year_idx,
+                        year,
+                        actions,
+                        states.heatmap_year_habits_state.is_fetching(),
+                        &states.heatmap_data_state,
+                    );
                 }
                 Some(2) => app.focus_streak_leaderboard(state.streak_leaderboard_state_mut()),
                 Some(3) => app.focus_settings(state.settings_state_mut()),
@@ -64,6 +75,15 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
                     if let Some(tile_state) = state.heatmap_tile_state_for_year_mut(year) {
                         app.focus_heatmap(tile_state);
                     }
+                    fetch_heatmap_data_if_needed(
+                        app,
+                        state,
+                        year_idx,
+                        year,
+                        actions,
+                        states.heatmap_year_habits_state.is_fetching(),
+                        &states.heatmap_data_state,
+                    );
                 }
                 Some(2) => app.focus_streak_leaderboard(state.streak_leaderboard_state_mut()),
                 Some(3) => app.focus_settings(state.settings_state_mut()),
@@ -117,6 +137,23 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
             state.prev_year();
         } else if matches!(code, KeyCode::Tab | KeyCode::BackTab) {
             app.focus_menu();
+        }
+        if is_right_key(code) || is_left_key(code) || is_down_key(code) || is_up_key(code) {
+            let new_yr_idx = state.year_list_state().selected().unwrap_or(0);
+            let new_yr = app
+                .heatmap_year_habits
+                .get(new_yr_idx)
+                .map(|(y, _)| *y)
+                .unwrap_or(0);
+            fetch_heatmap_data_if_needed(
+                app,
+                state,
+                new_yr_idx,
+                new_yr,
+                actions,
+                states.heatmap_year_habits_state.is_fetching(),
+                &states.heatmap_data_state,
+            );
         }
         return;
     }
@@ -247,5 +284,36 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
             app.focus_dashboard(state.dashboard_habits_state_mut());
         }
         return;
+    }
+}
+
+/// Dispatch a heatmap-data fetch for the currently selected habit+year if the
+/// data isn't already cached and no year-habits fetch is in flight.
+fn fetch_heatmap_data_if_needed(
+    app: &App,
+    app_state: &AppState,
+    year_idx: usize,
+    year: i32,
+    actions: &Actions,
+    year_habits_is_fetching: bool,
+    heatmap_data_state: &HeatmapDataState,
+) {
+    if year_habits_is_fetching {
+        return;
+    }
+    let tile_idx = app_state
+        .heatmap_tile_state_for_year(year)
+        .and_then(|ts| ts.selected())
+        .unwrap_or(0);
+    let habit_id = app
+        .heatmap_year_habits
+        .get(year_idx)
+        .and_then(|(_, ids)| ids.get(tile_idx))
+        .copied();
+    if let Some(id) = habit_id
+        && !app.heatmap_data.contains_key(&(id, year))
+        && !heatmap_data_state.is_fetching(id, year)
+    {
+        actions.fetch_heatmap_data(id, year);
     }
 }

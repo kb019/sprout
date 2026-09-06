@@ -59,9 +59,9 @@ use crate::state::States;
 use crate::update::{
     handle, handle_active_days_event, handle_add_habit_event, handle_best_streaks_event,
     handle_daily_progress_event, handle_delete_habit_event, handle_edit_habit_event,
-    handle_get_streak_event, handle_heatmap_year_habits_event, handle_log_habit_event,
-    handle_monthly_progress_event, handle_weekly_average_event, handle_weekly_progress_event,
-    handle_yearly_progress_event,
+    handle_get_streak_event, handle_heatmap_data_event, handle_heatmap_year_habits_event,
+    handle_log_habit_event, handle_monthly_progress_event, handle_weekly_average_event,
+    handle_weekly_progress_event, handle_yearly_progress_event,
 };
 use crate::widgets::notifier::Notifier;
 
@@ -246,6 +246,12 @@ fn main() -> Result<()> {
         .update_heatmap_tile_states(&app.heatmap_year_habits);
     let mut notifier = Notifier::new();
 
+    if let Some((year, ids)) = app.heatmap_year_habits.first()
+        && let Some(&habit_id) = ids.first()
+    {
+        actions.fetch_heatmap_data(habit_id, *year);
+    }
+
     while !app.should_quit {
         tui.draw(&mut app, &mut states, &mut notifier)?;
         match tui.events.next()? {
@@ -319,6 +325,9 @@ fn main() -> Result<()> {
             }
             AppEvent::HeatmapYearHabits(event) => {
                 handle_heatmap_year_habits_event(&mut app, event, &mut states, &mut notifier);
+            }
+            AppEvent::HeatmapData(event) => {
+                handle_heatmap_data_event(&mut app, event, &mut states, &mut notifier);
             }
         }
     }
