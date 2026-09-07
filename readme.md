@@ -82,7 +82,7 @@ See [`docs/index.html`](docs/index.html) for the full documentation including ke
 
 ## Acknowledgements
 
-- [bottom](https://github.com/ClementTsang/bottom) — referred approach for checking whether the output is a TTY before launching the TUI
+- [bottom](https://github.com/ClementTsang/bottom/blob/6323bef6f0e304316b19845da6fcb3a764a5f5d7/src/lib.rs#L93) — referred approach for checking whether the output is a TTY before launching the TUI
 - [openai/codex](https://github.com/openai/codex/blob/1fb5158b3496a05abb89fb992d45737a02511d47/codex-rs/tui/src/chatwidget/tokens/chart.rs) — reference for the heatmap cli implementation
 
 ---
