@@ -33,6 +33,8 @@
   <a href="https://kb019.github.io/sprout/">Documentation</a>
 </h4>
 
+![demo](https://vhs.charm.sh/vhs-VNYQxT6YBIQLEThP50VDT.gif)
+
 # sprout
 
 A habit tracker that lives in your terminal.
@@ -81,12 +83,6 @@ sprout sample                                        # open TUI with demo data
 ```
 
 All name arguments are case-insensitive. Run `sprout --help` or `sprout <command> --help` for the full flag reference.
-
----
-
-## Demo
-
-![demo](https://vhs.charm.sh/vhs-VNYQxT6YBIQLEThP50VDT.gif)
 
 ---
 
