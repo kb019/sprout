@@ -23,7 +23,7 @@
 </p>
 
 <h4 align="center">
-  <a href="https://kb019.github.io/habit_tracker_tui/">Documentation</a>
+  <a href="https://kb019.github.io/sprout/">Documentation</a>
 </h4>
 
 # sprout
