@@ -79,14 +79,13 @@ fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
     }
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn clear_modal_area(app: &mut App, frame: &mut Frame, area: Rect) {
     let p = app.palette();
     let fill = Fill::new(" ").style(Style::new().bg(p.background));
     frame.render_widget(fill, area);
 }
 
-pub fn dim_background(buf: &mut Buffer, area: Rect, amount: f32) {
+fn dim_background(buf: &mut Buffer, area: Rect, amount: f32) {
     for y in area.top()..area.bottom() {
         for x in area.left()..area.right() {
             let cell = &mut buf[(x, y)];

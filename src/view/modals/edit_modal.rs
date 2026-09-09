@@ -42,7 +42,6 @@ pub fn render_edit_modal(app: &mut App, frame: &mut Frame, area: Rect, states: &
     render_footer(app, frame, footer_area, states);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_edit_content(app: &mut App, frame: &mut Frame, area: Rect, modal_state: &mut ModalState) {
     let edit_modal_state = modal_state.edit_modal_state_mut();
     let p = app.palette();
@@ -120,7 +119,6 @@ fn render_edit_content(app: &mut App, frame: &mut Frame, area: Rect, modal_state
     frame.render_stateful_widget(list, area, &mut list_state);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_footer(app: &mut App, frame: &mut Frame, area: Rect, states: &mut States) {
     let p = app.palette();
 
@@ -171,7 +169,6 @@ fn render_footer(app: &mut App, frame: &mut Frame, area: Rect, states: &mut Stat
     );
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_title(app: &mut App, frame: &mut Frame, area: Rect, habit_name: &str) {
     let p = app.palette();
     let title_str = format!(" Edit - {}", habit_name);

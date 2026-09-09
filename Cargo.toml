@@ -10,7 +10,6 @@ unused_variables = "warn"
 
 [lints.clippy]
 unused-enumerate-index = "allow"
-needless_pass_by_ref_mut = "warn"
 implicit_clone = "warn"
 vec_init_then_push = "allow"
 
@@ -29,4 +28,5 @@ dirs = "5"
 
 [dev-dependencies]
 rstest = "0.26"
+tempfile = "3"
 cargo-husky = { version = "1", default-features = false, features = ["user-hooks"] }

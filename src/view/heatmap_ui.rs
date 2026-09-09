@@ -16,7 +16,7 @@ use ratatui::style::{Style, Stylize};
 use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, Borders, ListState, Padding, Widget};
 
-pub fn render_heatmap_page(app: &App, frame: &mut Frame, area: Rect, states: &mut States) {
+pub(super) fn render_heatmap_page(app: &App, frame: &mut Frame, area: Rect, states: &mut States) {
     let p = app.palette();
     let (border_color, text_color) = focus_colors(app.is_heatmap_in_focus, p);
     let is_loading = states.heatmap_year_habits_state.is_fetching();

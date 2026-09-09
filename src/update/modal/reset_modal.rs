@@ -2,7 +2,6 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{app::App, controller::Actions, state::States, widgets::notifier::Notifier};
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 #[allow(clippy::needless_return)]
 pub fn handle_reset_modal(
     app: &mut App,

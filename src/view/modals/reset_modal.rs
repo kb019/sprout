@@ -30,7 +30,6 @@ pub fn render_reset_modal(app: &mut App, frame: &mut Frame, area: Rect, states: 
     render_footer(app, frame, footer_area, states);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_title(app: &mut App, frame: &mut Frame, area: Rect) {
     let p = app.palette();
     let title_text = Text::from(Line::from(" Reset all data ")).style(Style::new().fg(p.accent));
@@ -42,7 +41,6 @@ fn render_title(app: &mut App, frame: &mut Frame, area: Rect) {
     frame.render_widget(border_bottom, area);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_content(app: &mut App, frame: &mut Frame, area: Rect) {
     let p = app.palette();
     let lines = vec![
@@ -68,7 +66,6 @@ fn render_content(app: &mut App, frame: &mut Frame, area: Rect) {
     frame.render_widget(paragraph, center_area);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_footer(app: &mut App, frame: &mut Frame, area: Rect, states: &mut States) {
     let p = app.palette();
     let is_resetting = states.modal_state.reset_modal_state_mut().is_resetting();

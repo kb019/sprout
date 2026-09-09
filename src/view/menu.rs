@@ -13,7 +13,7 @@ use ratatui::widgets::{
 };
 use ratatui::{Frame, symbols};
 
-pub fn render_menu_column(
+pub(super) fn render_menu_column(
     app: &mut App,
     frame: &mut Frame,
     menu_area: Rect,
@@ -32,7 +32,6 @@ pub fn render_menu_column(
     render_summary(app, frame, summary_box, p);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_navigate(
     app: &mut App,
     frame: &mut Frame,
@@ -77,7 +76,6 @@ fn render_menu(
     frame.render_stateful_widget(list, menu_area, list_state);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_summary(app: &mut App, frame: &mut Frame, summary_area: Rect, p: Palette) {
     let summary_block = Block::default()
         .title(" summary ")

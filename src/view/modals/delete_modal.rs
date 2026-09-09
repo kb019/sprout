@@ -37,7 +37,6 @@ pub fn render_delete_modal(app: &mut App, frame: &mut Frame, area: Rect, states:
     render_footer(app, frame, footer_area, states, habit_id);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_title(app: &mut App, frame: &mut Frame, area: Rect, habit_name: &str) {
     let p = app.palette();
     let title = format!(" Delete - {} ", habit_name);
@@ -50,7 +49,6 @@ fn render_title(app: &mut App, frame: &mut Frame, area: Rect, habit_name: &str) 
     frame.render_widget(border_bottom, area);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_content(app: &mut App, frame: &mut Frame, area: Rect, habit_name: &str) {
     let p = app.palette();
     let lines = vec![
@@ -76,7 +74,6 @@ fn render_content(app: &mut App, frame: &mut Frame, area: Rect, habit_name: &str
     frame.render_widget(paragraph, center_area);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_footer(
     app: &mut App,
     frame: &mut Frame,

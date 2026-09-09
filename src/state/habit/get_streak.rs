@@ -23,8 +23,4 @@ impl GetStreakState {
     pub fn is_fetching(&self, habit_id: i32) -> bool {
         self.fetching_habit_ids.contains(&habit_id)
     }
-
-    pub fn fetching_ids(&self) -> &HashSet<i32> {
-        &self.fetching_habit_ids
-    }
 }

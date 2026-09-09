@@ -6,49 +6,17 @@ use std::{
 
 use anyhow::Result;
 use ratatui::crossterm::event::{self, Event as CrosstermEvent, KeyEvent, MouseEvent};
-pub mod add_habit;
-pub use add_habit::AddHabitEvent;
-
-pub mod log_habit;
-pub use log_habit::LogHabitEvent;
-
-pub mod delete_habit;
-pub use delete_habit::DeleteHabitEvent;
-
-pub mod edit_habit;
-pub use edit_habit::EditHabitEvent;
-
-pub mod get_streak;
-pub use get_streak::GetStreakEvent;
-
-pub mod active_days;
-pub use active_days::ActiveDaysEvent;
-
-pub mod weekly_average;
-pub use weekly_average::WeeklyAverageEvent;
-
-pub mod heatmap_year_habits;
-pub use heatmap_year_habits::HeatmapYearHabitsEvent;
-
-pub mod heatmap_data;
-pub use heatmap_data::HeatmapDataEvent;
-
-pub mod best_streaks;
-pub use best_streaks::BestStreaksEvent;
-
-pub mod reset;
-pub use reset::ResetEvent;
-
-pub mod save_settings;
-pub use save_settings::SettingsSaveEvent;
-
-pub mod progress;
-pub use progress::{
-    DailyProgressEvent, MonthlyProgressEvent, WeeklyProgressEvent, YearlyProgressEvent,
+mod app_event;
+pub use app_event::{
+    ActiveDaysEvent, AddHabitEvent, BestStreaksEvent, DailyProgressEvent, DeleteHabitEvent,
+    EditHabitEvent, GetStreakEvent, HeatmapDataEvent, HeatmapYearHabitsEvent, LogHabitEvent,
+    MonthlyProgressEvent, ResetEvent, SettingsSaveEvent, WeeklyAverageEvent, WeeklyProgressEvent,
+    YearlyProgressEvent,
 };
 
 /// Terminal events.
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub enum AppEvent {
     /// Terminal tick.
     Tick,

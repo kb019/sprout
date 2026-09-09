@@ -8,11 +8,6 @@ use ratatui::{
 
 use crate::{palette::Palette, state::input::InputState};
 
-pub enum InputType {
-    Text,
-    Number,
-}
-
 pub struct Input<'a> {
     placeholder: String,
     palette: Palette,

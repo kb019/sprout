@@ -13,8 +13,7 @@ use crate::utils::{focus_colors, progress, render_ellipsis_if_overflow};
 use crate::vendor::barchart::{Bar, BarChart};
 use crate::widgets::simple_list::SimpleList;
 
-#[allow(clippy::needless_pass_by_ref_mut)]
-pub fn render_stats_column(
+pub(super) fn render_stats_column(
     app: &mut App,
     frame: &mut Frame,
     stats_area: Rect,
@@ -32,14 +31,7 @@ pub fn render_stats_column(
     frame.render_widget(stats_block, stats_area);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
-pub fn render_stat_cards(
-    app: &App,
-    frame: &mut Frame,
-    area: Rect,
-    p: Palette,
-    states: &mut States,
-) {
+fn render_stat_cards(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &mut States) {
     let horizontal_layout = Layout::horizontal([
         Constraint::Fill(1),
         Constraint::Fill(1),
@@ -60,7 +52,7 @@ pub fn render_stat_cards(
     render_habits_tracked_card(app, frame, habits_tracked_area, p);
 }
 
-pub fn render_streak_card(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &States) {
+fn render_streak_card(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &States) {
     let block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::new().fg(p.border))
@@ -87,7 +79,7 @@ pub fn render_streak_card(app: &App, frame: &mut Frame, area: Rect, p: Palette, 
     frame.render_widget(Paragraph::new(Text::from(lines)), inner);
 }
 
-pub fn render_week_card(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &States) {
+fn render_week_card(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &States) {
     let block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::new().fg(p.border))
@@ -118,13 +110,7 @@ pub fn render_week_card(app: &App, frame: &mut Frame, area: Rect, p: Palette, st
     frame.render_widget(Paragraph::new(Text::from(lines)), inner);
 }
 
-pub fn render_active_days_card(
-    app: &App,
-    frame: &mut Frame,
-    area: Rect,
-    p: Palette,
-    states: &States,
-) {
+fn render_active_days_card(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &States) {
     let block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::new().fg(p.border))
@@ -154,7 +140,7 @@ pub fn render_active_days_card(
     frame.render_widget(Paragraph::new(Text::from(lines)), inner);
 }
 
-pub fn render_habits_tracked_card(app: &App, frame: &mut Frame, area: Rect, p: Palette) {
+fn render_habits_tracked_card(app: &App, frame: &mut Frame, area: Rect, p: Palette) {
     let block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::new().fg(p.border))
@@ -174,7 +160,7 @@ pub fn render_habits_tracked_card(app: &App, frame: &mut Frame, area: Rect, p: P
     frame.render_widget(Paragraph::new(Text::from(lines)), inner);
 }
 
-pub fn render_stat_data(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &mut States) {
+fn render_stat_data(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &mut States) {
     let horizontal_layout =
         Layout::horizontal([Constraint::Percentage(60), Constraint::Percentage(40)]).spacing(0);
     let [bar_area, top_streaks_area] = area.layout(&horizontal_layout);
@@ -182,7 +168,7 @@ pub fn render_stat_data(app: &App, frame: &mut Frame, area: Rect, p: Palette, st
     render_top_streaks(app, frame, top_streaks_area, p, states);
 }
 
-pub fn render_bar_chart(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &States) {
+fn render_bar_chart(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &States) {
     let title = if states.weekly_average_state.is_fetching() {
         TextLine::from_iter([
             Span::raw("  "),
@@ -260,13 +246,7 @@ pub fn render_bar_chart(app: &App, frame: &mut Frame, area: Rect, p: Palette, st
     frame.render_widget(bar_chart, middle_area);
 }
 
-pub fn render_top_streaks(
-    app: &App,
-    frame: &mut Frame,
-    area: Rect,
-    p: Palette,
-    states: &mut States,
-) {
+fn render_top_streaks(app: &App, frame: &mut Frame, area: Rect, p: Palette, states: &mut States) {
     let (border_color, title_color) = focus_colors(app.is_streak_leaderboard_in_focus, p);
     let top_streaks_block = Block::default()
         .title(" streak leaderboard ")

@@ -1,46 +1,46 @@
 /// Application.
-pub mod app;
+mod app;
 
 /// Terminal events handler.
-pub mod event;
+mod event;
 
 /// Widget renderer.
-pub mod view;
+mod view;
 
 /// Terminal user interface.
-pub mod tui;
+mod tui;
 
 /// Application updater.
-pub mod update;
+mod update;
 
 /// Color palette.
-pub mod palette;
+mod palette;
 
 /// App Logo Progress Displayer
-pub mod sprout;
+mod sprout;
 
 /// Vendor widgets.
-pub mod vendor;
+mod vendor;
 
 /// Widgets.
-pub mod widgets;
+mod widgets;
 
 ///used to store all the states of the application
-pub mod state;
+mod state;
 
-pub mod symbols;
+mod symbols;
 
-pub mod utils;
+mod utils;
 
-pub mod constants;
+mod constants;
 
-pub mod model;
+mod model;
 
-pub mod controller;
+mod controller;
 
-pub mod samples;
+mod cli;
 
-pub mod cli;
+const SEED_SQL: &str = include_str!("../samples/seed.sql");
 
 use std::io::{Write, stderr, stdout};
 use std::thread;
@@ -269,7 +269,7 @@ fn main() -> Result<()> {
         let habit_db = HabitDb::new(&actions_db_path)?;
         if is_sample {
             habit_db
-                .execute_batch(samples::SEED_SQL)
+                .execute_batch(SEED_SQL)
                 .context("Failed to seed sample data")?;
         }
         let habits = habit_db.get_all_habits()?;

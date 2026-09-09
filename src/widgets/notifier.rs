@@ -11,9 +11,9 @@ use crate::palette::Palette;
 use crate::symbols;
 use crate::utils::render_ellipsis_if_overflow;
 
-pub struct NotifierMessage {
-    pub message: String,
-    pub is_error: bool,
+struct NotifierMessage {
+    message: String,
+    is_error: bool,
     ticks: u16,
 }
 

@@ -12,8 +12,6 @@ use crate::sprout::{SproutPoints, generate_sprout_points};
 pub struct App {
     /// should the application exit?
     pub should_quit: bool,
-    /// counter
-    pub counter: u8,
     /// sprout points for each percentage
     pub sprout_percentage_points: SproutPercentagePoints,
     /// menu items
@@ -113,8 +111,6 @@ pub struct SproutPercentagePoints {
 }
 
 impl App {
-    pub const APP_NAME: &'static str = "Sprout";
-
     /// Constructs a new instance of [`App`].
     pub fn new() -> Self {
         let mut app = Self::default();
@@ -124,7 +120,7 @@ impl App {
         app.is_menu_in_focus = true;
         app.menu = vec!["Dashboard", "Heatmap", "Stats", "Settings"];
         app.habits = vec![];
-        app.themes = vec!["Sprout", "Amber", "Mono"];
+        app.themes = vec!["Sprout", "Amber", "Mono", "Ocean", "Paper"];
         app.goal_progress_options = vec!["Daily", "Weekly", "Monthly", "Yearly"];
         app.cursor_blink_enabled = true;
         app.notification_level = 1;
@@ -151,10 +147,6 @@ impl App {
         self.display_edit_modal = Some(habit_id);
     }
 
-    pub fn hide_edit_modal(&mut self) {
-        self.display_edit_modal = None;
-    }
-
     pub fn show_delete_modal(&mut self, habit_id: i32) {
         self.display_delete_modal = Some(habit_id);
     }
@@ -173,10 +165,6 @@ impl App {
 
     pub fn show_add_modal(&mut self) {
         self.display_add_modal = true;
-    }
-
-    pub fn hide_add_modal(&mut self) {
-        self.display_add_modal = false;
     }
 
     pub fn hide_all_modals(&mut self) {
@@ -268,18 +256,6 @@ impl App {
     /// Set should_quit to true to quit the application.
     pub fn quit(&mut self) {
         self.should_quit = true;
-    }
-
-    pub fn increment_counter(&mut self) {
-        if let Some(res) = self.counter.checked_add(5) {
-            self.counter = res;
-        }
-    }
-
-    pub fn decrement_counter(&mut self) {
-        if let Some(res) = self.counter.checked_sub(5) {
-            self.counter = res;
-        }
     }
 
     /// Get cached sprout points for a given percentage, if they have been set.

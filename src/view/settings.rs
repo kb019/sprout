@@ -17,7 +17,7 @@ use crate::{
     },
 };
 
-pub fn render_settings_page(
+pub(super) fn render_settings_page(
     app: &mut App,
     frame: &mut Frame,
     area: Rect,
@@ -103,7 +103,6 @@ pub fn render_settings(
     frame.render_stateful_widget(simple_list, area, settings_state);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_setting_accent(
     app: &mut App,
     buf: &mut Buffer,
@@ -126,7 +125,6 @@ fn render_setting_accent(
     );
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_setting_cursor_blink(
     app: &mut App,
     buf: &mut Buffer,
@@ -149,7 +147,6 @@ fn render_setting_cursor_blink(
     );
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_setting_notifications(
     app: &mut App,
     buf: &mut Buffer,
@@ -172,7 +169,6 @@ fn render_setting_notifications(
     );
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_setting_reset(
     app: &mut App,
     buf: &mut Buffer,

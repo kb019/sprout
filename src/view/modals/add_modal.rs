@@ -35,7 +35,6 @@ pub fn render_add_modal(app: &mut App, frame: &mut Frame, area: Rect, states: &m
     render_footer(app, frame, footer_area, states);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_add_content(app: &mut App, frame: &mut Frame, area: Rect, modal_state: &mut ModalState) {
     let add_modal_state = modal_state.add_modal_state_mut();
     let p = app.palette();
@@ -124,7 +123,6 @@ fn render_add_content(app: &mut App, frame: &mut Frame, area: Rect, modal_state:
     frame.render_stateful_widget(list, area, &mut list_state);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_footer(app: &mut App, frame: &mut Frame, area: Rect, states: &mut States) {
     let p = app.palette();
 
@@ -175,7 +173,6 @@ fn render_footer(app: &mut App, frame: &mut Frame, area: Rect, states: &mut Stat
     );
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_title(app: &mut App, frame: &mut Frame, area: Rect) {
     let p = app.palette();
     let title_text = Text::from(Line::from(" Add habit")).style(Style::new().fg(p.accent));

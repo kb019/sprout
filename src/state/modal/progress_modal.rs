@@ -3,7 +3,7 @@ use ratatui::widgets::ListState;
 use crate::state::input::{InputState, InputType};
 
 pub struct ProgressModalState {
-    pub progress_input_state: InputState,
+    progress_input_state: InputState,
     button_state: ListState, // 0 = Add, 1 = Cancel
 }
 
@@ -31,27 +31,5 @@ impl ProgressModalState {
 
     pub fn button_state_mut(&mut self) -> &mut ListState {
         &mut self.button_state
-    }
-
-    pub fn selected_button(&self) -> usize {
-        self.button_state.selected().unwrap_or(0)
-    }
-
-    pub fn next_button(&mut self) {
-        let next = self
-            .button_state
-            .selected()
-            .map(|i| (i + 1).min(1))
-            .unwrap_or(0);
-        self.button_state.select(Some(next));
-    }
-
-    pub fn prev_button(&mut self) {
-        let prev = self
-            .button_state
-            .selected()
-            .map(|i| i.saturating_sub(1))
-            .unwrap_or(0);
-        self.button_state.select(Some(prev));
     }
 }

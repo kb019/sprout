@@ -18,7 +18,12 @@ use ratatui::style::{Modifier, Style, Stylize};
 use ratatui::text::{Line as TextLine, Span, Text};
 use ratatui::widgets::{Block, BorderType, Borders, ListState, Padding, Paragraph, Widget};
 
-pub fn render_dashboard(app: &mut App, frame: &mut Frame, app_area: Rect, states: &mut States) {
+pub(super) fn render_dashboard(
+    app: &mut App,
+    frame: &mut Frame,
+    app_area: Rect,
+    states: &mut States,
+) {
     let p = app.palette();
     let horizontal =
         Layout::horizontal([Constraint::Percentage(60), Constraint::Percentage(40)]).spacing(1);
@@ -56,7 +61,7 @@ pub fn render_dashboard(app: &mut App, frame: &mut Frame, app_area: Rect, states
     render_stats_column(app, frame, stats_column, states);
 }
 
-pub fn render_habits_content(app: &mut App, frame: &mut Frame, area: Rect, states: &mut States) {
+fn render_habits_content(app: &mut App, frame: &mut Frame, area: Rect, states: &mut States) {
     let p = app.palette();
     let vertical_layout = Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).spacing(1);
     let [header_area, habits_list_area] = area.layout(&vertical_layout);
@@ -64,8 +69,7 @@ pub fn render_habits_content(app: &mut App, frame: &mut Frame, area: Rect, state
     render_habits_list(app, frame, habits_list_area, states);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
-pub fn render_habits_list(app: &mut App, frame: &mut Frame, area: Rect, states: &mut States) {
+fn render_habits_list(app: &mut App, frame: &mut Frame, area: Rect, states: &mut States) {
     let p = app.palette();
     let habits = app.habits.clone();
     if habits.is_empty() {
@@ -110,7 +114,7 @@ pub fn render_habits_list(app: &mut App, frame: &mut Frame, area: Rect, states: 
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn render_habit_item(
+fn render_habit_item(
     area: Rect,
     buf: &mut Buffer,
     _is_selected: bool,
@@ -176,7 +180,7 @@ fn render_line_with_ellipsis(line: &TextLine, area: Rect, buf: &mut Buffer) {
     render_ellipsis_if_overflow(buf, area, line.width());
 }
 
-pub fn render_habits_header(frame: &mut Frame, area: Rect, p: Palette) {
+fn render_habits_header(frame: &mut Frame, area: Rect, p: Palette) {
     let text = Text::from(Span::styled(
         " + Add habit ",
         Style::default()
@@ -186,31 +190,6 @@ pub fn render_habits_header(frame: &mut Frame, area: Rect, p: Palette) {
     ))
     .right_aligned();
     frame.render_widget(text, area);
-}
-
-#[allow(dead_code)]
-fn render_empty_state(frame: &mut Frame, area: Rect, text: &str, p: Palette) {
-    let span = Span::from(text).style(Style::new().fg(p.accent));
-    let text_len = text.len() as u16;
-    let half_width = text_len / 2;
-    let center_x = area.x + area.width / 2;
-    let middle_rect = Rect {
-        x: center_x.saturating_sub(half_width),
-        y: area.y + area.height / 2,
-        width: area.width,
-        height: 1,
-    };
-    frame.render_widget(span, middle_rect);
-    let frame_buffer_mut = frame.buffer_mut();
-    for position in area.positions() {
-        let style = Style::new().fg(p.fg_dim).dim();
-        let cell_style = frame_buffer_mut[position].style();
-        if let Some(fg_color) = cell_style.fg
-            && fg_color != p.accent
-        {
-            frame_buffer_mut[position].set_symbol("⧸").set_style(style);
-        }
-    }
 }
 
 fn render_stats_column(app: &App, frame: &mut Frame, stats_area: Rect, states: &mut States) {

@@ -2,7 +2,6 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{app::App, controller::Actions, state::States};
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 #[allow(clippy::needless_return)]
 pub fn handle_delete_modal(
     app: &mut App,

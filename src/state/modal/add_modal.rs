@@ -67,11 +67,6 @@ impl AddModalState {
         self.current_field_focus
     }
 
-    pub fn set_current_field_focus(&mut self, focus: usize) {
-        self.current_field_focus = focus;
-        self.focus_input_field();
-    }
-
     pub fn focus_next_field(&mut self) {
         self.current_field_focus = (self.current_field_focus + 1) % 5;
         self.focus_input_field();
@@ -110,28 +105,6 @@ impl AddModalState {
 
     pub fn button_state_mut(&mut self) -> &mut ListState {
         &mut self.button_state
-    }
-
-    pub fn selected_button(&self) -> usize {
-        self.button_state.selected().unwrap_or(0)
-    }
-
-    pub fn next_button(&mut self) {
-        let next = self
-            .button_state
-            .selected()
-            .map(|i| (i + 1).min(1))
-            .unwrap_or(0);
-        self.button_state.select(Some(next));
-    }
-
-    pub fn prev_button(&mut self) {
-        let prev = self
-            .button_state
-            .selected()
-            .map(|i| i.saturating_sub(1))
-            .unwrap_or(0);
-        self.button_state.select(Some(prev));
     }
 
     // --- reset ---

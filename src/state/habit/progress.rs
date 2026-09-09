@@ -23,10 +23,6 @@ impl DailyProgressState {
     pub fn is_fetching(&self, habit_id: i32) -> bool {
         self.fetching_habit_ids.contains(&habit_id)
     }
-
-    pub fn fetching_ids(&self) -> &HashSet<i32> {
-        &self.fetching_habit_ids
-    }
 }
 
 #[derive(Default)]
@@ -51,10 +47,6 @@ impl WeeklyProgressState {
 
     pub fn is_fetching(&self, habit_id: i32) -> bool {
         self.fetching_habit_ids.contains(&habit_id)
-    }
-
-    pub fn fetching_ids(&self) -> &HashSet<i32> {
-        &self.fetching_habit_ids
     }
 }
 
@@ -81,10 +73,6 @@ impl MonthlyProgressState {
     pub fn is_fetching(&self, habit_id: i32) -> bool {
         self.fetching_habit_ids.contains(&habit_id)
     }
-
-    pub fn fetching_ids(&self) -> &HashSet<i32> {
-        &self.fetching_habit_ids
-    }
 }
 
 #[derive(Default)]
@@ -109,9 +97,5 @@ impl YearlyProgressState {
 
     pub fn is_fetching(&self, habit_id: i32) -> bool {
         self.fetching_habit_ids.contains(&habit_id)
-    }
-
-    pub fn fetching_ids(&self) -> &HashSet<i32> {
-        &self.fetching_habit_ids
     }
 }

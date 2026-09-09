@@ -23,8 +23,4 @@ impl HeatmapDataState {
     pub fn is_fetching(&self, habit_id: i32, year: i32) -> bool {
         self.fetching.contains(&(habit_id, year))
     }
-
-    pub fn is_any_fetching(&self) -> bool {
-        !self.fetching.is_empty()
-    }
 }

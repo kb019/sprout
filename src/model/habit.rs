@@ -3,11 +3,12 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use chrono::{Datelike, Local, NaiveDate};
-use rusqlite::{Connection, Error, params};
+use rusqlite::{Connection, params};
 
 use crate::model::open_db;
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct HabitLog {
     pub id: i32,
     pub habit_id: i32,
@@ -162,37 +163,6 @@ impl HabitDb {
             .context("Failed to collect completed habit ids")?;
 
         Ok(ids)
-    }
-
-    pub fn set_completion(&self, habit_id: i32, completed: bool) -> Result<()> {
-        self.conn
-            .execute(
-                "INSERT INTO habit_log (habit_id, date, completed)
-                 VALUES (?1, date('now', 'localtime'), ?2)
-                 ON CONFLICT(habit_id, date) DO UPDATE SET completed = excluded.completed",
-                params![habit_id, completed as i32],
-            )
-            .with_context(|| {
-                format!(
-                    "Failed to set completion for habit_id={} completed={}",
-                    habit_id, completed
-                )
-            })?;
-        Ok(())
-    }
-
-    pub fn is_completed_today(&self, habit_id: i32) -> Result<bool> {
-        let result = self.conn.query_row(
-            "SELECT completed FROM habit_log WHERE habit_id = ?1 AND date = date('now', 'localtime')",
-            params![habit_id],
-            |row| row.get::<_, i32>(0),
-        );
-        match result {
-            Ok(v) => Ok(v != 0),
-            Err(Error::QueryReturnedNoRows) => Ok(false),
-            Err(e) => Err(e)
-                .with_context(|| format!("Failed to check completion for habit_id={}", habit_id)),
-        }
     }
 
     pub fn get_best_streaks(&self) -> Result<Vec<BestStreak>> {

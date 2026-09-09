@@ -6,11 +6,11 @@ use crate::state::input::{InputState, InputType};
 pub struct EditModalState {
     current_field_focus: usize,
     active_fields: Vec<usize>,
-    pub habit_name_input_state: InputState,
-    pub daily_goal_input_state: InputState,
-    pub weekly_goal_input_state: InputState,
-    pub monthly_goal_input_state: InputState,
-    pub yearly_goal_input_state: InputState,
+    habit_name_input_state: InputState,
+    daily_goal_input_state: InputState,
+    weekly_goal_input_state: InputState,
+    monthly_goal_input_state: InputState,
+    yearly_goal_input_state: InputState,
     button_state: ListState,
     is_editing: bool,
 }
@@ -164,28 +164,6 @@ impl EditModalState {
 
     pub fn button_state_mut(&mut self) -> &mut ListState {
         &mut self.button_state
-    }
-
-    pub fn selected_button(&self) -> usize {
-        self.button_state.selected().unwrap_or(0)
-    }
-
-    pub fn next_button(&mut self) {
-        let next = self
-            .button_state
-            .selected()
-            .map(|i| (i + 1).min(1))
-            .unwrap_or(0);
-        self.button_state.select(Some(next));
-    }
-
-    pub fn prev_button(&mut self) {
-        let prev = self
-            .button_state
-            .selected()
-            .map(|i| i.saturating_sub(1))
-            .unwrap_or(0);
-        self.button_state.select(Some(prev));
     }
 
     pub fn reset(&mut self) {

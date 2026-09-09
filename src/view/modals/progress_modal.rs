@@ -47,7 +47,6 @@ pub fn render_progress_modal(app: &mut App, frame: &mut Frame, area: Rect, state
     render_footer(app, frame, footer_area, states, habit_id);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_title(app: &mut App, frame: &mut Frame, area: Rect, habit_name: &str) {
     let p = app.palette();
     let title = format!(" Log - {} ", habit_name);
@@ -60,7 +59,6 @@ fn render_title(app: &mut App, frame: &mut Frame, area: Rect, habit_name: &str) 
     frame.render_widget(border_bottom, area);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_progress_content(
     app: &mut App,
     frame: &mut Frame,
@@ -90,7 +88,6 @@ fn render_progress_content(
     frame.render_stateful_widget(list, area, &mut list_state);
 }
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 fn render_footer(app: &mut App, frame: &mut Frame, area: Rect, states: &mut States, habit_id: i32) {
     let p = app.palette();
     let is_logging = states.log_habit_state.is_habit_logging(habit_id);

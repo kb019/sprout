@@ -3,6 +3,7 @@ use ratatui::widgets::canvas::{Painter, Shape};
 use crate::app::App;
 
 #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
+#[allow(clippy::enum_variant_names)]
 pub enum SproutPercentage {
     #[default]
     FivePercent,

@@ -10,7 +10,6 @@ use crate::{
     widgets::notifier::Notifier,
 };
 
-#[allow(clippy::needless_pass_by_ref_mut)]
 #[allow(clippy::needless_return)]
 pub fn handle_edit_modal(
     app: &mut App,
