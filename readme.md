@@ -22,6 +22,10 @@
   >
 </p>
 
+<h4 align="center">
+  <a href="https://kb019.github.io/habit_tracker_tui/">Documentation</a> |
+</h4>
+
 # sprout
 
 A habit tracker that lives in your terminal.
