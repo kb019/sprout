@@ -77,7 +77,7 @@ All name arguments are case-insensitive. Run `sprout --help` or `sprout <command
 
 ## Documentation
 
-See [`docs/index.html`](docs/index.html) for the full documentation including keybind reference, settings, and data storage details.
+See [`docs`](https://kb019.github.io/sprout/) for the full documentation including keybind reference, settings, and data storage details.
 
 ---
 
