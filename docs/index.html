@@ -9,6 +9,17 @@
 </head>
 <body>
 
+<a href="https://github.com/kb019/sprout" class="github-corner" target="_blank" rel="noopener" title="View on GitHub">
+  <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true">
+    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+  </svg>
+</a>
+
+<button id="menu-toggle" aria-label="Open navigation" aria-expanded="false">
+  <span></span><span></span><span></span>
+</button>
+<div id="sidebar-overlay"></div>
+
 <!-- ── Sidebar ───────────────────────────────────────────────── -->
 <nav id="sidebar">
   <div class="nav-logo">
@@ -44,7 +55,19 @@
   <a href="#keybinds">Keybind reference</a>
   <a href="#settings-ref">Settings reference</a>
   <a href="#storage">Data storage</a>
+  <a href="#architecture">Architecture</a>
   <a href="#license">License</a>
+
+  <div class="theme-switcher">
+    <span class="nav-section">Theme</span>
+    <div class="theme-swatches">
+      <button class="swatch" data-theme="sprout" title="Sprout" style="background:#4be374"></button>
+      <button class="swatch" data-theme="amber"  title="Amber"  style="background:#e3b341"></button>
+      <button class="swatch" data-theme="mono"   title="Mono"   style="background:#cfe9d4"></button>
+      <button class="swatch" data-theme="ocean"  title="Ocean"  style="background:#41c3eb"></button>
+      <button class="swatch" data-theme="paper"  title="Paper"  style="background:#289b55"></button>
+    </div>
+  </div>
 </nav>
 
 <!-- ── Main ──────────────────────────────────────────────────── -->
@@ -63,7 +86,7 @@
   </p>
 
   <p>
-    <img src="https://vhs.charm.sh/vhs-2H0fffXh3jG8QE05r8ZdxL.gif" alt="Sprout demo" style="max-width:100%;border-radius:6px;">
+    <img src="https://vhs.charm.sh/vhs-6qM6LED0L8C9Z9ymD2JRYb.gif" alt="Sprout demo" style="max-width:100%;border-radius:6px;">
   </p>
 
   <hr />
@@ -73,7 +96,7 @@
 
   <p>Build from source:</p>
 
-  <pre><code>git clone https://github.com/&lt;your-repo&gt;/sprout
+  <pre><code>git clone https://github.com/kb019/sprout
 cd sprout
 just setup</code></pre>
 
@@ -505,7 +528,7 @@ sprout edit reading --rename "Books" --daily-goal 20</code></pre>
   <h2 id="settings">Settings</h2>
 
   <p>
-    Five rows navigated with <kbd>↑↓</kbd>. Options on each row are cycled with <kbd>◂▸</kbd>.
+    Four rows navigated with <kbd>↑↓</kbd>. Options on each row are cycled with <kbd>◂▸</kbd>.
     Changes are saved automatically to the database after a ~3 second debounce.
     A spinner next to the title indicates a save is in flight.
     Settings persist across restarts.
@@ -515,11 +538,10 @@ sprout edit reading --rename "Books" --daily-goal 20</code></pre>
     <table>
       <thead><tr><th>Row</th><th>Setting</th><th>Options</th></tr></thead>
       <tbody>
-        <tr><td>1</td><td>Accent theme</td><td>Sprout · Amber · Mono</td></tr>
-        <tr><td>2</td><td>Default view on launch</td><td>Dashboard · Heatmap · Stats</td></tr>
-        <tr><td>3</td><td>Cursor blink</td><td>On · Off</td></tr>
-        <tr><td>4</td><td>Notifications</td><td>All · Errors · Off</td></tr>
-        <tr><td>5</td><td>Reset all data</td><td>Press <kbd>Enter</kbd> to confirm</td></tr>
+        <tr><td>1</td><td>Accent theme</td><td>Sprout · Amber · Mono · Ocean · Paper</td></tr>
+        <tr><td>2</td><td>Cursor blink</td><td>On · Off</td></tr>
+        <tr><td>3</td><td>Notifications</td><td>All · Errors · Off</td></tr>
+        <tr><td>4</td><td>Reset all data</td><td>Press <kbd>Enter</kbd> to confirm</td></tr>
       </tbody>
     </table>
   </div>
@@ -733,7 +755,6 @@ sprout edit reading --rename "Books" --daily-goal 20</code></pre>
       <thead><tr><th>Setting</th><th>Default</th><th>Persisted</th></tr></thead>
       <tbody>
         <tr><td>Accent theme</td><td>Sprout (green)</td><td>Yes</td></tr>
-        <tr><td>Default view</td><td>Dashboard</td><td>Yes</td></tr>
         <tr><td>Cursor blink</td><td>On</td><td>Yes</td></tr>
         <tr><td>Notifications</td><td>Errors only</td><td>Yes</td></tr>
       </tbody>
@@ -743,11 +764,13 @@ sprout edit reading --rename "Books" --daily-goal 20</code></pre>
   <h3>Accent themes</h3>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Name</th><th>Accent colour</th></tr></thead>
+      <thead><tr><th>Name</th><th>Accent colour</th><th>Style</th></tr></thead>
       <tbody>
-        <tr><td>Sprout</td><td>Green</td></tr>
-        <tr><td>Amber</td><td>Amber / gold</td></tr>
-        <tr><td>Mono</td><td>Light grey</td></tr>
+        <tr><td>Sprout</td><td>Green <code>#4be374</code></td><td>Dark, green tinted borders and heatmap</td></tr>
+        <tr><td>Amber</td><td>Amber <code>#e3b341</code></td><td>Dark, warm amber tinted borders and heatmap</td></tr>
+        <tr><td>Mono</td><td>Light grey <code>#cfe9d4</code></td><td>Dark, neutral grey borders and heatmap</td></tr>
+        <tr><td>Ocean</td><td>Cyan-blue <code>#41c3eb</code></td><td>Dark, cool blue tinted borders and heatmap</td></tr>
+        <tr><td>Paper</td><td>Green <code>#289b55</code></td><td>Light, cream background with dark text</td></tr>
       </tbody>
     </table>
   </div>
@@ -800,6 +823,180 @@ sprout edit reading --rename "Books" --daily-goal 20</code></pre>
 
   <hr />
 
+  <!-- ── Architecture ─────────────────────────────────────────── -->
+  <h2 id="architecture">Architecture</h2>
+
+  <p>
+    Sprout is built around a single <strong>mpsc channel</strong> and a
+    unidirectional data flow. Every piece of work (a key press, a database
+    result, a timer tick) arrives at the main loop as an <code>AppEvent</code>
+    and is routed to the appropriate handler.
+  </p>
+
+  <pre>
+   crossterm                          controller background thread
+   (Key, Mouse,                       1. calls model (SQLite)
+    Resize, Tick)                     2. gets result
+        │                             3. sends AppEvent via sender
+        v                                          │
+   ┌────────────────────────────────────────────── v ──────┐
+   │                    EventHandler                        │
+   │   thread: polls crossterm, emits terminal AppEvents   │
+   │   channel: single mpsc shared with controller threads │
+   │   next(): blocks until any AppEvent arrives           │
+   └──────────────────────────────┬────────────────────────┘
+                                  │ AppEvent (any source)
+                                  v
+         ┌──────────────────────────────────────────────┐
+         │                  Main Loop                   │
+         │   routes every AppEvent to a handler         │
+         └───────────────┬──────────────────────────────┘
+                         │
+           ┌─────────────┼──────────────┐
+           v             v              v
+       Key/Mouse      DB result       Tick
+           │             │              │
+           v             v              v
+      ┌─────────┐  ┌──────────┐   ┌─────────┐
+      │ update  │  │ handlers │   │  view   │
+      │ key     │  │ state    │   │ render  │
+      │ logic   │  │ patches  │   │         │
+      └────┬────┘  └──────────┘   └─────────┘
+           │
+           │ dispatches async op
+           v
+      ┌────────────┐   spawns   ┌──────────────────────────┐
+      │ controller │ ---------> │      background thread   │
+      │  Actions   │   thread   │  1. calls model (SQLite) │
+      └────────────┘            │  2. gets result          │
+                                │  3. sends AppEvent via   │
+                                │     shared mpsc sender   │
+                                └──────────────────────────┘
+
+      ┌──────────────────────────┐
+      │       App + States       │
+      │  single source of truth  │  mutated by update / handlers
+      │  read by view at render  │
+      └──────────────────────────┘</pre>
+
+  <h3>Module roles</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Module</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>src/event/</code></td>
+          <td>
+            Defines the <code>AppEvent</code> enum: terminal events
+            (<code>Key</code>, <code>Tick</code>, <code>Resize</code>) and one
+            variant per domain operation (<code>AddHabit</code>,
+            <code>LogHabit</code>, …). Also contains <code>EventHandler</code>,
+            a dedicated thread that polls crossterm and forwards events into the
+            channel.
+          </td>
+        </tr>
+        <tr>
+          <td><code>src/app.rs</code></td>
+          <td>
+            The <code>App</code> struct: habit list, focus flags, modal state,
+            active theme index, settings values, and the tick counter used for
+            spinners. Everything the rest of the app needs at runtime lives here.
+          </td>
+        </tr>
+        <tr>
+          <td><code>src/state/</code></td>
+          <td>
+            UI selection state: one <code>ListState</code> per scrollable pane,
+            plus per-operation async states that track whether a fetch is idle,
+            loading, or complete. Kept separate from <code>App</code> so render
+            functions can take <code>&amp;mut States</code> without borrowing all
+            of <code>App</code>.
+          </td>
+        </tr>
+        <tr>
+          <td><code>src/update/</code></td>
+          <td>
+            Pure functions that mutate <code>App</code> and <code>States</code>.
+            <code>handle</code> routes key events to screen-specific handlers.
+            Each <code>handle_*_event</code> function applies a database result
+            to the relevant state field. Update functions call
+            <code>controller</code> when they need to start an async DB
+            operation.
+          </td>
+        </tr>
+        <tr>
+          <td><code>src/controller/</code></td>
+          <td>
+            The <code>Actions</code> struct. Each method spawns a background
+            thread, opens a short-lived <code>model</code> connection, runs the
+            query, then sends the result back as an <code>AppEvent</code> over
+            the shared mpsc channel. No application logic lives here.
+          </td>
+        </tr>
+        <tr>
+          <td><code>src/model/</code></td>
+          <td>
+            <code>HabitDb</code> and <code>SettingsDb</code>: raw SQLite queries
+            via rusqlite. Creates the schema on first open, exposes one method
+            per operation. No app state, no channels, just data access.
+          </td>
+        </tr>
+        <tr>
+          <td><code>src/view/</code></td>
+          <td>
+            Stateless render functions. Given <code>&amp;App</code> and
+            <code>&amp;mut States</code>, they build ratatui widgets and draw
+            them to the terminal frame. Called once per tick; never mutate state.
+          </td>
+        </tr>
+        <tr>
+          <td><code>src/cli/</code></td>
+          <td>
+            Standalone CLI command handlers. Each opens its own short-lived DB
+            connection, formats output to stdout, and exits. No TUI, no channels.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>AppEvent lifecycle</h3>
+
+  <p>
+    Every operation follows the same path through the system:
+  </p>
+
+  <ol style="padding-left:1.4rem; margin-bottom:0.85rem; color:var(--fg);">
+    <li style="margin-bottom:0.4rem">
+      The user presses a key. <code>EventHandler</code> wraps it in
+      <code>AppEvent::Key</code> and sends it into the mpsc channel.
+    </li>
+    <li style="margin-bottom:0.4rem">
+      The main loop receives it and calls <code>update::handle</code>, which
+      runs the key-binding logic for the focused pane.
+    </li>
+    <li style="margin-bottom:0.4rem">
+      If data is needed (e.g. logging a habit), <code>update</code> calls
+      <code>Actions::log_habit</code>. The controller spawns a thread, opens a
+      DB connection, and runs the SQL.
+    </li>
+    <li style="margin-bottom:0.4rem">
+      The background thread sends <code>AppEvent::LogHabit(…)</code> back
+      through the same channel.
+    </li>
+    <li style="margin-bottom:0.4rem">
+      The main loop receives it and calls <code>handle_log_habit_event</code>,
+      which updates the relevant fields in <code>App</code> and
+      <code>States</code>.
+    </li>
+    <li>
+      On the next <code>Tick</code>, the view re-renders from the updated state.
+    </li>
+  </ol>
+
+  <hr />
+
   <!-- ── License ───────────────────────────────────────────────── -->
   <h2 id="license">License</h2>
 
@@ -836,7 +1033,46 @@ sprout edit reading --rename "Books" --daily-goal 20</code></pre>
 </main>
 
 <script>
-  // Highlight the active nav link based on scroll position
+  // ── Theme switcher ────────────────────────────────────────────
+  const THEME_KEY = 'sprout-docs-theme';
+  const swatches = document.querySelectorAll('.swatch');
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    swatches.forEach(s => s.classList.toggle('active', s.dataset.theme === theme));
+  }
+
+  applyTheme(localStorage.getItem(THEME_KEY) || 'paper');
+
+  swatches.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const theme = btn.dataset.theme;
+      localStorage.setItem(THEME_KEY, theme);
+      applyTheme(theme);
+    });
+  });
+
+  // ── Mobile sidebar drawer ─────────────────────────────────────
+  const menuToggle = document.getElementById('menu-toggle');
+  const overlay = document.getElementById('sidebar-overlay');
+
+  function openNav() {
+    document.body.classList.add('nav-open');
+    menuToggle.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeNav() {
+    document.body.classList.remove('nav-open');
+    menuToggle.setAttribute('aria-expanded', 'false');
+  }
+
+  menuToggle.addEventListener('click', () => {
+    document.body.classList.contains('nav-open') ? closeNav() : openNav();
+  });
+
+  overlay.addEventListener('click', closeNav);
+
+  // ── Active nav link on scroll ─────────────────────────────────
   const links = document.querySelectorAll('nav a');
   const headings = Array.from(document.querySelectorAll('h2[id], h3[id]'));
 
@@ -855,6 +1091,11 @@ sprout edit reading --rename "Books" --daily-goal 20</code></pre>
 
   window.addEventListener('scroll', setActive, { passive: true });
   setActive();
+
+  // Close drawer when a nav link is tapped on mobile
+  links.forEach(a => a.addEventListener('click', () => {
+    if (window.innerWidth <= 768) closeNav();
+  }));
 </script>
 
 </body>

@@ -114,7 +114,27 @@ Sleep 0.5s
 Down
 Sleep 0.5s
 Tab
+Sleep 1.5s
+
+# Down to select accent theme row, Right x4 to reach Paper (light theme)
+Left
+Sleep 0.3s
+Left
+Sleep 0.3s
+Left
+Sleep 0.3s
+Left
 Sleep 2s
+
+# Left x4 to switch back to Sprout
+Right
+Sleep 0.3s
+Right
+Sleep 0.3s
+Right
+Sleep 0.3s
+Right
+Sleep 1s
 
 # m to menu, Up Up Up back to Dashboard (0), Tab to enter
 Type "m"

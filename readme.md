@@ -33,7 +33,7 @@
   <a href="https://kb019.github.io/sprout/">Documentation</a>
 </h4>
 
-![demo](https://vhs.charm.sh/vhs-2H0fffXh3jG8QE05r8ZdxL.gif)
+![demo](https://vhs.charm.sh/vhs-6qM6LED0L8C9Z9ymD2JRYb.gif)
 
 # sprout
 
@@ -50,7 +50,7 @@ Sprout is a habit tracker for the terminal. It has a full-screen TUI for daily u
 - GitHub-style activity heatmap with five intensity levels
 - Current and best streak tracking
 - Daily, weekly, monthly, and yearly goal tracking
-- Three accent themes: Sprout, Amber, Mono
+- Five themes: Sprout, Amber, Mono, Ocean, Paper (light)
 - CLI for logging and querying without opening the TUI
 
 ---
@@ -58,7 +58,7 @@ Sprout is a habit tracker for the terminal. It has a full-screen TUI for daily u
 ## Installation
 
 ```
-git clone https://github.com/<your-repo>/sprout
+git clone https://github.com/kb019/sprout
 cd sprout
 just setup
 ```
