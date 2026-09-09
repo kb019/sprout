@@ -10,6 +10,14 @@
       alt="Built With Ratatui"
     >
   </a>
+  <img
+    src="https://img.shields.io/badge/License-MIT-blue?style=flat"
+    alt="License MIT"
+  >
+  <img
+    src="https://img.shields.io/badge/Rust-1.97.0-orange?style=flat"
+    alt="Rust 1.97.0"
+  >
 </p>
 
 # sprout
