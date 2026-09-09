@@ -40,6 +40,8 @@ pub mod controller;
 
 pub mod samples;
 
+pub mod cli;
+
 use std::io::{Write, stderr, stdout};
 use std::thread;
 use std::time::Duration;
@@ -81,54 +83,73 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    #[command(
-        about = "Log a value for a habit (e.g. `habit log reading 30`)",
-        next_help_heading = "Arguments"
-    )]
-    Log {
-        #[arg(
-            help = "Name of the habit to log, e.g. reading, pushups, meditation (must exist — run `habit add` first)"
-        )]
-        habit_type: String,
-
-        #[arg(
-            default_value_t = 1,
-            help = "Amount to record in the habit's unit, e.g. 30 for 30 minutes or 15 for 15 pages (default: 1)"
-        )]
-        value: u32,
-    },
-
-    #[command(
-        about = "Add a new habit to track (e.g. `habit add --name reading --unit pages --goal 50`)",
-        next_help_heading = "Arguments"
-    )]
-    Add {
-        #[arg(
-            short,
-            long,
-            help = "Unique name for the habit, e.g. reading, meditation, pushups"
-        )]
-        name: String,
-
-        #[arg(
-            short,
-            long,
-            help = "Unit of measurement for logged values, e.g. pages, reps, minutes, hours"
-        )]
-        unit: String,
-
-        #[arg(
-            short,
-            long,
-            help = "Daily target in the chosen unit, e.g. 30 for 30 minutes or 50 for 50 pages (used to shade the heatmap)"
-        )]
-        goal: Option<u32>,
-    },
-
-    #[command(about = "List all tracked habits with their unit and daily goal")]
+    #[command(about = "List all tracked habits with today's progress and goals")]
     List {},
 
-    #[command(about = "Populate the database with 4 sample habits and 90 days of history")]
+    #[command(about = "Show today's completion status for all habits")]
+    Status {},
+
+    #[command(about = "Show current and best streaks (omit NAME to show all)")]
+    Streak {
+        #[arg(help = "Habit name (case-insensitive)")]
+        name: Option<String>,
+    },
+
+    #[command(about = "Add a new habit to track")]
+    Add {
+        #[arg(short, long, help = "Unique habit name, e.g. reading, pushups")]
+        name: String,
+        #[arg(long, default_value_t = 0, help = "Daily target value")]
+        daily_goal: i32,
+        #[arg(long, default_value_t = 0, help = "Weekly target value")]
+        weekly_goal: i32,
+        #[arg(long, default_value_t = 0, help = "Monthly target value")]
+        monthly_goal: i32,
+        #[arg(long, default_value_t = 0, help = "Yearly target value")]
+        yearly_goal: i32,
+    },
+
+    #[command(about = "Log a value for a habit (e.g. `sprout log reading 30`)")]
+    Log {
+        #[arg(help = "Habit name (case-insensitive)")]
+        habit_name: String,
+        #[arg(default_value_t = 1, help = "Amount to record (default: 1)")]
+        value: i32,
+    },
+
+    #[command(about = "Delete a habit and all its history")]
+    Delete {
+        #[arg(help = "Habit name (case-insensitive)")]
+        name: String,
+        #[arg(short, long, help = "Skip the confirmation prompt")]
+        yes: bool,
+    },
+
+    #[command(about = "Edit a habit's name or goals")]
+    Edit {
+        #[arg(help = "Habit name (case-insensitive)")]
+        name: String,
+        #[arg(long, help = "New name")]
+        rename: Option<String>,
+        #[arg(long, help = "New daily target")]
+        daily_goal: Option<i32>,
+        #[arg(long, help = "New weekly target")]
+        weekly_goal: Option<i32>,
+        #[arg(long, help = "New monthly target")]
+        monthly_goal: Option<i32>,
+        #[arg(long, help = "New yearly target")]
+        yearly_goal: Option<i32>,
+    },
+
+    #[command(about = "Print an activity heatmap for a habit")]
+    Heatmap {
+        #[arg(help = "Habit name (case-insensitive)")]
+        name: String,
+        #[arg(long, help = "Year to display (defaults to current year)")]
+        year: Option<i32>,
+    },
+
+    #[command(about = "Launch the TUI with 4 sample habits and 90 days of history")]
     Sample {},
 }
 
@@ -157,6 +178,63 @@ fn main() -> Result<()> {
     let db_path = exe_dir.join("habit.db");
 
     let is_sample = matches!(args.command, Some(Commands::Sample {}));
+
+    // CLI commands: run directly without launching the TUI.
+    match args.command {
+        Some(Commands::List {}) => {
+            return cli::cmd_list(&db_path);
+        }
+        Some(Commands::Status {}) => {
+            return cli::cmd_status(&db_path);
+        }
+        Some(Commands::Streak { name }) => {
+            return cli::cmd_streak(&db_path, name);
+        }
+        Some(Commands::Add {
+            name,
+            daily_goal,
+            weekly_goal,
+            monthly_goal,
+            yearly_goal,
+        }) => {
+            return cli::cmd_add(
+                &db_path,
+                name,
+                daily_goal,
+                weekly_goal,
+                monthly_goal,
+                yearly_goal,
+            );
+        }
+        Some(Commands::Log { habit_name, value }) => {
+            return cli::cmd_log(&db_path, habit_name, value);
+        }
+        Some(Commands::Delete { name, yes }) => {
+            return cli::cmd_delete(&db_path, name, yes);
+        }
+        Some(Commands::Edit {
+            name,
+            rename,
+            daily_goal,
+            weekly_goal,
+            monthly_goal,
+            yearly_goal,
+        }) => {
+            return cli::cmd_edit(
+                &db_path,
+                name,
+                rename,
+                daily_goal,
+                weekly_goal,
+                monthly_goal,
+                yearly_goal,
+            );
+        }
+        Some(Commands::Heatmap { name, year }) => {
+            return cli::cmd_heatmap(&db_path, name, year);
+        }
+        Some(Commands::Sample {}) | None => {} // fall through to TUI
+    }
 
     check_if_terminal();
     let loaded_settings = {

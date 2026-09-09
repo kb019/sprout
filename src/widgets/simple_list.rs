@@ -192,7 +192,7 @@ where
                 );
             }
 
-            // Divider between items — not after the last visible one
+            // Divider between items, not after the last visible one
             if self.render_line && i < last - 1 {
                 if current_y < area.bottom() {
                     buf.set_string(

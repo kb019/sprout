@@ -54,7 +54,7 @@ impl Widget for &Input<'_> {
         let block = Block::default()
             .borders(Borders::ALL)
             .border_style(Style::default().fg(border_color))
-            .style(Style::default().bg(self.palette.background)); // explicit dark fill — this is the actual fix
+            .style(Style::default().bg(self.palette.background)); // explicit dark fill prevents background bleed
         let block_area = Rect {
             x: area.x,
             y: area.y,
@@ -63,7 +63,7 @@ impl Widget for &Input<'_> {
         };
 
         let inner = block.inner(block_area);
-        block.render(block_area, buf); // Block writes its own cells correctly — no manual buf.get_mut() needed
+        block.render(block_area, buf); // Block writes its own cells correctly, no manual buf.get_mut() needed
 
         let showing_placeholder = self.input_state.get_value().is_empty();
         let cursor_position = self.input_state.get_cursor_position();

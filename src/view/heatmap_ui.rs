@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use chrono::Datelike;
 
 use crate::app::App;
+use crate::model::habit::Habit;
 use crate::palette::Palette;
 use crate::state::States;
 use crate::utils::{focus_colors, progress, selection_modifier};
@@ -69,11 +70,9 @@ pub fn render_heatmap_page(app: &App, frame: &mut Frame, area: Rect, states: &mu
     render_year_list(app, frame, year_area, p, states);
     render_habits(app, frame, habit_tiles_area, states);
     let is_boolean_habit = habit_id
-        .map(|id| {
-            !app.heatmap_data
-                .get(&(id, year))
-                .map(|data| data.values().any(|&v| v > 0 && v < 4))
-                .unwrap_or(false)
+        .and_then(|id| app.habits.iter().find(|h| h.id == id))
+        .map(|h| {
+            h.daily_goal == 0 && h.weekly_goal == 0 && h.monthly_goal == 0 && h.yearly_goal == 0
         })
         .unwrap_or(false);
     render_legend(
@@ -229,7 +228,7 @@ pub fn render_habit_tiles(
     let habits_for_year: Vec<_> = app
         .habits
         .iter()
-        .filter(|h: &&crate::model::habit::Habit| year_habit_ids.contains(&h.id))
+        .filter(|h: &&Habit| year_habit_ids.contains(&h.id))
         .collect();
     let tiles_items: Vec<TileItem> = habits_for_year
         .iter()

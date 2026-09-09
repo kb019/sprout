@@ -151,7 +151,7 @@ pub fn generate_sprout_points(pct: u8) -> SproutPoints {
         pts.push((x, y - 0.4));
     };
 
-    // Phase 1: trunk (5-20%) — y = -35 growing up to -10
+    // Phase 1: trunk (5-20%): y = -35 growing up to -10
     {
         let frac = (p / 20.0).min(1.0);
         let top = -35.0 + 25.0 * frac;
@@ -162,7 +162,7 @@ pub fn generate_sprout_points(pct: u8) -> SproutPoints {
         }
     }
 
-    // Phase 2: lower branches (20-35%) — arcs sweep left and right from trunk at y=-20
+    // Phase 2: lower branches (20-35%): arcs sweep left and right from trunk at y=-20
     if p > 20.0 {
         let frac = ((p - 20.0) / 15.0).min(1.0);
         let steps = (90.0 * frac) as i32;
@@ -174,7 +174,7 @@ pub fn generate_sprout_points(pct: u8) -> SproutPoints {
         }
     }
 
-    // Phase 3: upper stem (35-50%) — y = -10 growing up to 5
+    // Phase 3: upper stem (35-50%): y = -10 growing up to 5
     if p > 35.0 {
         let frac = ((p - 35.0) / 15.0).min(1.0);
         let top = -10.0 + 15.0 * frac;
@@ -185,7 +185,7 @@ pub fn generate_sprout_points(pct: u8) -> SproutPoints {
         }
     }
 
-    // Phase 4: upper branches (50-65%) — shorter arcs sweep left and right from y=5
+    // Phase 4: upper branches (50-65%): shorter arcs sweep left and right from y=5
     if p > 50.0 {
         let frac = ((p - 50.0) / 15.0).min(1.0);
         let steps = (90.0 * frac) as i32;
@@ -197,7 +197,7 @@ pub fn generate_sprout_points(pct: u8) -> SproutPoints {
         }
     }
 
-    // Phase 5: top stem (65-80%) — y = 5 growing up to 20
+    // Phase 5: top stem (65-80%): y = 5 growing up to 20
     if p > 65.0 {
         let frac = ((p - 65.0) / 15.0).min(1.0);
         let top = 5.0 + 15.0 * frac;
@@ -208,7 +208,7 @@ pub fn generate_sprout_points(pct: u8) -> SproutPoints {
         }
     }
 
-    // Phase 6: flower blooms (80-100%) — petals appear one cluster at a time
+    // Phase 6: flower blooms (80-100%): petals appear one cluster at a time
     if p > 80.0 {
         let frac = ((p - 80.0) / 20.0).min(1.0);
         let all: &[(f64, f64)] = &[

@@ -16,7 +16,7 @@ pub struct Palette {
     pub background: Color,
     pub row_highlight: Color,
     pub heatmap: [Color; 5],
-    /// Fixed fire/streak indicator — stays amber regardless of accent theme.
+    /// Fixed fire/streak indicator, stays amber regardless of accent theme.
     pub amber: Color,
     pub danger: Color,
     pub danger_bg: Color,
