@@ -20,6 +20,13 @@
     src="https://img.shields.io/badge/Rust-1.97.0-orange?style=flat"
     alt="Rust 1.97.0"
   >
+  &nbsp;&nbsp;
+  <a href="https://github.com/kb019/sprout/actions/workflows/pages/pages-build-deployment">
+    <img
+      src="https://github.com/kb019/sprout/actions/workflows/pages/pages-build-deployment/badge.svg"
+      alt="Docs"
+    >
+  </a>
 </p>
 
 <h4 align="center">
