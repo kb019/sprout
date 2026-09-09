@@ -33,7 +33,7 @@
   <a href="https://kb019.github.io/sprout/">Documentation</a>
 </h4>
 
-![demo](https://vhs.charm.sh/vhs-43WPyt3gQ7cMquJvfci5iV.gif)
+![demo](https://vhs.charm.sh/vhs-2H0fffXh3jG8QE05r8ZdxL.gif)
 
 # sprout
 
