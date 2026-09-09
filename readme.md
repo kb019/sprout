@@ -34,22 +34,10 @@ Sprout is a habit tracker for the terminal. It has a full-screen TUI for daily u
 
 ## Installation
 
-Requires Rust 1.80 or later.
-
 ```
 git clone https://github.com/<your-repo>/sprout
 cd sprout
-cargo build --release
-```
-
-Copy the binary to your PATH:
-
-```
-# Linux / macOS
-cp target/release/sprout ~/.local/bin/
-
-# Windows (PowerShell)
-Copy-Item target\release\sprout.exe $env:USERPROFILE\bin\
+just setup
 ```
 
 The database file `habit.db` is created automatically next to the binary on first run.
@@ -78,6 +66,24 @@ All name arguments are case-insensitive. Run `sprout --help` or `sprout <command
 ## Documentation
 
 See [`docs`](https://kb019.github.io/sprout/) for the full documentation including keybind reference, settings, and data storage details.
+
+
+---
+
+## Useful links
+
+- [stdout vs stderr](https://blog.orhun.dev/stdout-vs-stderr/) — when to use stdout and stderr in terminal apps
+- [How terminals work](https://how-terminals-work.vercel.app/) — a visual guide to how terminals work
+- [Ratatui templates](https://github.com/ratatui/templates) — starter templates for Ratatui apps
+- [Release your Ratatui app](https://ratatui.rs/recipes/apps/release-your-app/) — guide for packaging and releasing a Ratatui app
+
+---
+
+## Similar projects
+
+- [dijo](https://github.com/oppiliappan/dijo) — scriptable, curses-based habit tracker written in Rust
+- [habito](https://github.com/codito/habito) — simple CLI habit tracker written in Python
+- [habu](https://github.com/schmee/habu) — TUI habit tracker
 
 ---
 
