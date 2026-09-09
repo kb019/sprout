@@ -337,18 +337,11 @@ fn main() -> Result<()> {
         }
     }
     if let Some(v) = loaded_settings
-        .get("default_view")
-        .and_then(|s| s.parse::<usize>().ok())
-        && let Some(s) = tile_states.get_mut(1)
-    {
-        s.select(Some(v));
-    }
-    if let Some(v) = loaded_settings
         .get("cursor_blink")
         .and_then(|s| s.parse::<usize>().ok())
     {
         app.cursor_blink_enabled = v == 0;
-        if let Some(s) = tile_states.get_mut(2) {
+        if let Some(s) = tile_states.get_mut(1) {
             s.select(Some(v));
         }
     }
@@ -357,7 +350,7 @@ fn main() -> Result<()> {
         .and_then(|s| s.parse::<usize>().ok())
     {
         app.notification_level = v;
-        if let Some(s) = tile_states.get_mut(3) {
+        if let Some(s) = tile_states.get_mut(2) {
             s.select(Some(v));
         }
     }
@@ -409,7 +402,6 @@ fn main() -> Result<()> {
                             states.app_state.active_theme(),
                             states.app_state.settings_tile_selected(1).unwrap_or(0),
                             states.app_state.settings_tile_selected(2).unwrap_or(0),
-                            states.app_state.settings_tile_selected(3).unwrap_or(0),
                         );
                     }
                 }

@@ -21,11 +21,11 @@ impl AppState {
         let mut settings_state = ListState::default();
         settings_state.select(None);
         let mut settings_tile_states: Vec<ListState> =
-            (0..5).map(|_| ListState::default()).collect();
+            (0..4).map(|_| ListState::default()).collect();
         for s in &mut settings_tile_states {
             s.select(Some(0));
         }
-        settings_tile_states[3].select(Some(1));
+        settings_tile_states[2].select(Some(1));
         let mut goal_progress_tile_state = ListState::default();
         goal_progress_tile_state.select(Some(0));
         // 0=daily, 1=weekly, 2=monthly, 3=yearly

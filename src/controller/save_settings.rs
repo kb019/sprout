@@ -15,20 +15,13 @@ impl SaveSettingsAction {
         Self { sender, db_path }
     }
 
-    pub fn save(
-        &self,
-        theme: usize,
-        default_view: usize,
-        cursor_blink: usize,
-        notification_level: usize,
-    ) {
+    pub fn save(&self, theme: usize, cursor_blink: usize, notification_level: usize) {
         let sender = self.sender.clone();
         let db_path = self.db_path.clone();
         let _ = sender.send(AppEvent::SaveSettings(SettingsSaveEvent::Saving));
         thread::spawn(move || {
             let result = SettingsDb::new(&db_path).and_then(|db| {
                 db.save_setting("theme", &theme.to_string())?;
-                db.save_setting("default_view", &default_view.to_string())?;
                 db.save_setting("cursor_blink", &cursor_blink.to_string())?;
                 db.save_setting("notification_level", &notification_level.to_string())?;
                 Ok(())

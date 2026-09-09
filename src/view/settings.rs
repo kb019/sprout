@@ -61,7 +61,7 @@ pub fn render_settings(
     let p = app.palette();
     let is_settings_in_focus = app.is_settings_in_focus;
     let simple_list = SimpleList::new(
-        vec!["2", "2", "2", "2", "3"],
+        vec!["2", "2", "2", "3"],
         |index, item_area, buf, is_selected| match index {
             0 => render_setting_accent(
                 app,
@@ -70,33 +70,26 @@ pub fn render_settings(
                 is_selected,
                 &mut settings_tile_states[0],
             ),
-            1 => render_setting_dashboard(
+            1 => render_setting_cursor_blink(
                 app,
                 buf,
                 item_area,
                 is_selected,
                 &mut settings_tile_states[1],
             ),
-            2 => render_setting_cursor_blink(
+            2 => render_setting_notifications(
                 app,
                 buf,
                 item_area,
                 is_selected,
                 &mut settings_tile_states[2],
             ),
-            3 => render_setting_notifications(
+            3 => render_setting_reset(
                 app,
                 buf,
                 item_area,
                 is_selected,
                 &mut settings_tile_states[3],
-            ),
-            4 => render_setting_reset(
-                app,
-                buf,
-                item_area,
-                is_selected,
-                &mut settings_tile_states[4],
             ),
             _ => {}
         },
@@ -125,38 +118,6 @@ fn render_setting_accent(
         "Accent theme",
         "Sidebar & heatmap color",
         build_items(&app.themes, is_selected, tile_state, p),
-        TileType::Unbordered,
-        TileBorderType::Rounded,
-        Style::new().fg(p.accent),
-        tile_state,
-        p,
-    );
-}
-
-#[allow(clippy::needless_pass_by_ref_mut)]
-fn render_setting_dashboard(
-    app: &mut App,
-    buf: &mut Buffer,
-    area: Rect,
-    is_selected: bool,
-    tile_state: &mut ListState,
-) {
-    let p = app.palette();
-    render_setting_row(
-        buf,
-        area,
-        "Default View on launch",
-        "Which tab opens when the app starts",
-        build_items(
-            &app.menu
-                .iter()
-                .copied()
-                .filter(|menu_name| *menu_name != "Settings")
-                .collect::<Vec<_>>(),
-            is_selected,
-            tile_state,
-            p,
-        ),
         TileType::Unbordered,
         TileBorderType::Rounded,
         Style::new().fg(p.accent),

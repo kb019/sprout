@@ -213,28 +213,27 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
 
     if app.is_settings_in_focus {
         if is_up_key(code) {
-            state.prev_settings(5);
+            state.prev_settings(4);
         } else if is_down_key(code) {
-            state.next_settings(5);
+            state.next_settings(4);
         } else if is_right_key(code) {
             let row = state.settings_state().selected().unwrap_or(0);
             let len = match row {
                 0 => app.themes.len(),
-                1 => app.menu.len().saturating_sub(1),
-                2 => 2,
-                3 => 3,
+                1 => 2,
+                2 => 3,
                 _ => 1,
             };
             if len > 0 {
                 state.prev_settings_tile(row, len);
                 if row == 0 {
                     app.active_theme = state.active_theme();
+                } else if row == 1 {
+                    app.cursor_blink_enabled = state.settings_tile_selected(1) == Some(0);
                 } else if row == 2 {
-                    app.cursor_blink_enabled = state.settings_tile_selected(2) == Some(0);
-                } else if row == 3 {
-                    app.notification_level = state.settings_tile_selected(3).unwrap_or(0);
+                    app.notification_level = state.settings_tile_selected(2).unwrap_or(0);
                 }
-                if row < 4 {
+                if row < 3 {
                     app.settings_save_delay = SETTINGS_SAVE_DELAY_TICKS;
                     states.settings_save_state.start_saving();
                 }
@@ -243,28 +242,27 @@ pub fn handle_app(app: &mut App, key_event: KeyEvent, states: &mut States, actio
             let row = state.settings_state().selected().unwrap_or(0);
             let len = match row {
                 0 => app.themes.len(),
-                1 => app.menu.len().saturating_sub(1),
-                2 => 2,
-                3 => 3,
+                1 => 2,
+                2 => 3,
                 _ => 1,
             };
             if len > 0 {
                 state.next_settings_tile(row, len);
                 if row == 0 {
                     app.active_theme = state.active_theme();
+                } else if row == 1 {
+                    app.cursor_blink_enabled = state.settings_tile_selected(1) == Some(0);
                 } else if row == 2 {
-                    app.cursor_blink_enabled = state.settings_tile_selected(2) == Some(0);
-                } else if row == 3 {
-                    app.notification_level = state.settings_tile_selected(3).unwrap_or(0);
+                    app.notification_level = state.settings_tile_selected(2).unwrap_or(0);
                 }
-                if row < 4 {
+                if row < 3 {
                     app.settings_save_delay = SETTINGS_SAVE_DELAY_TICKS;
                     states.settings_save_state.start_saving();
                 }
             }
         } else if matches!(code, KeyCode::Enter) {
             let row = state.settings_state().selected().unwrap_or(0);
-            if row == 4 {
+            if row == 3 {
                 app.show_reset_modal();
             }
         } else if matches!(code, KeyCode::Char('m' | 'M')) {

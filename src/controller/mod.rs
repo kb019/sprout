@@ -138,14 +138,8 @@ impl Actions {
         self.reset_action.reset_all();
     }
 
-    pub fn save_settings(
-        &self,
-        theme: usize,
-        default_view: usize,
-        cursor_blink: usize,
-        notification_level: usize,
-    ) {
+    pub fn save_settings(&self, theme: usize, cursor_blink: usize, notification_level: usize) {
         self.save_settings_action
-            .save(theme, default_view, cursor_blink, notification_level);
+            .save(theme, cursor_blink, notification_level);
     }
 }

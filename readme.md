@@ -84,6 +84,12 @@ All name arguments are case-insensitive. Run `sprout --help` or `sprout <command
 
 ---
 
+## Demo
+
+![demo](https://vhs.charm.sh/vhs-VNYQxT6YBIQLEThP50VDT.gif)
+
+---
+
 ## Documentation
 
 See [`docs`](https://kb019.github.io/sprout/) for the full documentation including keybind reference, settings, and data storage details.
