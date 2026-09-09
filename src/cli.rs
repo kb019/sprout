@@ -682,11 +682,7 @@ pub fn cmd_heatmap(db_path: &Path, habit_name: String, year: Option<i32>) -> Res
     println!();
     print!("  ");
     if is_binary {
-        print!(
-            "{}not done  {}done  ",
-            colored_square(0),
-            colored_square(4)
-        );
+        print!("{}not done  {}done  ", colored_square(0), colored_square(4));
     } else {
         for (i, label) in ["none", "low", "mid", "high", "done"].iter().enumerate() {
             print!("{}{}  ", colored_square(i), label);

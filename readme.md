@@ -16,12 +16,13 @@
 
 A habit tracker that lives in your terminal.
 
-Track daily habits, visualise streaks, and view GitHub-style activity heatmaps inside a full-screen TUI. A CLI is also included for quick logging and scripting without opening the interface. No background daemon, no cloud sync. A single binary and a SQLite file.
+Sprout is a habit tracker for the terminal. It has a full-screen TUI for daily use and a CLI for quick logging without opening the interface. Just a binary and a SQLite file.
 
 ---
 
 ## Features
 
+- Fully keyboard driven, no mouse required
 - Full-screen TUI with dashboard, heatmap, stats, and settings screens
 - GitHub-style activity heatmap with five intensity levels
 - Current and best streak tracking
@@ -82,8 +83,7 @@ See [`docs/index.html`](docs/index.html) for the full documentation including ke
 
 ## Acknowledgements
 
-- [bottom](https://github.com/ClementTsang/bottom) — referred approach for checking whether the output is a TTY before launching the TUI
-- [openai/codex](https://github.com/openai/codex/blob/1fb5158b3496a05abb89fb992d45737a02511d47/codex-rs/tui/src/chatwidget/tokens/chart.rs) — reference for the heatmap cli implementation
+- [bottom](https://github.com/ClementTsang/bottom/blob/6323bef6f0e304316b19845da6fcb3a764a5f5d7/src/lib.rs#L93) — referred approach for checking whether the output is a TTY before launching the TUI
 
 ---
 

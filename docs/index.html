@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sprout Documentation</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ── Sidebar ───────────────────────────────────────────────── -->
+<nav id="sidebar">
+  <div class="nav-logo">
+    <div class="name">sprout</div>
+    <div class="tagline">habit tracker · terminal</div>
+  </div>
+
+  <span class="nav-section">Getting started</span>
+  <a href="#installation">Installation</a>
+  <a href="#cli">CLI overview</a>
+  <a href="#launching">Launching the TUI</a>
+
+  <span class="nav-section">CLI commands</span>
+  <a href="#cli-list">list</a>
+  <a href="#cli-status">status</a>
+  <a href="#cli-streak">streak</a>
+  <a href="#cli-heatmap">heatmap</a>
+  <a href="#cli-add">add</a>
+  <a href="#cli-log">log</a>
+  <a href="#cli-delete">delete</a>
+  <a href="#cli-edit">edit</a>
+  <a href="#cli-sample">sample</a>
+
+  <span class="nav-section">TUI interface</span>
+  <a href="#navigation">Navigation</a>
+  <a href="#dashboard">Dashboard</a>
+  <a href="#heatmap">Heatmap</a>
+  <a href="#stats">Stats</a>
+  <a href="#settings">Settings</a>
+
+  <span class="nav-section">Reference</span>
+  <a href="#modals">Modals</a>
+  <a href="#keybinds">Keybind reference</a>
+  <a href="#settings-ref">Settings reference</a>
+  <a href="#storage">Data storage</a>
+  <a href="#license">License</a>
+</nav>
+
+<!-- ── Main ──────────────────────────────────────────────────── -->
+<main>
+<div class="content">
+
+  <h1>
+    sprout
+    <span class="subtitle">A habit tracker that lives in your terminal.</span>
+  </h1>
+
+  <p>
+    Sprout is a habit tracker for the terminal. It has a full-screen TUI for daily use
+    and a CLI for quick logging without opening the interface.
+    Just a binary and a SQLite file.
+  </p>
+
+  <hr />
+
+  <!-- ── Installation ───────────────────────────────────────── -->
+  <h2 id="installation">Installation</h2>
+
+  <p>Build from source with Cargo (Rust 1.80 or later):</p>
+
+  <pre><code>git clone https://github.com/&lt;your-repo&gt;/sprout
+cd sprout
+cargo build --release</code></pre>
+
+  <p>
+    The binary is written to <code>target/release/sprout</code>
+    (<code>sprout.exe</code> on Windows).
+    Copy it to any directory on your <code>PATH</code>.
+  </p>
+
+  <pre><code># Linux / macOS
+cp target/release/sprout ~/.local/bin/
+
+# Windows (PowerShell)
+Copy-Item target\release\sprout.exe $env:USERPROFILE\bin\</code></pre>
+
+  <div class="note">
+    <strong>Note:</strong> Sprout writes <code>habit.db</code> to the same directory as the
+    binary, not the working directory. Keep the binary somewhere writable, or symlink it.
+  </div>
+
+  <h3>Running with Cargo (development)</h3>
+
+  <p>
+    Pass arguments to the binary after a <code>--</code> separator so Cargo does not
+    consume them:
+  </p>
+
+  <pre><code>cargo run                                    # open TUI
+cargo run -- list                            # list habits
+cargo run -- add --name "Reading" --daily-goal 30
+cargo run -- log reading 30</code></pre>
+
+  <hr />
+
+  <!-- ── CLI overview ───────────────────────────────────────── -->
+  <h2 id="cli">CLI overview</h2>
+
+  <p>
+    Every Sprout subcommand runs directly in the shell and exits. No TUI is launched.
+    Running <code>sprout</code> with no arguments (or <code>sprout sample</code>) is the
+    only way to open the full-screen interface.
+  </p>
+
+  <pre><code>sprout                        # open the TUI
+sprout list                   # list all habits with today's progress
+sprout status                 # today's ✓ / ✗ completion summary
+sprout streak [name]          # current and best streaks
+sprout heatmap &lt;name&gt;        # activity grid for the year
+sprout add --name &lt;n&gt; …      # create a new habit
+sprout log &lt;name&gt; [value]    # record progress for a habit
+sprout delete &lt;name&gt;         # delete a habit and its history
+sprout edit &lt;name&gt; …         # rename or update goals
+sprout sample                 # open TUI with demo data</code></pre>
+
+  <p>
+    All name arguments are <strong>case-insensitive</strong>.
+    Run <code>sprout --help</code> or <code>sprout &lt;command&gt; --help</code>
+    for the full flag reference.
+  </p>
+
+  <hr />
+
+  <!-- ── Launching ───────────────────────────────────────────── -->
+  <h2 id="launching">Launching the TUI</h2>
+
+  <pre><code>sprout</code></pre>
+
+  <p>
+    The full-screen TUI opens in your current terminal. Press <kbd>q</kbd>, <kbd>Esc</kbd>,
+    or <kbd>Ctrl-C</kbd> to quit at any time.
+  </p>
+
+  <p>
+    Sprout requires a true terminal (TTY). Running it inside a pipe or a non-TTY context
+    prints a warning but still attempts to start.
+  </p>
+
+  <hr />
+
+  <!-- ── CLI commands ───────────────────────────────────────── -->
+  <h2 id="cli-commands">CLI commands</h2>
+
+  <!-- list -->
+  <h3 id="cli-list">list</h3>
+
+  <pre><code>sprout list</code></pre>
+
+  <p>
+    Prints all habits in a table with today's progress, and the weekly, monthly, and
+    yearly goal targets. The <em>Today</em> column shows <code>logged/goal</code> when a
+    goal is set, or the raw value when there is no goal.
+  </p>
+
+  <pre><code>  ID    Name                    Today   Weekly   Monthly   Yearly
+  ────  ────────────────────  ─────────  ───────  ────────  ───────
+     1  Reading                   15/30        ─         ─        ─
+     2  Pushups                    0/50        ─         ─        ─
+     3  Meditation                    0        ─         ─        ─</code></pre>
+
+  <!-- status -->
+  <h3 id="cli-status">status</h3>
+
+  <pre><code>sprout status</code></pre>
+
+  <p>
+    Shows a quick completion summary for today. Each habit is marked <strong>✓</strong>
+    (completed) or <strong>✗</strong> (not yet done), along with the logged value vs.
+    the daily goal.
+  </p>
+
+  <pre><code>  Today  Saturday, 2026-09-06  (1/3)
+  ────────────────────────────────────────
+  ✓  Reading                 15 / 30
+  ✗  Pushups                  0 / 50
+  ✗  Meditation          not logged</code></pre>
+
+  <!-- streak -->
+  <h3 id="cli-streak">streak</h3>
+
+  <pre><code>sprout streak              # show all habits
+sprout streak reading      # show a single habit</code></pre>
+
+  <p>
+    Displays the current streak and all-time best streak for each habit.
+    The best-streak row also shows the date range it covered.
+  </p>
+
+  <pre><code>  Habit                    Current       Best
+  ──────────────────────   ─────────   ──────────
+  Reading                    3 days      14 days
+                                       2026-01-01 → 2026-01-14
+  Pushups                    0 days          ─</code></pre>
+
+  <!-- heatmap -->
+  <h3 id="cli-heatmap">heatmap</h3>
+
+  <pre><code>sprout heatmap &lt;name&gt; [--year YYYY]</code></pre>
+
+  <p>
+    Prints a full-year activity grid directly in the terminal using the same
+    <code>■</code> square and five-level green gradient as the TUI heatmap.
+    Intensity is derived by normalising each day's logged value against the
+    min and max values recorded in the selected year, identical to the TUI
+    heatmap calculation. Darkest means no data; brightest means the highest
+    recorded value for that year. Binary habits (no goals) use only two levels:
+    not logged vs. done. Month labels and day-of-week initials are shown for
+    orientation. When the terminal is too narrow to show all twelve months, the
+    display centres on the current month and trims accordingly.
+  </p>
+
+  <pre><code>  Reading  -  2026
+
+       Jan  Feb  Mar  Apr  May  Jun  Jul  Aug  Sep  Oct  Nov  Dec
+  Mon  ■ ■ ■ ■  ■ ■ ■ ■  ■ ■ ■ ■  ■ ■ ■ ■  …
+  Tue  ■ ■ ■ ■  ■ ■ ■ ■  ■ ■ ■ ■  ■ ■ ■ ■  …
+  Wed  ■ ■ ■ ■  ■ ■ ■ ■  ■ ■ ■ ■  ■ ■ ■ ■  …
+  Thu  ■ ■ ■ ■  ■ ■ ■ ■  ■ ■ ■ ■  ■ ■ ■ ■  …
+  Fri  ■ ■ ■ ■  ■ ■ ■ ■  ■ ■ ■ ■  ■ ■ ■ ■  …
+  Sat  ■ ■ ■ ■  ■ ■ ■ ■  ■ ■ ■ ■  ■ ■ ■ ■  …
+  Sun  ■ ■ ■ ■  ■ ■ ■ ■  ■ ■ ■ ■  ■ ■ ■ ■  …
+
+  ■ none  ■ low  ■ mid  ■ high  ■ done     (colour darkest to brightest)
+  32 active days in 2026</code></pre>
+
+  <p>Omit <code>--year</code> to show the current year.</p>
+
+  <pre><code>sprout heatmap reading             # current year
+sprout heatmap reading --year 2025 # a previous year</code></pre>
+
+  <!-- add -->
+  <h3 id="cli-add">add</h3>
+
+  <pre><code>sprout add --name &lt;name&gt; [--daily-goal &lt;n&gt;] [--weekly-goal &lt;n&gt;] [--monthly-goal &lt;n&gt;] [--yearly-goal &lt;n&gt;]</code></pre>
+
+  <p>Creates a new habit. All goals are optional and default to <code>0</code> (no goal).</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Flag</th><th>Required</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>--name</code> / <code>-n</code></td><td>Yes</td><td>n/a</td><td>Unique habit name</td></tr>
+        <tr><td><code>--daily-goal</code></td><td>No</td><td>0</td><td>Daily target value</td></tr>
+        <tr><td><code>--weekly-goal</code></td><td>No</td><td>0</td><td>Weekly target value</td></tr>
+        <tr><td><code>--monthly-goal</code></td><td>No</td><td>0</td><td>Monthly target value</td></tr>
+        <tr><td><code>--yearly-goal</code></td><td>No</td><td>0</td><td>Yearly target value</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <pre><code>sprout add --name "Reading" --daily-goal 30
+sprout add --name "Pushups" --daily-goal 50 --weekly-goal 300
+sprout add --name "Meditation"          # no goal, tracked as done/not-done</code></pre>
+
+  <!-- log -->
+  <h3 id="cli-log">log</h3>
+
+  <pre><code>sprout log &lt;name&gt; [value]</code></pre>
+
+  <p>
+    Records progress for a habit today. <code>value</code> defaults to <code>1</code>.
+    If the logged value meets or exceeds the daily goal, the habit is marked completed.
+    Running <code>log</code> again on the same day <strong>overwrites</strong> the
+    previous entry. It does not add to it.
+  </p>
+
+  <pre><code>sprout log reading 30      # log 30; marks complete if daily goal ≤ 30
+sprout log meditation      # logs 1; marks complete for a no-goal habit</code></pre>
+
+  <div class="note">
+    <strong>Binary habits</strong> (created with no goals at all) only accept
+    <code>0</code> (not done) or <code>1</code> (done). Negative values are rejected
+    for all habits.
+  </div>
+
+  <!-- delete -->
+  <h3 id="cli-delete">delete</h3>
+
+  <pre><code>sprout delete &lt;name&gt; [--yes]</code></pre>
+
+  <p>
+    Deletes the habit and <strong>all its log history</strong>.
+    Without <code>--yes</code>, a <code>[y/N]</code> prompt is shown first.
+    Pass <code>--yes</code> / <code>-y</code> to skip the prompt in scripts.
+  </p>
+
+  <pre><code>sprout delete reading          # prompts for confirmation
+sprout delete reading --yes    # deletes immediately</code></pre>
+
+  <div class="warn">
+    <strong>Warning:</strong> Deletion is permanent. There is no undo.
+  </div>
+
+  <!-- edit -->
+  <h3 id="cli-edit">edit</h3>
+
+  <pre><code>sprout edit &lt;name&gt; [--rename &lt;new-name&gt;] [--daily-goal &lt;n&gt;] [--weekly-goal &lt;n&gt;] [--monthly-goal &lt;n&gt;] [--yearly-goal &lt;n&gt;]</code></pre>
+
+  <p>
+    Updates a habit in place. Only the flags you pass are changed; everything else
+    keeps its current value. At least one flag is required.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Flag</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>--rename</code></td><td>Set a new name</td></tr>
+        <tr><td><code>--daily-goal</code></td><td>Update the daily target</td></tr>
+        <tr><td><code>--weekly-goal</code></td><td>Update the weekly target</td></tr>
+        <tr><td><code>--monthly-goal</code></td><td>Update the monthly target</td></tr>
+        <tr><td><code>--yearly-goal</code></td><td>Update the yearly target</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <pre><code>sprout edit reading --daily-goal 50
+sprout edit reading --rename "Books" --daily-goal 20</code></pre>
+
+  <div class="note">
+    <strong>Constraints:</strong> Only goals that were set when the habit was created can
+    be changed. For example, if a habit was created with no weekly goal, <code>--weekly-goal</code>
+    is rejected. Binary habits (no goals at all) cannot have goals added via
+    <code>edit</code>; recreate the habit instead.
+  </div>
+
+  <!-- sample -->
+  <h3 id="cli-sample">sample</h3>
+
+  <pre><code>sprout sample</code></pre>
+
+  <p>
+    Seeds four example habits with 90 days of history into a <em>temporary</em> database,
+    then opens the TUI against that file. Your real <code>habit.db</code> is never touched.
+    The temp file is deleted when you exit.
+  </p>
+
+  <hr />
+
+  <!-- ── Navigation ─────────────────────────────────────────── -->
+  <h2 id="navigation">Navigation</h2>
+
+  <p>
+    Sprout uses a cyclic focus model. <kbd>Tab</kbd> moves focus forward through panes in
+    order, and <kbd>Shift+Tab</kbd> moves it backward. The cycle always includes the sidebar
+    menu, so pressing <kbd>Tab</kbd> enough times from any pane eventually returns to the
+    menu. Only the focused pane responds to <kbd>↑↓</kbd> and <kbd>◂▸</kbd>.
+  </p>
+
+  <p>
+    A coloured border and a <code>▶</code> marker indicate which element is focused.
+    Press <kbd>m</kbd> from anywhere to jump straight back to the sidebar.
+  </p>
+
+  <div class="note">
+    <strong>Tip:</strong> Arrow keys and vim keys (<kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd>)
+    are interchangeable throughout the app.
+  </div>
+
+  <hr />
+
+  <!-- ── Dashboard ──────────────────────────────────────────── -->
+  <h2 id="dashboard">Dashboard</h2>
+
+  <p>The default screen. Split into a left column (habits) and a right column (stats).</p>
+
+  <h3>Active habits</h3>
+
+  <p>
+    Lists every tracked habit. Each row shows the habit name, current streak (with a
+    flame indicator), and whether it has been completed today. A spinner appears on a row
+    while a log request is in flight.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>↑</kbd> / <kbd>k</kbd></td><td>Previous habit</td></tr>
+        <tr><td><kbd>↓</kbd> / <kbd>j</kbd></td><td>Next habit</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Toggle complete, or open the progress modal if goals are set</td></tr>
+        <tr><td><kbd>a</kbd></td><td>Add a new habit</td></tr>
+        <tr><td><kbd>e</kbd></td><td>Edit the selected habit</td></tr>
+        <tr><td><kbd>d</kbd></td><td>Delete the selected habit</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Best streaks</h3>
+
+  <p>
+    Shows the all-time best streak per habit (longest consecutive completed days), sorted
+    longest first. Refreshes automatically after any log action.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>↑</kbd> / <kbd>k</kbd></td><td>Scroll up</td></tr>
+        <tr><td><kbd>↓</kbd> / <kbd>j</kbd></td><td>Scroll down</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Goal progress</h3>
+
+  <p>
+    Four tabs: <strong>Daily</strong>, <strong>Weekly</strong>, <strong>Monthly</strong>,
+    <strong>Yearly</strong>. Each tab lists only the habits that have a goal for that period,
+    with a progress bar showing units logged vs. target.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>◂</kbd> / <kbd>h</kbd></td><td>Previous tab</td></tr>
+        <tr><td><kbd>▸</kbd> / <kbd>l</kbd></td><td>Next tab</td></tr>
+        <tr><td><kbd>↑</kbd> / <kbd>k</kbd></td><td>Scroll list up</td></tr>
+        <tr><td><kbd>↓</kbd> / <kbd>j</kbd></td><td>Scroll list down</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Stat cards</h3>
+
+  <p>Four summary cards on the right column: current streak, weekly average, total active days, and number of habits tracked.</p>
+
+  <hr />
+
+  <!-- ── Heatmap ─────────────────────────────────────────────── -->
+  <h2 id="heatmap">Heatmap</h2>
+
+  <p>
+    A GitHub-style activity grid, one cell per calendar day.
+    Cell shade ranges from empty through four intensity levels derived from the logged
+    value relative to the habit's daily goal.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>◂</kbd> / <kbd>h</kbd></td><td>Previous habit tile</td></tr>
+        <tr><td><kbd>▸</kbd> / <kbd>l</kbd></td><td>Next habit tile</td></tr>
+        <tr><td><kbd>↑</kbd> / <kbd>k</kbd></td><td>Previous year</td></tr>
+        <tr><td><kbd>↓</kbd> / <kbd>j</kbd></td><td>Next year</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    The habit selector at the top shows one tile per habit active in the selected year.
+    The year list on the right shows every year that contains log data.
+    The active-days count below the grid reflects the selected habit and year, not a
+    global total.
+  </p>
+
+  <p>A spinner appears in the title while heatmap data is being loaded from the database.</p>
+
+  <hr />
+
+  <!-- ── Stats ──────────────────────────────────────────────── -->
+  <h2 id="stats">Stats</h2>
+
+  <p>
+    Reached via the sidebar (item 3). Shows aggregated statistics across all habits.
+  </p>
+
+  <h3>Streak leaderboard</h3>
+
+  <p>
+    Ranked list of all habits by current streak length, with a horizontal bar chart.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>↑</kbd> / <kbd>k</kbd></td><td>Scroll up</td></tr>
+        <tr><td><kbd>↓</kbd> / <kbd>j</kbd></td><td>Scroll down</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr />
+
+  <!-- ── Settings ───────────────────────────────────────────── -->
+  <h2 id="settings">Settings</h2>
+
+  <p>
+    Five rows navigated with <kbd>↑↓</kbd>. Options on each row are cycled with <kbd>◂▸</kbd>.
+    Changes are saved automatically to the database after a ~3 second debounce.
+    A spinner next to the title indicates a save is in flight.
+    Settings persist across restarts.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Row</th><th>Setting</th><th>Options</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Accent theme</td><td>Sprout · Amber · Mono</td></tr>
+        <tr><td>2</td><td>Default view on launch</td><td>Dashboard · Heatmap · Stats</td></tr>
+        <tr><td>3</td><td>Cursor blink</td><td>On · Off</td></tr>
+        <tr><td>4</td><td>Notifications</td><td>All · Errors · Off</td></tr>
+        <tr><td>5</td><td>Reset all data</td><td>Press <kbd>Enter</kbd> to confirm</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="warn">
+    <strong>Warning:</strong> Reset deletes every habit and every log entry permanently.
+    There is no undo.
+  </div>
+
+  <hr />
+
+  <!-- ── Modals ─────────────────────────────────────────────── -->
+  <h2 id="modals">Modals</h2>
+
+  <p>
+    All modals are dismissed with <kbd>Esc</kbd> and confirmed with <kbd>Enter</kbd>
+    (where applicable). While a modal is open, the rest of the UI does not respond to keys.
+  </p>
+
+  <h3>Modal navigation</h3>
+
+  <p>Applies to text-input modals (Add habit, Edit habit, Log progress). Confirmation-only modals (Delete habit, Reset all data) only respond to <kbd>Enter</kbd> and <kbd>Esc</kbd>.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>Tab</kbd> / <kbd>↓</kbd></td><td>Next input field</td></tr>
+        <tr><td><kbd>Shift+Tab</kbd> / <kbd>↑</kbd></td><td>Previous input field</td></tr>
+        <tr><td><kbd>←</kbd> / <kbd>→</kbd></td><td>Move text cursor within the active field</td></tr>
+        <tr><td><kbd>Backspace</kbd></td><td>Delete character before the cursor</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Confirm / submit</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Cancel and close</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Add habit</h3>
+
+  <p>Opened with <kbd>a</kbd> from the habit list.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Field</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Name</td><td>Yes</td><td>Unique identifier for the habit</td></tr>
+        <tr><td>Daily goal</td><td>No</td><td>Target per day, used to shade the heatmap and track progress</td></tr>
+        <tr><td>Weekly goal</td><td>No</td><td>Target per week</td></tr>
+        <tr><td>Monthly goal</td><td>No</td><td>Target per month</td></tr>
+        <tr><td>Yearly goal</td><td>No</td><td>Target per year</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    A habit with no goals is treated as a simple done/not-done tracker.
+    Goals only affect the heatmap shading and the goal-progress pane.
+  </p>
+
+  <h3>Edit habit</h3>
+
+  <p>Opened with <kbd>e</kbd> from the habit list. Same fields as Add. The creation date is preserved.</p>
+
+  <h3>Log progress</h3>
+
+  <p>
+    Opens automatically when you press <kbd>Enter</kbd> on a habit that has at least one goal.
+    Type the number of units completed today (digits only) and press <kbd>Enter</kbd> to save.
+    Use <kbd>←</kbd> / <kbd>→</kbd> to move the cursor and <kbd>Backspace</kbd> to delete.
+    If the value meets or exceeds the daily goal, the habit is marked completed.
+  </p>
+
+  <h3>Delete habit</h3>
+
+  <p>
+    Opened with <kbd>d</kbd> from the habit list. Asks for confirmation.
+    Deletes the habit definition and all its log history.
+  </p>
+
+  <h3>Reset all data</h3>
+
+  <p>
+    Opened from the Settings screen (navigate to the Reset row, press <kbd>Enter</kbd>).
+    Removes every habit and every log entry.
+  </p>
+
+  <hr />
+
+  <!-- ── Keybind reference ───────────────────────────────────── -->
+  <h2 id="keybinds">Keybind reference</h2>
+
+  <h3>Universal</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>q</kbd> / <kbd>Esc</kbd></td><td>Quit</td></tr>
+        <tr><td><kbd>Ctrl-C</kbd></td><td>Quit</td></tr>
+        <tr><td><kbd>Tab</kbd></td><td>Move focus forward through panes</td></tr>
+        <tr><td><kbd>Shift+Tab</kbd></td><td>Move focus backward through panes</td></tr>
+        <tr><td><kbd>m</kbd></td><td>Return focus to sidebar menu</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Sidebar menu</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>↑</kbd> / <kbd>k</kbd></td><td>Previous item</td></tr>
+        <tr><td><kbd>↓</kbd> / <kbd>j</kbd></td><td>Next item</td></tr>
+        <tr><td><kbd>Tab</kbd></td><td>Enter the selected screen at the first pane</td></tr>
+        <tr><td><kbd>Shift+Tab</kbd></td><td>Enter the selected screen at the last pane</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Dashboard: habit list</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>↑↓</kbd> / <kbd>jk</kbd></td><td>Navigate list</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Toggle complete / open progress modal</td></tr>
+        <tr><td><kbd>a</kbd></td><td>Add habit</td></tr>
+        <tr><td><kbd>e</kbd></td><td>Edit habit</td></tr>
+        <tr><td><kbd>d</kbd></td><td>Delete habit</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Dashboard: goal progress</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>◂▸</kbd> / <kbd>hl</kbd></td><td>Switch period tab</td></tr>
+        <tr><td><kbd>↑↓</kbd> / <kbd>jk</kbd></td><td>Scroll habit list</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Dashboard: best streaks</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>↑</kbd> / <kbd>k</kbd></td><td>Scroll up</td></tr>
+        <tr><td><kbd>↓</kbd> / <kbd>j</kbd></td><td>Scroll down</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Modals (text-input: Add, Edit, Log progress)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>Tab</kbd> / <kbd>↓</kbd></td><td>Next field</td></tr>
+        <tr><td><kbd>Shift+Tab</kbd> / <kbd>↑</kbd></td><td>Previous field</td></tr>
+        <tr><td><kbd>←</kbd> / <kbd>→</kbd></td><td>Move cursor in active field</td></tr>
+        <tr><td><kbd>Backspace</kbd></td><td>Delete character before the cursor</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Confirm</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Cancel</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Modals (confirmation: Delete, Reset)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>Enter</kbd></td><td>Confirm</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Cancel</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Heatmap</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>◂▸</kbd> / <kbd>hl</kbd></td><td>Switch habit</td></tr>
+        <tr><td><kbd>↑↓</kbd> / <kbd>jk</kbd></td><td>Switch year</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Settings</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>↑↓</kbd> / <kbd>jk</kbd></td><td>Navigate rows</td></tr>
+        <tr><td><kbd>◂▸</kbd> / <kbd>hl</kbd></td><td>Cycle option</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Confirm (Reset row only)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr />
+
+  <!-- ── Settings reference ─────────────────────────────────── -->
+  <h2 id="settings-ref">Settings reference</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Setting</th><th>Default</th><th>Persisted</th></tr></thead>
+      <tbody>
+        <tr><td>Accent theme</td><td>Sprout (green)</td><td>Yes</td></tr>
+        <tr><td>Default view</td><td>Dashboard</td><td>Yes</td></tr>
+        <tr><td>Cursor blink</td><td>On</td><td>Yes</td></tr>
+        <tr><td>Notifications</td><td>Errors only</td><td>Yes</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Accent themes</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Accent colour</th></tr></thead>
+      <tbody>
+        <tr><td>Sprout</td><td>Green</td></tr>
+        <tr><td>Amber</td><td>Amber / gold</td></tr>
+        <tr><td>Mono</td><td>Light grey</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Notification levels</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Level</th><th>What is shown</th></tr></thead>
+      <tbody>
+        <tr><td>All</td><td>Success messages and errors</td></tr>
+        <tr><td>Errors</td><td>Only error messages (default)</td></tr>
+        <tr><td>Off</td><td>Nothing</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr />
+
+  <!-- ── Data storage ───────────────────────────────────────── -->
+  <h2 id="storage">Data storage</h2>
+
+  <p>
+    Everything is stored in a single SQLite file named <code>habit.db</code>,
+    placed in the same directory as the <code>sprout</code> binary.
+    The file is created automatically on first run.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Table</th><th>Contents</th></tr></thead>
+      <tbody>
+        <tr><td><code>habit</code></td><td>Habit definitions: name, goals (daily / weekly / monthly / yearly), created_at</td></tr>
+        <tr><td><code>habit_log</code></td><td>One row per day per habit: completed flag and raw progress value</td></tr>
+        <tr><td><code>settings</code></td><td>Key/value pairs for persistent user preferences</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    There is no migration step required when upgrading. Tables are created with
+    <code>CREATE TABLE IF NOT EXISTS</code>, so a new binary running against an existing
+    database will add missing tables without touching existing data.
+  </p>
+
+  <p>
+    To wipe everything manually, delete <code>habit.db</code>.
+    To reset from inside the app, use the Reset option in Settings.
+    To reset from the CLI, use <code>sprout delete &lt;name&gt;</code> for individual habits.
+  </p>
+
+  <hr />
+
+  <!-- ── License ───────────────────────────────────────────────── -->
+  <h2 id="license">License</h2>
+
+  <p>
+    Sprout is released under the <strong>MIT License</strong>.
+    Copyright &copy; 2026.
+  </p>
+
+  <p>
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+  </p>
+
+  <p>
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+  </p>
+
+  <p>
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+  </p>
+
+</div><!-- .content -->
+</main>
+
+<script>
+  // Highlight the active nav link based on scroll position
+  const links = document.querySelectorAll('nav a');
+  const headings = Array.from(document.querySelectorAll('h2[id], h3[id]'));
+
+  function setActive() {
+    const scrollY = window.scrollY + 80;
+    let current = headings[0]?.id ?? '';
+    for (const h of headings) {
+      if (h.getBoundingClientRect().top + window.scrollY <= scrollY) {
+        current = h.id;
+      }
+    }
+    links.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }
+
+  window.addEventListener('scroll', setActive, { passive: true });
+  setActive();
+</script>
+
+</body>
+</html>

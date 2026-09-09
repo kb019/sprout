@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#0f1110"/>
+  <!-- stem -->
+  <line x1="16" y1="28" x2="16" y2="14" stroke="#4be374" stroke-width="2" stroke-linecap="round"/>
+  <!-- left leaf -->
+  <path d="M16 20 C16 20 8 18 7 12 C7 12 14 11 16 18" fill="#4be374"/>
+  <!-- right leaf -->
+  <path d="M16 16 C16 16 24 14 25 8 C25 8 18 7 16 14" fill="#4be374" opacity="0.75"/>
+  <!-- soil dots -->
+  <circle cx="11" cy="28" r="1.5" fill="#243525"/>
+  <circle cx="16" cy="29" r="1.5" fill="#243525"/>
+  <circle cx="21" cy="28" r="1.5" fill="#243525"/>
+</svg>
