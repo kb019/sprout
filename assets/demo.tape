@@ -74,15 +74,15 @@ Down
 Sleep 1s
 
 # Switch to weekly tab
-Left
+Right
 Sleep 1s
 
 # Switch to monthly tab
-Left
+Right
 Sleep 1s
 
 # Switch to yearly tab
-Left
+Right
 Sleep 1.5s
 
 # Tab to best streaks, Tab again to menu
