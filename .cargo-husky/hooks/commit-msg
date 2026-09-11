@@ -1,2 +1,5 @@
 #!/bin/sh
+if [ -f ".git/MERGE_HEAD" ]; then
+  exit 0
+fi
 committed --config committed.toml --commit-file "$1"
