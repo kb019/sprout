@@ -55,40 +55,17 @@ Sprout is a habit tracker for the terminal. It has a full-screen TUI for daily u
 
 ---
 
-## Installation
-
-```
-git clone https://github.com/kb019/sprout
-cd sprout
-just setup
-```
-
-The database file `habit.db` is created automatically next to the binary on first run.
-
----
-
-## Usage
-
-```
-sprout                                               # open the TUI
-sprout list                                          # list all habits with progress
-sprout status                                        # today's completion summary
-sprout streak [name]                                 # current and best streaks
-sprout heatmap <name> [--year YYYY]                  # activity heatmap
-sprout add --name <name> [--daily-goal <n>]          # create a habit
-sprout log <name> [value]                            # record progress
-sprout edit <name> [--rename <n>] [--daily-goal <n>] # update a habit
-sprout delete <name> [--yes]                         # delete a habit and its history
-sprout sample                                        # open TUI with demo data
-```
-
-All name arguments are case-insensitive. Run `sprout --help` or `sprout <command> --help` for the full flag reference.
-
----
-
 ## Documentation
 
-See [`docs`](https://kb019.github.io/sprout/) for the full documentation including keybind reference, settings, and data storage details.
+Learn how to use Sprout from the official [documentation](https://kb019.github.io/sprout/).
+
+- [Installation](https://kb019.github.io/sprout/#installation)
+- [CLI overview](https://kb019.github.io/sprout/#cli)
+- [Launching the TUI](https://kb019.github.io/sprout/#launching)
+- [Navigation](https://kb019.github.io/sprout/#navigation)
+- [Keybind reference](https://kb019.github.io/sprout/#keybinds)
+- [Settings reference](https://kb019.github.io/sprout/#settings-ref)
+- [Data storage](https://kb019.github.io/sprout/#storage)
 
 
 ---

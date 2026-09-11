@@ -94,28 +94,33 @@
   <!-- ── Installation ───────────────────────────────────────── -->
   <h2 id="installation">Installation</h2>
 
-  <p>Build from source:</p>
+  <h3>macOS / Linux: Homebrew</h3>
+  <pre><code>brew tap kb019/sprout
+brew install sprout</code></pre>
 
-  <pre><code>git clone https://github.com/kb019/sprout
-cd sprout
-just setup</code></pre>
+  <h3>macOS / Linux: install script</h3>
+  <pre><code>curl -sSf https://raw.githubusercontent.com/kb019/sprout/main/install.sh | sh</code></pre>
+  <p>Installs to <code>~/.local/bin</code>. Detects OS and architecture automatically.</p>
 
-  <p>
-    The binary is written to <code>target/release/sprout</code>
-    (<code>sprout.exe</code> on Windows).
-    Copy it to any directory on your <code>PATH</code>.
-  </p>
+  <h3>Windows: Scoop</h3>
+  <pre><code>scoop bucket add sprout https://github.com/kb019/scoop-sprout
+scoop install sprout</code></pre>
 
-  <pre><code># Linux / macOS
-cp target/release/sprout ~/.local/bin/
+  <h3>Cargo</h3>
+  <pre><code>cargo install sprout</code></pre>
 
-# Windows (PowerShell)
-Copy-Item target\release\sprout.exe $env:USERPROFILE\bin\</code></pre>
+  <h3>Manual download</h3>
+  <p>Download the prebuilt binary for your platform from the <a href="https://github.com/kb019/sprout/releases/latest" target="_blank" rel="noopener">latest GitHub Release</a>, extract it, and place it on your <code>PATH</code>.</p>
 
   <div class="note">
     <strong>Note:</strong> Sprout writes <code>habit.db</code> to the same directory as the
     binary, not the working directory. Keep the binary somewhere writable, or symlink it.
   </div>
+
+  <h3>Build from source</h3>
+  <pre><code>git clone https://github.com/kb019/sprout
+cd sprout
+just setup</code></pre>
 
   <h3>Running with Cargo (development)</h3>
 
