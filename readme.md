@@ -21,6 +21,13 @@
     alt="Rust 1.97.0"
   >
   &nbsp;&nbsp;
+  <a href="https://crates.io/crates/sprout-tui">
+    <img
+      src="https://img.shields.io/crates/v/sprout-tui?style=flat"
+      alt="crates.io"
+    >
+  </a>
+  &nbsp;&nbsp;
   <a href="https://github.com/kb019/sprout/actions/workflows/pages/pages-build-deployment">
     <img
       src="https://github.com/kb019/sprout/actions/workflows/pages/pages-build-deployment/badge.svg"
