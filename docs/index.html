@@ -816,12 +816,6 @@ sprout edit reading --rename "Books" --daily-goal 20</code></pre>
   </div>
 
   <p>
-    There is no migration step required when upgrading. Tables are created with
-    <code>CREATE TABLE IF NOT EXISTS</code>, so a new binary running against an existing
-    database will add missing tables without touching existing data.
-  </p>
-
-  <p>
     To wipe everything manually, delete <code>habit.db</code>.
     To reset from inside the app, use the Reset option in Settings.
     To reset from the CLI, use <code>sprout delete &lt;name&gt;</code> for individual habits.
