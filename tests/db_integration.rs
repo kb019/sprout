@@ -1,6 +1,6 @@
 use chrono::Datelike;
-use sprout::model::habit::{HabitDb, HabitUpdate, NewHabit};
-use sprout::model::settings::SettingsDb;
+use sprout_tui::model::habit::{HabitDb, HabitUpdate, NewHabit};
+use sprout_tui::model::settings::SettingsDb;
 use tempfile::NamedTempFile;
 
 fn temp_db() -> (NamedTempFile, HabitDb) {
