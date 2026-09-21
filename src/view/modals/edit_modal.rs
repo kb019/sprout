@@ -24,8 +24,9 @@ pub fn render_edit_modal(app: &mut App, frame: &mut Frame, area: Rect, states: &
         Constraint::Length(2),
     ]);
     let [title_area, edit_content_area, footer_area] = area.layout(&vertical_layout);
+    let p = app.palette();
     let content_block = Block::default()
-        .bg(ratatui::style::Color::Rgb(13, 20, 15))
+        .bg(p.background)
         .padding(Padding::new(1, 1, 1, 1));
     let edit_content_inner_area = content_block.inner(edit_content_area);
 

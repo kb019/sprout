@@ -1,7 +1,7 @@
 use ratatui::{
     Frame,
     layout::{Constraint, Layout, Rect},
-    style::{Color, Modifier, Style, Stylize},
+    style::{Modifier, Style, Stylize},
     text::{Line, Span, Text},
     widgets::{Block, BorderType, Borders, ListState, Padding, Widget},
 };
@@ -24,8 +24,9 @@ pub fn render_add_modal(app: &mut App, frame: &mut Frame, area: Rect, states: &m
         Constraint::Length(2),
     ]);
     let [title_area, add_content_area, footer_area] = area.layout(&vertical_layout);
+    let p = app.palette();
     let content_block = Block::default()
-        .bg(Color::Rgb(13, 20, 15))
+        .bg(p.background)
         .padding(Padding::new(1, 1, 1, 1));
     let add_content_inner_area = content_block.inner(add_content_area);
 
