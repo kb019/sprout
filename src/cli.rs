@@ -215,6 +215,10 @@ pub fn cmd_log(db_path: &Path, habit_name: String, value: i32) -> Result<()> {
         );
     }
 
+    if !is_binary && value < 0 {
+        bail!("Progress cannot be negative.");
+    }
+
     let completed: i32 = if daily_goal > 0 && value >= daily_goal || daily_goal == 0 && value > 0 {
         1
     } else {

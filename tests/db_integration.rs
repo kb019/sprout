@@ -421,6 +421,25 @@ fn settings_multiple_keys() {
     );
 }
 
+// ── CLI validation ────────────────────────────────────────────────────────────
+
+#[test]
+fn cmd_log_rejects_negative_progress_for_goal_habit() {
+    let (f, mut db) = temp_db();
+    db.create_habit(&new_habit("Reading", 30, 0, 0, 0)).unwrap();
+    let result = sprout_tui::cli::cmd_log(f.path(), "Reading".to_string(), -5);
+    assert!(result.is_err());
+    assert!(result.unwrap_err().to_string().contains("negative"));
+}
+
+#[test]
+fn cmd_log_accepts_zero_progress_for_goal_habit() {
+    let (f, mut db) = temp_db();
+    db.create_habit(&new_habit("Reading", 30, 0, 0, 0)).unwrap();
+    let result = sprout_tui::cli::cmd_log(f.path(), "Reading".to_string(), 0);
+    assert!(result.is_ok());
+}
+
 // ── End-to-end flows ──────────────────────────────────────────────────────────
 
 #[test]
