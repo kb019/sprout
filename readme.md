@@ -1,33 +1,21 @@
 
-<p align="center">
-  A habit tracker that lives in your terminal.
-</p>
+# 🌱 Sprout - TUI Habit Tracker
 
-<p align="center">
-  <a href="https://ratatui.rs/">
-    <img src="https://img.shields.io/badge/Built%20With-Ratatui-6E56CF?style=flat" alt="Built With Ratatui">
-  </a>
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/License-MIT-blue?style=flat" alt="License MIT">
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/Rust-1.97.0-orange?style=flat" alt="Rust 1.97.0">
-  &nbsp;&nbsp;
-  <a href="https://crates.io/crates/sprout-tui">
-    <img src="https://img.shields.io/crates/v/sprout-tui?style=flat" alt="crates.io">
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://github.com/kb019/sprout/actions/workflows/pages/pages-build-deployment">
-    <img src="https://github.com/kb019/sprout/actions/workflows/pages/pages-build-deployment/badge.svg" alt="Docs">
-  </a>
-</p>
+A habit tracker that lives in your terminal.
 
-<h4 align="center">
-  <a href="https://kb019.github.io/sprout/">Documentation</a>
-</h4>
+![GitHub License](https://img.shields.io/github/license/kb019/sprout?style=for-the-badge)
+[![Crates.io Version](https://img.shields.io/crates/v/sprout-tui?style=for-the-badge)](https://crates.io/crates/sprout-tui)
+[![Crates.io Downloads](https://img.shields.io/crates/d/sprout-tui?style=for-the-badge)](https://crates.io/crates/sprout-tui)
 
 ---
 
 ![demo](https://vhs.charm.sh/vhs-6qM6LED0L8C9Z9ymD2JRYb.gif)
+
+---
+
+## Why Sprout?
+
+Most habit apps live on your phone — easy to ignore and full of distractions. The terminal is already open when you're working, so logging a habit takes seconds. All your data stays local, no accounts, no subscriptions.
 
 ---
 
