@@ -1,9 +1,5 @@
 
 <p align="center">
-  <img src="assets/sprout_logo_plant.png" width="30%" alt="Sprout logo">
-</p>
-
-<p align="center">
   A habit tracker that lives in your terminal.
 </p>
 
