@@ -1,38 +1,27 @@
 
 <p align="center">
-  <img src="assets/sprout_logo_plant.png" width="40%" alt="Description of image">
+  <img src="assets/sprout_logo_plant.png" width="30%" alt="Sprout logo">
+</p>
+
+<p align="center">
+  A habit tracker that lives in your terminal.
 </p>
 
 <p align="center">
   <a href="https://ratatui.rs/">
-    <img
-      src="https://img.shields.io/badge/Built%20With-Ratatui-6E56CF?style=flat"
-      alt="Built With Ratatui"
-    >
+    <img src="https://img.shields.io/badge/Built%20With-Ratatui-6E56CF?style=flat" alt="Built With Ratatui">
   </a>
   &nbsp;&nbsp;
-  <img
-    src="https://img.shields.io/badge/License-MIT-blue?style=flat"
-    alt="License MIT"
-  >
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=flat" alt="License MIT">
   &nbsp;&nbsp;
-  <img
-    src="https://img.shields.io/badge/Rust-1.97.0-orange?style=flat"
-    alt="Rust 1.97.0"
-  >
+  <img src="https://img.shields.io/badge/Rust-1.97.0-orange?style=flat" alt="Rust 1.97.0">
   &nbsp;&nbsp;
   <a href="https://crates.io/crates/sprout-tui">
-    <img
-      src="https://img.shields.io/crates/v/sprout-tui?style=flat"
-      alt="crates.io"
-    >
+    <img src="https://img.shields.io/crates/v/sprout-tui?style=flat" alt="crates.io">
   </a>
   &nbsp;&nbsp;
   <a href="https://github.com/kb019/sprout/actions/workflows/pages/pages-build-deployment">
-    <img
-      src="https://github.com/kb019/sprout/actions/workflows/pages/pages-build-deployment/badge.svg"
-      alt="Docs"
-    >
+    <img src="https://github.com/kb019/sprout/actions/workflows/pages/pages-build-deployment/badge.svg" alt="Docs">
   </a>
 </p>
 
@@ -40,31 +29,35 @@
   <a href="https://kb019.github.io/sprout/">Documentation</a>
 </h4>
 
+---
+
 ![demo](https://vhs.charm.sh/vhs-6qM6LED0L8C9Z9ymD2JRYb.gif)
-
-# sprout
-
-A habit tracker that lives in your terminal.
-
-Sprout is a habit tracker for the terminal. It has a full-screen TUI for daily use and a CLI for quick logging without opening the interface. Just a binary and a SQLite file.
 
 ---
 
 ## Features
 
-- Fully keyboard driven, no mouse required
 - Full-screen TUI with dashboard, heatmap, stats, and settings screens
 - GitHub-style activity heatmap with five intensity levels
 - Current and best streak tracking
 - Daily, weekly, monthly, and yearly goal tracking
 - Five themes: Sprout, Amber, Mono, Ocean, Paper (light)
 - CLI for logging and querying without opening the TUI
+- Fully keyboard driven, no mouse required
+
+---
+
+## Install
+
+```sh
+cargo install sprout-tui
+```
+
+Or check the [full installation guide](https://kb019.github.io/sprout/#installation) for Homebrew, Scoop, and prebuilt binaries.
 
 ---
 
 ## Documentation
-
-Learn how to use Sprout from the official [documentation](https://kb019.github.io/sprout/).
 
 - [Installation](https://kb019.github.io/sprout/#installation)
 - [CLI overview](https://kb019.github.io/sprout/#cli)
@@ -73,16 +66,6 @@ Learn how to use Sprout from the official [documentation](https://kb019.github.i
 - [Keybind reference](https://kb019.github.io/sprout/#keybinds)
 - [Settings reference](https://kb019.github.io/sprout/#settings-ref)
 - [Data storage](https://kb019.github.io/sprout/#storage)
-
-
----
-
-## Useful links
-
-- [stdout vs stderr](https://blog.orhun.dev/stdout-vs-stderr/) — when to use stdout and stderr in terminal apps
-- [How terminals work](https://how-terminals-work.vercel.app/) — a visual guide to how terminals work
-- [Ratatui templates](https://github.com/ratatui/templates) — starter templates for Ratatui apps
-- [Release your Ratatui app](https://ratatui.rs/recipes/apps/release-your-app/) — guide for packaging and releasing a Ratatui app
 
 ---
 
