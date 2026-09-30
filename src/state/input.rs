@@ -28,7 +28,13 @@ impl InputState {
     }
 
     pub fn set_value(&mut self, new_value: String) {
-        self.cursor_position = new_value.len();
+        if self
+            .max_length
+            .is_some_and(|max| new_value.chars().count() >= max)
+        {
+            return;
+        }
+        self.cursor_position = new_value.chars().count();
         self.value = new_value;
     }
 
@@ -49,10 +55,14 @@ impl InputState {
     }
 
     pub fn push_char(&mut self, c: char) {
-        if self.max_length.is_some_and(|max| self.value.len() >= max) {
+        if self
+            .max_length
+            .is_some_and(|max| self.value.chars().count() >= max)
+        {
             return;
         }
-        self.value.insert(self.cursor_position, c);
+        let byte_idx = self.byte_index(self.cursor_position);
+        self.value.insert(byte_idx, c);
         self.cursor_position += 1;
     }
 
@@ -61,10 +71,13 @@ impl InputState {
     }
 
     pub fn backspace(&mut self) {
-        if self.cursor_position > 0 {
-            self.cursor_position -= 1;
-            self.value.remove(self.cursor_position);
+        if self.cursor_position == 0 {
+            return;
         }
+        let start = self.byte_index(self.cursor_position - 1);
+        let end = self.byte_index(self.cursor_position);
+        self.value.replace_range(start..end, "");
+        self.cursor_position -= 1;
     }
 
     pub fn move_cursor_left(&mut self) {
@@ -74,7 +87,7 @@ impl InputState {
     }
 
     pub fn move_cursor_right(&mut self) {
-        if self.cursor_position < self.value.len() {
+        if self.cursor_position < self.value.chars().count() {
             self.cursor_position += 1;
         }
     }
@@ -95,10 +108,33 @@ impl InputState {
     pub fn set_cursor_visibility_delay(&mut self, delay: usize) {
         self.cursor_visibility_delay = delay;
     }
+
+    fn byte_index(&self, char_idx: usize) -> usize {
+        self.value
+            .char_indices()
+            .nth(char_idx)
+            .map(|(i, _)| i)
+            .unwrap_or(self.value.len())
+    }
 }
 
 impl Default for InputState {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn typing_ascii_after_multibyte_advances_cursor_by_one_char() {
+        let mut s = InputState::new();
+        s.push_char('あ');
+        assert_eq!(s.get_cursor_position(), 1);
+        s.push_char('a');
+        assert_eq!(s.get_value(), "あa");
+        assert_eq!(s.get_cursor_position(), 2);
     }
 }
